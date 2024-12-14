@@ -23,13 +23,14 @@ import { DeleteMembersCommand } from '../../controls/edit-commands/delete-member
 import { CursorOverlayComponent } from '../cursor-overlay/cursor-overlay.component';
 import { SelectedElementsService } from '../services/selected-elements-service';
 import { UndoManagerService } from '../services/undo-manager.service';
+import { ToolSelectorComponent } from '../../controls/tool-selector/tool-selector.component';
 
 @Component({
   selector: 'drafting-panel',
   standalone: true,
   templateUrl: './drafting-panel.component.html',
   styleUrl: './drafting-panel.component.scss',
-  imports: [CursorOverlayComponent],
+  imports: [CursorOverlayComponent, ToolSelectorComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DraftingPanelComponent implements AfterViewInit {
@@ -68,19 +69,19 @@ export class DraftingPanelComponent implements AfterViewInit {
     this.handleResize();
   }
 
-  addJointRequestHandler(joint: Joint) {
+  addJointRequestHandler(joint: Joint): void {
     this.undoManagerService.do(
       new AddJointCommand(joint, this.designBridgeService.bridge, this.selectedElementsService.selectedElements),
     );
   }
 
-  addMemberRequestHandler(member: Member) {
+  addMemberRequestHandler(member: Member): void {
     this.undoManagerService.do(
       new AddMemberCommand(member, this.designBridgeService.bridge, this.selectedElementsService.selectedElements),
     );
   }
 
-  deleteRequestHandler(element: Joint | Member) {
+  deleteRequestHandler(element: Joint | Member): void {
     const selectedElements = this.selectedElementsService.selectedElements;
     const command: EditCommand =
       element instanceof Joint
@@ -89,9 +90,15 @@ export class DraftingPanelComponent implements AfterViewInit {
     this.undoManagerService.do(command);
   }
 
+  deleteSelectionRequestHandler(): void {
+    const selectedElements = this.selectedElementsService.selectedElements;
+    this.undoManagerService.do(DeleteMembersCommand.forSelectedMembers(selectedElements, this.designBridgeService));
+  }
+
   ngAfterViewInit(): void {
     this.handleResize();
     window.addEventListener('resize', () => this.handleResize());
+    this.eventBrokerService.deleteSelectionRequest.subscribe(_info => this.deleteSelectionRequestHandler());
     this.eventBrokerService.loadBridgeRequest.subscribe(info => this.loadBridge(info.data));
     this.eventBrokerService.undoManagerStateChange.subscribe(_info => this.render());
     this.eventBrokerService.selectedElementsChange.subscribe(_info => this.render());

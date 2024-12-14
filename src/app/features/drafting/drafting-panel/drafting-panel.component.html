@@ -1,10 +1,7 @@
 <div class="wrapper">
-  <canvas
-    #draftingPanel
-    class="view"
-    width="{{ width }}"
-    height="{{ height }}"
-  ></canvas>
+  <canvas #draftingPanel class="view" width="{{ width }}" height="{{ height }}">
+    <tool-selector #toolSelector></tool-selector>
+  </canvas>
   <cursor-overlay
     #cursorLayer
     class="cursor"

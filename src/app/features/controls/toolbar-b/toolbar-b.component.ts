@@ -129,24 +129,24 @@ export class ToolbarBComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     const tools = this.toolbar.getTools();
-    this.uiStateService.registerSelectButtons(
+    this.uiStateService.registerSelectToolbarButtons(
       tools,
       [Tools.COARSE_GRID, Tools.MEDIUM_GRID, Tools.FINE_GRID],
       this.eventBrokerService.gridDensitySelection
     );
-    this.uiStateService.registerToggleButton(
+    this.uiStateService.registerToggleToobarButton(
       tools[Tools.MEMBER_TABLE],
       this.eventBrokerService.memberTableToggle
     );
-    this.uiStateService.registerToggleButton(
+    this.uiStateService.registerToggleToobarButton(
       tools[Tools.MEMBER_NUMBERS],
       this.eventBrokerService.memberNumbersToggle
     );
-    this.uiStateService.registerToggleButton(
+    this.uiStateService.registerToggleToobarButton(
       tools[Tools.GUIDES],
       this.eventBrokerService.guidesToggle
     );
-    this.uiStateService.registerToggleButton(
+    this.uiStateService.registerToggleToobarButton(
       tools[Tools.TEMPLATE],
       this.eventBrokerService.templateToggle
     );

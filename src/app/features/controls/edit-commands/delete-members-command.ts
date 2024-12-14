@@ -24,18 +24,18 @@ export class DeleteMembersCommand extends EditCommand {
   public static forMember(
     member: Member,
     bridge: BridgeModel,
-    elementSelection: SelectedElements,
+    selectedElements: SelectedElements,
   ): DeleteMembersCommand {
-    return new DeleteMembersCommand([member], [], { bridge, selectedElements: elementSelection });
+    return new DeleteMembersCommand([member], [], { bridge, selectedElements });
   }
 
   public static forSelectedMembers(
-    bridge: BridgeModel,
     elementSelection: SelectedElements,
     designBridgeService: DesignBridgeService,
   ): DeleteMembersCommand {
+    const bridge = designBridgeService.bridge;
     const members = Array.from(elementSelection.selectedMembers)
-      .sort()
+      .sort((a, b) => a - b)
       .map(i => bridge.members[i]);
     const joints = designBridgeService.getJointsForMembersDeletion(
       elementSelection.selectedMembers,
@@ -47,14 +47,14 @@ export class DeleteMembersCommand extends EditCommand {
   }
 
   public override do(): void {
-    const { bridge, selectedElements: elementSelection }: SelectableBridge = this.context;
-    EditableUtility.remove(bridge.members, this.members, elementSelection.selectedMembers);
-    EditableUtility.remove(bridge.joints, this.joints, elementSelection.selectedJoints);
+    const { bridge, selectedElements }: SelectableBridge = this.context;
+    EditableUtility.remove(bridge.members, this.members, selectedElements.selectedMembers);
+    EditableUtility.remove(bridge.joints, this.joints, selectedElements.selectedJoints);
   }
 
   public override undo(): void {
-    const { bridge, selectedElements: elementSelection }: SelectableBridge = this.context;
-    EditableUtility.merge(bridge.joints, this.joints, elementSelection.selectedJoints);
-    EditableUtility.merge(bridge.members, this.members, elementSelection.selectedMembers);
+    const { bridge, selectedElements }: SelectableBridge = this.context;
+    EditableUtility.merge(bridge.joints, this.joints, selectedElements.selectedJoints);
+    EditableUtility.merge(bridge.members, this.members, selectedElements.selectedMembers);
   }
 }

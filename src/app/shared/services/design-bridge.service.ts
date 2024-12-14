@@ -91,7 +91,7 @@ export class DesignBridgeService {
       deletedJointIndices.delete(member.b.index);
     });
     return Array.from(deletedJointIndices)
-      .sort()
+      .sort((a, b) => a - b)
       .map((i) => this.bridge.joints[i]);
   }
 

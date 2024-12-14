@@ -44,7 +44,7 @@ export class UndoManagerService {
         return;
       }
       editCommand.do();
-      this.done.pushRight(editCommand);
+      this.done.pushLeft(editCommand);
       this.emitStateChange();
     }
   }

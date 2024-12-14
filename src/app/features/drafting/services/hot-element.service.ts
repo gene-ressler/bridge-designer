@@ -28,11 +28,13 @@ export class HotElementService {
     return this._hotElement;
   }
 
+  /** Chooses a new hot element based on given cursor location. May be restricted to joints (optionally non-fixed only), members */
   public updateRenderedHotElement(
     ctx: CanvasRenderingContext2D,
     x: number,
     y: number,
     considerOnly?: HotElementClass[],
+    excludeFixedJoints: boolean = false
   ): void {
     const xWorld = this.viewportTransform.viewportToworldX(x);
     const yWorld = this.viewportTransform.viewportToworldY(y);
@@ -49,6 +51,9 @@ export class HotElementService {
       var minDistanceSquared: number = Number.MAX_VALUE;
       var minDistanceJoint: Joint | undefined = undefined;
       bridge.joints.forEach(joint => {
+        if (excludeFixedJoints && joint.isFixed) {
+          return; // break forEach
+        }
         const distanceSquared = Geometry.distanceSquared2D(xWorld, yWorld, joint.x, joint.y);
         if (distanceSquared < minDistanceSquared) {
           minDistanceJoint = joint;

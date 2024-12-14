@@ -11,24 +11,24 @@ export class DeleteJointCommand extends EditCommand {
   private readonly joint: Joint[]; // List of one joint.
   private readonly members: Member[];
 
-  constructor(joint: Joint, bridge: BridgeModel, elementSelection: SelectedElements) {
+  constructor(joint: Joint, bridge: BridgeModel, selectedElements: SelectedElements) {
     super(`Delete joint at (${joint.x}, ${joint.y})`, {
       bridge,
-      elementSelection,
+      selectedElements,
     });
     this.joint = [joint];
     this.members = bridge.members.filter(member => member.hasJoint(joint));
   }
 
   public override do(): void {
-    const { bridge, selectedElements: elementSelection }: SelectableBridge = this.context;
-    EditableUtility.remove(bridge.members, this.members, elementSelection.selectedMembers);
-    EditableUtility.remove(bridge.joints, this.joint, elementSelection.selectedJoints);
+    const { bridge, selectedElements }: SelectableBridge = this.context;
+    EditableUtility.remove(bridge.members, this.members, selectedElements.selectedMembers);
+    EditableUtility.remove(bridge.joints, this.joint, selectedElements.selectedJoints);
   }
 
   public override undo(): void {
-    const { bridge, selectedElements: elementSelection }: SelectableBridge = this.context;
-    EditableUtility.merge(bridge.joints, this.joint, elementSelection.selectedJoints);
-    EditableUtility.merge(bridge.members, this.members, elementSelection.selectedMembers);
+    const { bridge, selectedElements }: SelectableBridge = this.context;
+    EditableUtility.merge(bridge.joints, this.joint, selectedElements.selectedJoints);
+    EditableUtility.merge(bridge.members, this.members, selectedElements.selectedMembers);
   }
 }

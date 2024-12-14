@@ -1,0 +1,54 @@
+<jqxWindow
+  #dialog
+  [position]="{ x: 8, y: 120 }"
+  [isModal]="false"
+  [autoOpen]="true"
+  [width]="windowWidth"
+  [height]="windowHeight"
+  [resizable]="false"
+>
+  <div
+    #header
+    class="header"
+  >
+    Tools
+  </div>
+  <div
+    #content
+    class="content"
+  >
+    <jqxToggleButton
+      #jointsButton
+      [imgSrc]="'img/joint.png'"
+      [imgWidth]="imgSize"
+      [imgHeight]="imgSize"
+      [width]="buttonSize"
+      [height]="buttonSize"
+      [toggled]="true"
+    ></jqxToggleButton>
+    <jqxToggleButton
+      #membersButton
+      [imgSrc]="'img/member.png'"
+      [imgWidth]="imgSize"
+      [imgHeight]="imgSize"
+      [width]="buttonSize"
+      [height]="buttonSize"
+    ></jqxToggleButton>
+    <jqxToggleButton
+      #selectButton
+      [imgSrc]="'img/arrow.png'"
+      [imgWidth]="imgSize"
+      [imgHeight]="imgSize"
+      [width]="buttonSize"
+      [height]="buttonSize"
+    ></jqxToggleButton>
+    <jqxToggleButton
+      #eraseButton
+      [imgSrc]="'img/eraser.png'"
+      [imgWidth]="imgSize"
+      [imgHeight]="imgSize"
+      [width]="buttonSize"
+      [height]="buttonSize"
+    ></jqxToggleButton>
+  </div>
+</jqxWindow>

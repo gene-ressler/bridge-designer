@@ -318,7 +318,9 @@ class SelectModeMouseHandler {
     this.hotElementService.updateRenderedHotElement(
       this.ctx,
       event.offsetX,
-      event.offsetY
+      event.offsetY,
+      undefined, // consider all
+      true // exclude fixed joints
     );
     this.selectCursorService.update(event.offsetX, event.offsetY);
   }
@@ -364,7 +366,9 @@ class EraseModeMouseHandler {
     this.hotElementService.updateRenderedHotElement(
       this.ctx,
       event.offsetX,
-      event.offsetY
+      event.offsetY,
+      undefined, // consider all
+      true // exclude fixed joints
     );
   }
 }
