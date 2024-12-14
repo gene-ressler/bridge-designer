@@ -21,7 +21,7 @@ import { AddMemberCommand } from '../../controls/edit-commands/add-member-comman
 import { DeleteJointCommand } from '../../controls/edit-commands/delete-joint-command';
 import { DeleteMembersCommand } from '../../controls/edit-commands/delete-members-command';
 import { CursorOverlayComponent } from '../cursor-overlay/cursor-overlay.component';
-import { ElementSelectionService } from '../services/element-selection.service';
+import { SelectedElementsService } from '../services/selected-elements-service';
 import { UndoManagerService } from '../services/undo-manager.service';
 
 @Component({
@@ -44,7 +44,7 @@ export class DraftingPanelComponent implements AfterViewInit {
     private readonly viewportTransform: ViewportTransform2D,
     private readonly eventBrokerService: EventBrokerService,
     private readonly undoManagerService: UndoManagerService,
-    private readonly elementSelectionService: ElementSelectionService
+    private readonly selectedElementsService: SelectedElementsService,
   ) {}
 
   handleResize(reset: boolean = false): void {
@@ -55,9 +55,7 @@ export class DraftingPanelComponent implements AfterViewInit {
     const w = parent.clientWidth;
     const h = parent.clientHeight;
     this.viewportTransform.setViewport(0, h - 1, w - 1, 1 - h);
-    this.viewportTransform.setWindow(
-      this.designBridgeService.siteInfo.drawingWindow
-    );
+    this.viewportTransform.setWindow(this.designBridgeService.siteInfo.drawingWindow);
     this.render();
   }
 
@@ -72,48 +70,30 @@ export class DraftingPanelComponent implements AfterViewInit {
 
   addJointRequestHandler(joint: Joint) {
     this.undoManagerService.do(
-      new AddJointCommand(
-        joint,
-        this.designBridgeService.bridge,
-        this.elementSelectionService.elementSelection
-      )
+      new AddJointCommand(joint, this.designBridgeService.bridge, this.selectedElementsService.selectedElements),
     );
   }
 
   addMemberRequestHandler(member: Member) {
     this.undoManagerService.do(
-      new AddMemberCommand(
-        member,
-        this.designBridgeService.bridge,
-        this.elementSelectionService.elementSelection
-      )
+      new AddMemberCommand(member, this.designBridgeService.bridge, this.selectedElementsService.selectedElements),
     );
   }
 
   deleteRequestHandler(element: Joint | Member) {
+    const selectedElements = this.selectedElementsService.selectedElements;
     const command: EditCommand =
       element instanceof Joint
-        ? new DeleteJointCommand(
-            element,
-            this.designBridgeService.bridge,
-            this.elementSelectionService.elementSelection
-          )
-        : DeleteMembersCommand.forMember(
-            element,
-            this.designBridgeService.bridge,
-            this.elementSelectionService.elementSelection
-          );
+        ? new DeleteJointCommand(element, this.designBridgeService.bridge, selectedElements)
+        : DeleteMembersCommand.forMember(element, this.designBridgeService.bridge, selectedElements);
     this.undoManagerService.do(command);
   }
 
   ngAfterViewInit(): void {
     this.handleResize();
     window.addEventListener('resize', () => this.handleResize());
-    this.eventBrokerService.loadBridgeRequest.subscribe((info) =>
-      this.loadBridge(info.data)
-    );
-    this.eventBrokerService.undoManagerStateChange.subscribe((_info) =>
-      this.render()
-    );
+    this.eventBrokerService.loadBridgeRequest.subscribe(info => this.loadBridge(info.data));
+    this.eventBrokerService.undoManagerStateChange.subscribe(_info => this.render());
+    this.eventBrokerService.selectedElementsChange.subscribe(_info => this.render());
   }
 }

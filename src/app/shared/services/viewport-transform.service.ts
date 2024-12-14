@@ -74,8 +74,8 @@ export class ViewportTransform2D {
   }
 
   public setWindow(window: Rectangle2D): void {
-    this._xWindow = window.x;
-    this._yWindow = window.y;
+    this._xWindow = window.x0;
+    this._yWindow = window.y0;
     this._widthWindow = window.width;
     this._heightWindow = window.height;
     this.setScaleFactor();
@@ -136,10 +136,10 @@ export class ViewportTransform2D {
     dst: Rectangle2D,
     src: Rectangle2D
   ): Rectangle2D {
-    dst.x = this.viewportToworldX(src.x);
-    dst.y = this.viewportToworldY(src.y);
-    dst.width = this.viewportToWorldDistance(src.width);
-    dst.height = this.viewportToWorldDistance(src.height);
+    dst.x0 = this.viewportToworldX(src.x0);
+    dst.y0 = this.viewportToworldY(src.y0);
+    dst.width = this.viewportToworldX(src.x1) - dst.x0;
+    dst.height = this.viewportToworldY(src.y1) - dst.y0;
     return dst;
   }
 

@@ -5,8 +5,8 @@ export const enum EventOrigin {
   DRAFTING_PANEL,
   MENU,
   SAMPLE_DIALOG,
+  SERVICE,
   TOOLBAR,
-  UNDO_REDO_MANAGER,
 }
 
 export type EventInfo = { source: EventOrigin; data?: any };
@@ -29,6 +29,7 @@ export class EventBrokerService {
   public readonly memberTableToggle = new Subject<EventInfo>();
   public readonly redoRequest = new Subject<EventInfo>();
   public readonly rulersToggle = new Subject<EventInfo>();
+  public readonly selectedElementsChange = new Subject<EventInfo>();
   public readonly templateToggle = new Subject<EventInfo>();
   public readonly titleBlockToggle = new Subject<EventInfo>();
   public readonly toolsToggle = new Subject<EventInfo>();

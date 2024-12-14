@@ -73,7 +73,7 @@ export class DesignBridgeService {
     return mostCommonStockId;
   }
 
-  /** Return joints in index order that need deletion along with a set of members. */
+  /** Returns joints in index order that need deletion along with a set of members. */
   public getJointsForMembersDeletion(
     deletedMemberIndices: Set<number>
   ): Joint[] {
@@ -93,6 +93,19 @@ export class DesignBridgeService {
     return Array.from(deletedJointIndices)
       .sort()
       .map((i) => this.bridge.joints[i]);
+  }
+
+  /** Returns members inside or partially inside a given world rectangle.  */
+  public getMembersTouchingRectangle(rectangle: Rectangle2D): Member[] {
+    return this.bridge.members.filter(member => rectangle.touchesLineSegment(member.a, member.b))
+  }
+
+  /** Returns members fully inside a given world rectangle. */
+  public getMembersInsideRectangle(rectangle: Rectangle2D): Member[] {
+    return this.bridge.members.filter(
+      (member) =>
+        rectangle.containsPoint(member.a) && rectangle.containsPoint(member.b)
+    );
   }
 
   /** Returns an array of arrays of selected members, Each inner array contains those having the same stock. Sorting is on ascending member number: inner then first element of outer. */

@@ -1,15 +1,7 @@
 import { CommonModule } from '@angular/common';
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { jqxMenuComponent, jqxMenuModule } from 'jqwidgets-ng/jqxmenu';
-import {
-  EventBrokerService,
-  EventOrigin,
-} from '../../../shared/services/event-broker.service';
+import { EventBrokerService, EventOrigin } from '../../../shared/services/event-broker.service';
 import { UiStateService } from '../../drafting/services/ui-state.service';
 
 @Component({
@@ -23,7 +15,7 @@ import { UiStateService } from '../../drafting/services/ui-state.service';
 export class MenusComponent implements AfterViewInit {
   constructor(
     private readonly uiStateService: UiStateService,
-    private readonly eventBrokerService: EventBrokerService
+    private readonly eventBrokerService: EventBrokerService,
   ) {}
 
   @ViewChild('mainMenu', { static: false }) mainMenu!: jqxMenuComponent;
@@ -42,62 +34,23 @@ export class MenusComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.mainMenu.disable('print', true); // TODO: Example/test. Remove.
-    this.uiStateService.registerSelectMenuItems(
-      ['coarseGrid', 'mediumGrid', 'fineGrid'],
-      this.eventBrokerService.gridDensitySelection
-    );
-    this.uiStateService.registerSelectMenuItems(
-      ['drawingBoard', 'loadTest'],
-      this.eventBrokerService.designModeSelection
-    );
-    this.uiStateService.registerSelectMenuItems(
-      ['joints', 'members', 'select', 'erase'],
-      this.eventBrokerService.editModeSelection
-    );
-    this.uiStateService.registerToggleMenuItem(
-      'animation',
-      this.eventBrokerService.animationToggle
-    );
-    this.uiStateService.registerToggleMenuItem(
-      'animationControls',
-      this.eventBrokerService.animationControlsToggle
-    );
-    this.uiStateService.registerToggleMenuItem(
-      'autoCorrect',
-      this.eventBrokerService.autoCorrectToggle
-    );
-    this.uiStateService.registerToggleMenuItem(
-      'guides',
-      this.eventBrokerService.guidesToggle
-    );
-    this.uiStateService.registerToggleMenuItem(
-      'legacyGraphics',
-      this.eventBrokerService.legacyGraphicsToggle
-    );
-    this.uiStateService.registerToggleMenuItem(
-      'memberList',
-      this.eventBrokerService.memberTableToggle
-    );
-    this.uiStateService.registerToggleMenuItem(
-      'memberNumbers',
-      this.eventBrokerService.memberNumbersToggle
-    );
-    this.uiStateService.registerToggleMenuItem(
-      'rulers',
-      this.eventBrokerService.rulersToggle
-    );
-    this.uiStateService.registerToggleMenuItem(
-      'template',
-      this.eventBrokerService.templateToggle
-    );
-    this.uiStateService.registerToggleMenuItem(
-      'titleBlock',
-      this.eventBrokerService.titleBlockToggle
-    );
-    this.uiStateService.registerToggleMenuItem(
-      'tools',
-      this.eventBrokerService.toolsToggle
-    );
+    // this.mainMenu.disable('print', true); // TODO: Example/test. Remove.
+    const gridGroup = ['coarseGrid', 'mediumGrid', 'fineGrid'];
+    this.uiStateService.registerSelectMenuItems(gridGroup, this.eventBrokerService.gridDensitySelection);
+    const draftingGroup = ['drawingBoard', 'loadTest'];
+    this.uiStateService.registerSelectMenuItems(draftingGroup, this.eventBrokerService.designModeSelection);
+    const toolsGroup = ['joints', 'members', 'select', 'erase'];
+    this.uiStateService.registerSelectMenuItems(toolsGroup, this.eventBrokerService.editModeSelection);
+    this.uiStateService.registerToggleMenuItem('animation', this.eventBrokerService.animationToggle);
+    this.uiStateService.registerToggleMenuItem('animationControls', this.eventBrokerService.animationControlsToggle);
+    this.uiStateService.registerToggleMenuItem('autoCorrect', this.eventBrokerService.autoCorrectToggle);
+    this.uiStateService.registerToggleMenuItem('guides', this.eventBrokerService.guidesToggle);
+    this.uiStateService.registerToggleMenuItem('legacyGraphics', this.eventBrokerService.legacyGraphicsToggle);
+    this.uiStateService.registerToggleMenuItem('memberList', this.eventBrokerService.memberTableToggle);
+    this.uiStateService.registerToggleMenuItem('memberNumbers', this.eventBrokerService.memberNumbersToggle);
+    this.uiStateService.registerToggleMenuItem('rulers', this.eventBrokerService.rulersToggle);
+    this.uiStateService.registerToggleMenuItem('template', this.eventBrokerService.templateToggle);
+    this.uiStateService.registerToggleMenuItem('titleBlock', this.eventBrokerService.titleBlockToggle);
+    this.uiStateService.registerToggleMenuItem('tools', this.eventBrokerService.toolsToggle);
   }
 }

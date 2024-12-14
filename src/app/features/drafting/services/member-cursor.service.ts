@@ -7,7 +7,7 @@ import { HotElement } from './hot-element.service';
 
 @Injectable({providedIn: 'root'})
 export class MemberCursorService {
-  private _anchor: Joint | undefined;
+  private _anchorJoint: Joint | undefined;
   private anchorX: number = 0;
   private anchorY: number = 0;
   private cursorX: number = 0;
@@ -20,9 +20,9 @@ export class MemberCursorService {
   ) { }
 
   public start(ctx: CanvasRenderingContext2D, x: number, y: number, joint: Joint): void {
-    this._anchor = joint;
-    this.anchorX = this.viewportTransform.worldToViewportX(this._anchor.x);
-    this.anchorY = this.viewportTransform.worldToViewportY(this._anchor.y);
+    this._anchorJoint = joint;
+    this.anchorX = this.viewportTransform.worldToViewportX(this._anchorJoint.x);
+    this.anchorY = this.viewportTransform.worldToViewportY(this._anchorJoint.y);
     this.cursorX = x;
     this.cursorY = y;
     this.ctx = ctx;
@@ -30,7 +30,7 @@ export class MemberCursorService {
   }
 
   public update(x: number, y: number, hotElement: HotElement): void {
-    if (!this._anchor) {
+    if (!this._anchorJoint) {
       return;
     }
     this.erase();
@@ -38,12 +38,12 @@ export class MemberCursorService {
   }
 
   public end(): Joint | undefined {
-    if (!this._anchor) {
+    if (!this._anchorJoint) {
       return;
     }
     this.erase();
-    const anchor = this._anchor;
-    this._anchor = this.ctx = undefined;
+    const anchor = this._anchorJoint;
+    this._anchorJoint = this.ctx = undefined;
     return anchor;
   }
 
@@ -65,8 +65,8 @@ export class MemberCursorService {
     ctx.moveTo(this.anchorX, this.anchorY);
     ctx.lineTo(this.cursorX, this.cursorY);
     ctx.stroke();
-    // Restore joints erased when clearing rubberband.
-    this.designJointRenderingService.renderHot(ctx, this._anchor!, false);
+    // Restore joints erased along with rubberband.
+    this.designJointRenderingService.renderHot(ctx, this._anchorJoint!, false);
     if (hotElement instanceof Joint) {
       this.designJointRenderingService.renderHot(ctx, hotElement, false);
     }
@@ -80,6 +80,6 @@ export class MemberCursorService {
   private erase(): void {
     const pad = DesignJointRenderingService.JOINT_RADIUS_VIEWPORT;
     this.cleared.setFromDiagonal(this.anchorX, this.anchorY, this.cursorX, this.cursorY).pad(pad, pad);
-    this.ctx?.clearRect(this.cleared.x, this.cleared.y, this.cleared.width, this.cleared.height);
+    this.ctx?.clearRect(this.cleared.x0, this.cleared.y0, this.cleared.width, this.cleared.height);
   }
 }

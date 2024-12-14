@@ -9,7 +9,7 @@ export class Member implements Editable {
     public a: Joint,
     public b: Joint,
     public material: Material,
-    public shape: Shape
+    public shape: Shape,
   ) {
     if (a === b) {
       throw new Error(`Single joint member: ${a.number}`);
@@ -25,11 +25,7 @@ export class Member implements Editable {
   }
 
   public get stockId(): StockId {
-    return new StockId(
-      this.material.index,
-      this.shape.section.index,
-      this.shape.sizeIndex
-    );
+    return new StockId(this.material.index, this.shape.section.index, this.shape.sizeIndex);
   }
 
   public get slenderness(): number {

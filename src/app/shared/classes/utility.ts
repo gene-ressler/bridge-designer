@@ -8,12 +8,38 @@ export class Utility {
     return Utility.sqr(Utility.sqr(x));
   }
 
-  public static inRange(x: number, lo: number, hi: number): boolean {
-    return lo <= x && x <= hi;
+  /**
+   * Returns whether a given number lies in a given closed range [a,b] or [b,a].
+   * I.e., the order of bounds doesn't matter.
+   */
+  public static inRange(x: number, a: number, b: number): boolean {
+    return a <= b ? a <= x && x <= b : b <= x && x <= a;
   }
 
   /** Returns [0, 1, ... n-1]. */
   public static indices(n: number): number[] {
     return Array.from({ length: n }, (_, i) => i);
+  }
+
+  public static setContainsExactly<T>(set: Set<T>, items: T[]) {
+    return set.size === items.length && items.every(item => set.has(item));
+  }
+
+  // TODO: Not currently used. Remove?
+  public static setsEqual<T>(a: Set<T>, b: Set<T>) {
+    if (a.size !== b.size) {
+      return false;
+    }
+    for (const element of a) {
+      if (!b.has(element)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // TODO: Not currently used. Remove?
+  public static arraysEqual<T>(a: T[], b: T[]): boolean {
+    return a.length === b.length && a.every((aElement, index) => aElement === b[index]);
   }
 }

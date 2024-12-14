@@ -5,29 +5,29 @@ import { Member } from '../../../shared/classes/member.model';
 
 export type SelectedSet = Set<number>;
 
-export type ElementSelection = {
-  selectedJoints: SelectedSet,
-  selectedMembers: SelectedSet,
+export type SelectedElements = {
+  selectedJoints: SelectedSet;  // Always zero or one joint. The set simplifies undo/redo.
+  selectedMembers: SelectedSet;
 };
 
 export type SelectableBridge = {
-  bridge: BridgeModel,
-  elementSelection: ElementSelection,
+  bridge: BridgeModel;
+  selectedElements: SelectedElements;
 };
 
 /** Container for the drafting panel's element selection and hot element. */
-@Injectable({providedIn: 'root'})
-export class ElementSelectionService {
-  public readonly elementSelection: ElementSelection = { 
+@Injectable({ providedIn: 'root' })
+export class SelectedElementsService {
+  public readonly selectedElements: SelectedElements = {
     selectedJoints: new Set<number>(),
     selectedMembers: new Set<number>(),
   };
 
   public isJointSelected(joint: Joint): boolean {
-    return this.elementSelection.selectedJoints.has(joint.index);
+    return this.selectedElements.selectedJoints.has(joint.index);
   }
 
   public isMemberSelected(member: Member): boolean {
-    return this.elementSelection.selectedMembers.has(member.index);
+    return this.selectedElements.selectedMembers.has(member.index);
   }
 }

@@ -52,16 +52,16 @@ describe('TaggedPoint2D', () => {
 describe('Rectangle2D', () => {
   it('should create empty rectangle', () => {
     const rect = Rectangle2D.createEmpty();
-    expect(rect.x).toBe(0);
-    expect(rect.y).toBe(0);
+    expect(rect.x0).toBe(0);
+    expect(rect.y0).toBe(0);
     expect(rect.width).toBe(0);
     expect(rect.height).toBe(0);
   });
 
   it('should make canonical rectangle from negative dimensions', () => {
     const rect = new Rectangle2D(10, 10, -20, -30).makeCanonical();
-    expect(rect.x).toBe(-10);
-    expect(rect.y).toBe(-20);
+    expect(rect.x0).toBe(-10);
+    expect(rect.y0).toBe(-20);
     expect(rect.width).toBe(20);
     expect(rect.height).toBe(30);
   });
@@ -69,8 +69,8 @@ describe('Rectangle2D', () => {
   it('should clone correctly', () => {
     const original = new Rectangle2D(10, 20, 30, 40);
     const clone = original.clone();
-    expect(clone.x).toBe(10);
-    expect(clone.y).toBe(20);
+    expect(clone.x0).toBe(10);
+    expect(clone.y0).toBe(20);
     expect(clone.width).toBe(30);
     expect(clone.height).toBe(40);
     expect(clone).not.toBe(original);
@@ -105,8 +105,8 @@ describe('Geometry', () => {
   it('should calculate extent of points', () => {
     const points = [new Point2D(0, 0), new Point2D(10, 0), new Point2D(5, 5)];
     const extent = Geometry.getExtent2D(points);
-    expect(extent.x).toBe(0);
-    expect(extent.y).toBe(0);
+    expect(extent.x0).toBe(0);
+    expect(extent.y0).toBe(0);
     expect(extent.width).toBe(10);
     expect(extent.height).toBe(5);
   });

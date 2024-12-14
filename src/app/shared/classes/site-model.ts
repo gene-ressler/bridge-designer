@@ -65,30 +65,30 @@ export class SiteModel {
     }
 
     // Canonical rectangular span extent.
-    this.spanExtent.x = this.xLeftmostDeckJoint;
-    this.spanExtent.y = -conditions.underClearance;
+    this.spanExtent.x0 = this.xLeftmostDeckJoint;
+    this.spanExtent.y0 = -conditions.underClearance;
     this.spanExtent.width = conditions.spanLength;
     this.spanExtent.height =
       conditions.underClearance + conditions.overClearance;
 
-    this.drawingWindow.x = this.spanExtent.x - SiteConstants.DRAWING_X_MARGIN;
+    this.drawingWindow.x0 = this.spanExtent.x0 - SiteConstants.DRAWING_X_MARGIN;
     this.drawingWindow.width =
       this.spanExtent.width + 2 * SiteConstants.DRAWING_X_MARGIN;
     if (conditions.isLeftAnchorage) {
-      this.drawingWindow.x -= DesignConditions.ANCHOR_OFFSET;
+      this.drawingWindow.x0 -= DesignConditions.ANCHOR_OFFSET;
       this.drawingWindow.width += DesignConditions.ANCHOR_OFFSET;
     }
     if (conditions.isRightAnchorage) {
       this.drawingWindow.width += DesignConditions.ANCHOR_OFFSET;
     }
     // Extra 3.5 shows bottom of lowest abutment position.
-    this.drawingWindow.y =
+    this.drawingWindow.y0 =
       this.yGradeLevel - SiteConstants.WATER_BELOW_GRADE - 3.5;
     this.drawingWindow.height =
       this.yGradeLevel +
       SiteConstants.OVERHEAD_CLEARANCE +
       1.0 -
-      this.drawingWindow.y;
+      this.drawingWindow.y0;
     this.designConditions = conditions;
     if (drawingWindowCustomizer) {
       drawingWindowCustomizer(this.drawingWindow);

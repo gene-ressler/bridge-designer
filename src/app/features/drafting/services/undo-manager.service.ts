@@ -52,7 +52,7 @@ export class UndoManagerService {
   private emitStateChange(): void {
     this.eventBrokerService.undoManagerStateChange.next(
       {
-        source: EventOrigin.UNDO_REDO_MANAGER,
+        source: EventOrigin.SERVICE,
         data: {
           doneCount: this.done.length,
           undoneCount: this.undone.length,

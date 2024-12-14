@@ -1,4 +1,5 @@
 import { ElementRef } from '@angular/core';
+import { Utility } from './utility';
 
 /** Colors meant to be consistent across the application. */
 export class Colors {
@@ -18,14 +19,17 @@ export interface Point2DInterface {
 }
 
 export interface Rectangle2DInterface {
-  x: number;
-  y: number;
+  x0: number;
+  y0: number;
   width: number;
   height: number;
 }
 
 export class Point2D implements Point2DInterface {
-  constructor(public x: number = 0, public y: number = 0) {}
+  constructor(
+    public x: number = 0,
+    public y: number = 0,
+  ) {}
 
   public set(x: number, y: number): void {
     this.x = x;
@@ -42,17 +46,21 @@ export class Point2D implements Point2DInterface {
 }
 
 export class TaggedPoint2D<T> extends Point2D {
-  constructor(x: number, y: number, public tag: T) {
+  constructor(
+    x: number,
+    y: number,
+    public tag: T,
+  ) {
     super(x, y);
   }
 }
 
 export class Rectangle2D implements Rectangle2DInterface {
   constructor(
-    public x: number,
-    public y: number,
+    public x0: number,
+    public y0: number,
     public width: number,
-    public height: number
+    public height: number,
   ) {}
 
   /** Construct a canonical empty rectangle. */
@@ -60,12 +68,7 @@ export class Rectangle2D implements Rectangle2DInterface {
     return new Rectangle2D(0, 0, 0, 0);
   }
 
-  public static fromDiagonal(
-    ax: number,
-    ay: number,
-    bx: number,
-    by: number
-  ): Rectangle2D {
+  public static fromDiagonal(ax: number, ay: number, bx: number, by: number): Rectangle2D {
     return new Rectangle2D(ax, ay, bx - ax, by - ay);
   }
 
@@ -73,26 +76,61 @@ export class Rectangle2D implements Rectangle2DInterface {
     return this.fromDiagonal(a.x, a.y, b.x, b.y);
   }
 
+  /** Returns the length of the diagonal squared. */
+  public get diagonalSqr(): number {
+    return Utility.sqr(this.width) + Utility.sqr(this.height);
+  }
+
   public clone(): Rectangle2D {
-    return new Rectangle2D(this.x, this.y, this.width, this.height);
+    return new Rectangle2D(this.x0, this.y0, this.width, this.height);
+  }
+
+  public get x1(): number {
+    return this.x0 + this.width;
+  }
+
+  public get y1(): number {
+    return this.y0 + this.height;
+  }
+
+  public contains(x: number, y: number): boolean {
+    return Utility.inRange(x, this.x0, this.x1) && Utility.inRange(y, this.y0, this.y1);
+  }
+
+  public touchesLineSegment(a: Point2DInterface, b: Point2DInterface): boolean {
+    if (this.containsPoint(a) || this.containsPoint(b)) {
+      return true;
+    }
+    const small = 1e-10;
+    if (Math.abs(a.x - b.x) < small) {
+      return Utility.inRange(a.x, this.x0, this.x1) && Utility.inRange(this.y0, a.y, b.y);
+    }
+    if (Math.abs(a.y - b.y) < small) {
+      return Utility.inRange(a.y, this.y0, this.y1) && Utility.inRange(this.x0, a.x, b.x);
+    }
+    const p = (b.x - a.x) / (b.y - a.y);
+    return (
+      Utility.inRange((this.y0 - a.y) * p + a.x, this.x0, this.x1) ||
+      Utility.inRange((this.y1 - a.y) * p + a.x, this.x0, this.x1) ||
+      Utility.inRange((this.x0 - a.x) / p + a.y, this.y0, this.y1)
+    );
+  }
+
+  public containsPoint(p: Point2DInterface): boolean {
+    return this.contains(p.x, p.y);
   }
 
   public copyTo(dst: Rectangle2D): Rectangle2D {
-    dst.x = this.x;
-    dst.y = this.y;
+    dst.x0 = this.x0;
+    dst.y0 = this.y0;
     dst.width = this.width;
     dst.height = this.height;
     return dst;
   }
 
-  public setFromDiagonal(
-    ax: number,
-    ay: number,
-    bx: number,
-    by: number
-  ): Rectangle2D {
-    this.x = ax;
-    this.y = ay;
+  public setFromDiagonal(ax: number, ay: number, bx: number, by: number): Rectangle2D {
+    this.x0 = ax;
+    this.y0 = ay;
     this.width = bx - ax;
     this.height = by - ay;
     return this;
@@ -100,11 +138,11 @@ export class Rectangle2D implements Rectangle2DInterface {
 
   public makeCanonical(): Rectangle2D {
     if (this.width < 0) {
-      this.x += this.width;
+      this.x0 += this.width;
       this.width = -this.width;
     }
     if (this.height < 0) {
-      this.y += this.height;
+      this.y0 += this.height;
       this.height = -this.height;
     }
     return this;
@@ -112,9 +150,9 @@ export class Rectangle2D implements Rectangle2DInterface {
 
   public pad(dx: number, dy: number): Rectangle2D {
     this.makeCanonical();
-    this.x -= dx;
+    this.x0 -= dx;
     this.width += 2 * dx;
-    this.y -= dy;
+    this.y0 -= dy;
     this.height += 2 * dy;
     return this;
   }
@@ -124,65 +162,34 @@ export class Geometry {
   public static readonly SMALL = 0.01; // A world centimeter.
   public static readonly SMALL_SQUARED = this.SMALL * this.SMALL;
 
-  public static areColocated2D(
-    a: Point2DInterface,
-    b: Point2DInterface,
-    toleranceSquared: number = 0
-  ): boolean {
+  public static areColocated2D(a: Point2DInterface, b: Point2DInterface, toleranceSquared: number = 0): boolean {
     return this.distanceSquared2DPoints(a, b) <= toleranceSquared;
   }
 
   /** Return the distance squared between a couple of 2d points. */
-  public static distanceSquared2DPoints(
-    a: Point2DInterface,
-    b: Point2DInterface
-  ): number {
+  public static distanceSquared2DPoints(a: Point2DInterface, b: Point2DInterface): number {
     return this.distanceSquared2D(a.x, a.y, b.x, b.y);
   }
 
-  public static distanceSquared2D(
-    ax: number,
-    ay: number,
-    bx: number,
-    by: number
-  ): number {
+  public static distanceSquared2D(ax: number, ay: number, bx: number, by: number): number {
     const dx = ax - bx;
     const dy = ay - by;
     return dx * dx + dy * dy;
   }
 
-  public static distance2DPoints(
-    a: Point2DInterface,
-    b: Point2DInterface
-  ): number {
+  public static distance2DPoints(a: Point2DInterface, b: Point2DInterface): number {
     return Math.sqrt(this.distanceSquared2DPoints(a, b));
   }
 
-  public static distance2D(
-    ax: number,
-    ay: number,
-    bx: number,
-    by: number
-  ): number {
+  public static distance2D(ax: number, ay: number, bx: number, by: number): number {
     return Math.sqrt(this.distanceSquared2D(ax, ay, bx, by));
   }
 
-  public static pointSegmentDistance2DPoints(
-    p: Point2DInterface,
-    a: Point2DInterface,
-    b: Point2DInterface
-  ): number {
+  public static pointSegmentDistance2DPoints(p: Point2DInterface, a: Point2DInterface, b: Point2DInterface): number {
     return this.pointSegmentDistance2D(p.x, p.y, a.x, a.y, b.x, b.y);
   }
 
-  public static pointSegmentDistance2D(
-    px: number,
-    py: number,
-    ax: number,
-    ay: number,
-    bx: number,
-    by: number
-  ): number {
+  public static pointSegmentDistance2D(px: number, py: number, ax: number, ay: number, bx: number, by: number): number {
     const vx = bx - ax;
     const vy = by - ay;
     const vDotV = vx * vx + vy * vy;
@@ -209,7 +216,7 @@ export class Geometry {
     ay: number,
     bx: number,
     by: number,
-    width: number
+    width: number,
   ): boolean {
     const vx = bx - ax;
     const vy = by - ay;
@@ -234,17 +241,9 @@ export class Geometry {
     p: Point2DInterface,
     a: Point2DInterface,
     b: Point2DInterface,
-    width: number
+    width: number,
   ): boolean {
-    return this.isInNonAxisAlignedRectangle(
-      p.x,
-      p.y,
-      a.x,
-      a.y,
-      b.x,
-      b.y,
-      width
-    );
+    return this.isInNonAxisAlignedRectangle(p.x, p.y, a.x, a.y, b.x, b.y, width);
   }
 
   /** Returns a canonical rectangle that exactly includes a list of 2d points or null if the list is empty. */
@@ -275,18 +274,13 @@ export class Geometry {
   }
 
   /** Returns whether point p is on open segment a--b. */
-  public static isPointOnSegment(
-    p: Point2DInterface,
-    a: Point2DInterface,
-    b: Point2DInterface
-  ) {
+  public static isPointOnSegment(p: Point2DInterface, a: Point2DInterface, b: Point2DInterface) {
     return (
       !this.areColocated2D(p, a) &&
       !this.areColocated2D(p, b) &&
       ((a.x <= p.x && p.x <= b.x) || (b.x <= p.x && p.x <= a.x)) &&
       ((a.y <= p.y && p.y <= b.y) || (b.y <= p.y && p.y <= a.y)) &&
-      Math.abs((p.x - a.x) * (b.y - a.y) - (p.y - a.y) * (b.x - a.x)) <
-        Geometry.SMALL_SQUARED
+      Math.abs((p.x - a.x) * (b.y - a.y) - (p.y - a.y) * (b.x - a.x)) < Geometry.SMALL_SQUARED
     );
   }
 }
@@ -298,7 +292,7 @@ export class Graphics {
     g: number,
     b: number,
     intensification: number = 0,
-    blueification: number = 0
+    blueification: number = 0,
   ): string {
     r += intensification * (255 - r) - 0.25 * blueification * r;
     g += intensification * (255 - g) - 0.25 * blueification * g;
@@ -307,26 +301,17 @@ export class Graphics {
   }
 
   /** Sets up lineDashOffset and lineDash in given context with offset that assures a good look. */
-  public static setTickLineDash(
-    ctx: CanvasRenderingContext2D,
-    length: number,
-    dash: [number, number]
-  ): void {
+  public static setTickLineDash(ctx: CanvasRenderingContext2D, length: number, dash: [number, number]): void {
     const [dashLength, spaceLength] = dash;
     const cycleLength = dashLength + spaceLength;
     const dashFraction = dashLength / cycleLength;
     const cycles = length / cycleLength;
     const wholeCyclesWithExtraDash = Math.floor(cycles + dashFraction - 0.0001);
-    ctx.lineDashOffset =
-      (1 - cycles + wholeCyclesWithExtraDash + dashFraction) *
-      0.5 *
-      cycleLength;
+    ctx.lineDashOffset = (1 - cycles + wholeCyclesWithExtraDash + dashFraction) * 0.5 * cycleLength;
     ctx.setLineDash(dash);
   }
 
-  public static getContext(
-    canvasRef: ElementRef<HTMLCanvasElement>
-  ): CanvasRenderingContext2D {
+  public static getContext(canvasRef: ElementRef<HTMLCanvasElement>): CanvasRenderingContext2D {
     const ctx = canvasRef.nativeElement.getContext('2d');
     if (ctx == null) {
       throw new Error('Get canvas 2d context failed');

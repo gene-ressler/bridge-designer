@@ -3,7 +3,7 @@ import { Geometry, Point2DInterface } from '../../../shared/classes/graphics';
 import { Joint } from '../../../shared/classes/joint.model';
 import { Member } from '../../../shared/classes/member.model';
 import { DesignConditions } from '../../../shared/services/design-conditions.service';
-import { SelectedSet } from '../../drafting/services/element-selection.service';
+import { SelectedSet } from '../../drafting/services/selected-elements-service';
 
 /** Helper to handle cases where a new joint or one to be moved transects existing members. */
 export class MemberSplitter {
@@ -29,27 +29,23 @@ export class MemberSplitter {
         existingMemberCount--;
         // Re-use the old member index for the first new one to make re-numbering minimially disruptive.
         var index = member.index;
-        if (
-          !connectedMemberJointPairs.has(Member.getJointsKey(member.a, joint))
-        ) {
+        if (!connectedMemberJointPairs.has(Member.getJointsKey(member.a, joint))) {
           this.mergedMembers.push(
-            new Member(index, member.a, joint, member.material, member.shape)
+            new Member(index, member.a, joint, member.material, member.shape),
           );
           index = -1; // Second insert, if any, is un-indexed.
           existingMemberCount++;
         }
-        if (
-          !connectedMemberJointPairs.has(Member.getJointsKey(joint, member.b))
-        ) {
+        if (!connectedMemberJointPairs.has(Member.getJointsKey(joint, member.b))) {
           this.mergedMembers.push(
-            new Member(index, joint, member.b, member.material, member.shape)
+            new Member(index, joint, member.b, member.material, member.shape),
           );
         }
       }
     }
     // Index un-indexed members at the end, so they're appended.
     var index = existingMemberCount;
-    this.mergedMembers.forEach((member) => {
+    this.mergedMembers.forEach(member => {
       if (member.index < 0) {
         member.index = index++;
       }

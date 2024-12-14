@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ElementSelectionService } from '../../features/drafting/services/element-selection.service';
+import { SelectedElementsService } from '../../features/drafting/services/selected-elements-service';
 import { DesignBridgeService } from './design-bridge.service';
 import { DesignJointRenderingService } from './design-joint-rendering.service';
 import { DesignMemberRenderingService } from './design-member-rendering.service';
@@ -10,7 +10,7 @@ export class DesignBridgeRenderingService {
     private readonly bridgeService: DesignBridgeService,
     private readonly jointRenderingService: DesignJointRenderingService,
     private readonly memberRenderingService: DesignMemberRenderingService,
-    private readonly elementSelectionService: ElementSelectionService
+    private readonly elementSelectionService: SelectedElementsService
   ) {}
 
   /** Render the design bridge using its current selection. */

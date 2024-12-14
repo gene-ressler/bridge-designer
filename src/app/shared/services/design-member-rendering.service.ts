@@ -143,7 +143,7 @@ export class DesignMemberRenderingService {
       this.pointA,
       this.pointB
     ).pad(pad, pad);
-    ctx.clearRect(toClear.x, toClear.y, toClear.width, toClear.height);
+    ctx.clearRect(toClear.x0, toClear.y0, toClear.width, toClear.height);
   }
 
   public getMemberWidthWorld(member: Member): number {

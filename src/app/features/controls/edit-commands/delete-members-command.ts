@@ -4,15 +4,15 @@ import { Joint } from '../../../shared/classes/joint.model';
 import { Member } from '../../../shared/classes/member.model';
 import { DesignBridgeService } from '../../../shared/services/design-bridge.service';
 import {
-  ElementSelection,
+  SelectedElements,
   SelectableBridge,
-} from '../../drafting/services/element-selection.service';
+} from '../../drafting/services/selected-elements-service';
 
 export class DeleteMembersCommand extends EditCommand {
   private constructor(
     private readonly members: Member[],
     private readonly joints: Joint[],
-    selectableBridge: SelectableBridge
+    selectableBridge: SelectableBridge,
   ) {
     const description =
       members.length == 1
@@ -24,53 +24,37 @@ export class DeleteMembersCommand extends EditCommand {
   public static forMember(
     member: Member,
     bridge: BridgeModel,
-    elementSelection: ElementSelection
+    elementSelection: SelectedElements,
   ): DeleteMembersCommand {
-    return new DeleteMembersCommand([member], [], { bridge, elementSelection });
+    return new DeleteMembersCommand([member], [], { bridge, selectedElements: elementSelection });
   }
 
   public static forSelectedMembers(
     bridge: BridgeModel,
-    elementSelection: ElementSelection,
-    designBridgeService: DesignBridgeService
+    elementSelection: SelectedElements,
+    designBridgeService: DesignBridgeService,
   ): DeleteMembersCommand {
     const members = Array.from(elementSelection.selectedMembers)
       .sort()
-      .map((i) => bridge.members[i]);
+      .map(i => bridge.members[i]);
     const joints = designBridgeService.getJointsForMembersDeletion(
-      elementSelection.selectedMembers
+      elementSelection.selectedMembers,
     );
     return new DeleteMembersCommand(members, joints, {
       bridge,
-      elementSelection,
+      selectedElements: elementSelection,
     });
   }
 
   public override do(): void {
-    const { bridge, elementSelection }: SelectableBridge = this.context;
-    EditableUtility.remove(
-      bridge.members,
-      this.members,
-      elementSelection.selectedMembers
-    );
-    EditableUtility.remove(
-      bridge.joints,
-      this.joints,
-      elementSelection.selectedJoints
-    );
+    const { bridge, selectedElements: elementSelection }: SelectableBridge = this.context;
+    EditableUtility.remove(bridge.members, this.members, elementSelection.selectedMembers);
+    EditableUtility.remove(bridge.joints, this.joints, elementSelection.selectedJoints);
   }
 
   public override undo(): void {
-    const { bridge, elementSelection }: SelectableBridge = this.context;
-    EditableUtility.merge(
-      bridge.joints,
-      this.joints,
-      elementSelection.selectedJoints
-    );
-    EditableUtility.merge(
-      bridge.members,
-      this.members,
-      elementSelection.selectedMembers
-    );
+    const { bridge, selectedElements: elementSelection }: SelectableBridge = this.context;
+    EditableUtility.merge(bridge.joints, this.joints, elementSelection.selectedJoints);
+    EditableUtility.merge(bridge.members, this.members, elementSelection.selectedMembers);
   }
 }

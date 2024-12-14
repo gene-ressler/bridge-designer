@@ -24,7 +24,7 @@ import {
   SampleService,
 } from '../../../shared/services/sample.service';
 import { ViewportTransform2D } from '../../../shared/services/viewport-transform.service';
-import { ElementSelectionService } from '../../drafting/services/element-selection.service';
+import { SelectedElementsService } from '../../drafting/services/selected-elements-service';
 import { jqxButtonComponent, jqxButtonModule } from 'jqwidgets-ng/jqxbuttons';
 
 @Component({
@@ -39,7 +39,7 @@ import { jqxButtonComponent, jqxButtonModule } from 'jqwidgets-ng/jqxbuttons';
     DesignMemberRenderingService,
     DesignRenderingService,
     DesignSiteRenderingService,
-    ElementSelectionService,
+    SelectedElementsService,
     ViewportTransform2D,
   ],
   templateUrl: './sample-selection-dialog.component.html',
