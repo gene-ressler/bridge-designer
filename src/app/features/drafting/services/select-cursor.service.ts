@@ -7,7 +7,7 @@ export class SelectCursorService {
   private static readonly SMALL_SQR = Utility.sqr(3);
   private readonly cursor: Rectangle2D = Rectangle2D.createEmpty();
   private ctx?: CanvasRenderingContext2D;
-  private isAnchored: boolean = false;
+  private _isAnchored: boolean = false;
 
   public start(ctx: CanvasRenderingContext2D, x: number, y: number): void {
     this.cursor.x0 = x;
@@ -15,11 +15,11 @@ export class SelectCursorService {
     this.cursor.width = this.cursor.height = 0;
     this.ctx = ctx;
     this.show();
-    this.isAnchored = true;
+    this._isAnchored = true;
   }
 
   public update(x: number, y: number): void {
-    if (!this.isAnchored) {
+    if (!this._isAnchored) {
       return;
     }
     this.erase();
@@ -29,17 +29,33 @@ export class SelectCursorService {
   }
 
   public end(x: number, y: number, selected: Rectangle2D): Rectangle2D | undefined {
-    if (!this.isAnchored) {
+    if (!this._isAnchored) {
       return undefined;
     }
     this.erase();
+    this._isAnchored = false;
     this.cursor.width = x - this.cursor.x0;
     this.cursor.height = y - this.cursor.y0;
-    this.isAnchored = false;
     if (this.cursor.diagonalSqr < SelectCursorService.SMALL_SQR) {
       this.cursor.width = this.cursor.height = 0;
     }
     return this.cursor.copyTo(selected);
+  }
+
+  public abort(): void {
+    if (!this._isAnchored) {
+      return undefined;
+    }
+    this.erase();
+    this._isAnchored = false;
+  }
+
+  public get isAnchored(): boolean {
+    return this._isAnchored;
+  }
+
+  public get diagonalSqr(): number {
+    return this.cursor.diagonalSqr;
   }
 
   private show() {

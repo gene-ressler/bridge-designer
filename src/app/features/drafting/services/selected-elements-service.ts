@@ -6,13 +6,8 @@ import { Member } from '../../../shared/classes/member.model';
 export type SelectedSet = Set<number>;
 
 export type SelectedElements = {
-  selectedJoints: SelectedSet;  // Always zero or one joint. The set simplifies undo/redo.
+  selectedJoints: SelectedSet; // Always zero or one joint. The set simplifies undo/redo.
   selectedMembers: SelectedSet;
-};
-
-export type SelectableBridge = {
-  bridge: BridgeModel;
-  selectedElements: SelectedElements;
 };
 
 /** Container for the drafting panel's element selection and hot element. */
@@ -22,6 +17,16 @@ export class SelectedElementsService {
     selectedJoints: new Set<number>(),
     selectedMembers: new Set<number>(),
   };
+
+  public getSelectedJoint(bridge: BridgeModel): Joint | undefined {
+    if (this.selectedElements.selectedJoints.size === 0) {
+      return undefined;
+    }
+    for (const jointIndex of this.selectedElements.selectedJoints) {
+      return bridge.joints[jointIndex];
+    }
+    return undefined; // never reached
+  }
 
   public isJointSelected(joint: Joint): boolean {
     return this.selectedElements.selectedJoints.has(joint.index);

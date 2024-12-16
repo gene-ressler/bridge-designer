@@ -146,8 +146,11 @@ export class DesignMemberRenderingService {
     ctx.clearRect(toClear.x0, toClear.y0, toClear.width, toClear.height);
   }
 
-  public getMemberWidthWorld(member: Member): number {
-    const widthViewport = this.lineWidths[member.shape.sizeIndex].outer;
+  public getMemberWidthWorld(member: Member, minWidthViewport?: number): number {
+    var widthViewport: number = this.lineWidths[member.shape.sizeIndex].outer;
+    if (minWidthViewport && widthViewport < minWidthViewport ) {
+      widthViewport = minWidthViewport;
+    }
     return this.viewportTransform.viewportToWorldDistance(widthViewport);
   }
 

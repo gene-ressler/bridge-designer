@@ -28,30 +28,37 @@ export class HotElementService {
     return this._hotElement;
   }
 
-  /** Chooses a new hot element based on given cursor location. May be restricted to joints (optionally non-fixed only), members */
+  /**
+   * Chooses a new hot element based on given cursor location.
+   * May be restricted to joints (optionally non-fixed only), members, and/or element labels.
+   */
   public updateRenderedHotElement(
     ctx: CanvasRenderingContext2D,
     x: number,
     y: number,
-    considerOnly?: HotElementClass[],
-    excludeFixedJoints: boolean = false
+    options: {
+      considerOnly?: HotElementClass[];
+      excludeFixedJoints?: boolean;
+      excludedJointIndices?: Set<number>;
+    } = {},
   ): void {
     const xWorld = this.viewportTransform.viewportToworldX(x);
     const yWorld = this.viewportTransform.viewportToworldY(y);
     const bridge = this.designBridgeService.bridge;
     var hotElement: HotElement = undefined;
-    if (!considerOnly || considerOnly.includes(Joint)) {
-      const jointRadiusWorldSquared = Utility.sqr(
-        3 *
-          this.viewportTransform.viewportToWorldDistance(
-            DesignJointRenderingService.JOINT_RADIUS_VIEWPORT,
-          ),
-      );
+    const jointRadiusWorld = this.viewportTransform.viewportToWorldDistance(
+      DesignJointRenderingService.JOINT_RADIUS_VIEWPORT,
+    );
+    const jointPickRadiusSquared = Utility.sqr(3 * jointRadiusWorld);
+    if (!options.considerOnly || options.considerOnly.includes(Joint)) {
       // Could stop at the first joint, but look for minimum in case the screen is small enough for joints to overlap.
       var minDistanceSquared: number = Number.MAX_VALUE;
       var minDistanceJoint: Joint | undefined = undefined;
       bridge.joints.forEach(joint => {
-        if (excludeFixedJoints && joint.isFixed) {
+        if (
+          (options.excludeFixedJoints && joint.isFixed) ||
+          (options.excludedJointIndices && options.excludedJointIndices.has(joint.index))
+        ) {
           return; // break forEach
         }
         const distanceSquared = Geometry.distanceSquared2D(xWorld, yWorld, joint.x, joint.y);
@@ -60,13 +67,14 @@ export class HotElementService {
           minDistanceSquared = distanceSquared;
         }
       });
-      if (minDistanceSquared <= jointRadiusWorldSquared) {
+      if (minDistanceSquared <= jointPickRadiusSquared) {
         hotElement = minDistanceJoint;
       }
     }
-    if (!considerOnly || considerOnly.includes(Member)) {
+    if (!options.considerOnly || options.considerOnly.includes(Member)) {
       bridge.members.forEach(member => {
-        const width = this.designMemberRenderingService.getMemberWidthWorld(member);
+        // Min pixel width eases selection of very narrow members.
+        const width = this.designMemberRenderingService.getMemberWidthWorld(member, 10);
         if (
           Geometry.isInNonAxisAlignedRectangle(
             xWorld,
@@ -76,6 +84,7 @@ export class HotElementService {
             member.b.x,
             member.b.y,
             width,
+            jointRadiusWorld,
           )
         ) {
           hotElement = member;
@@ -106,28 +115,12 @@ export class HotElementService {
       return; // nothing to rendder
     }
     if (element instanceof Joint) {
-      this.designJointRenderingService.renderHot(
-        ctx,
-        element,
-        this.elementSelectionService.isJointSelected(element),
-      );
+      this.designJointRenderingService.renderHot(ctx, element, this.elementSelectionService.isJointSelected(element));
     } else if (element instanceof Member) {
       const member: Member = element;
-      this.designMemberRenderingService.renderHot(
-        ctx,
-        member,
-        this.elementSelectionService.isMemberSelected(member),
-      );
-      this.designJointRenderingService.render(
-        ctx,
-        member.a,
-        this.elementSelectionService.isJointSelected(member.a),
-      );
-      this.designJointRenderingService.render(
-        ctx,
-        member.b,
-        this.elementSelectionService.isJointSelected(member.b),
-      );
+      this.designMemberRenderingService.renderHot(ctx, member, this.elementSelectionService.isMemberSelected(member));
+      this.designJointRenderingService.render(ctx, member.a, this.elementSelectionService.isJointSelected(member.a));
+      this.designJointRenderingService.render(ctx, member.b, this.elementSelectionService.isJointSelected(member.b));
     }
   }
 

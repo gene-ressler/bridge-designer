@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { EventInfo, EventOrigin } from '../../../shared/services/event-broker.service';
-import { jqxButtonComponent } from 'jqwidgets-ng/jqxbuttons';
 import { jqxToggleButtonComponent } from 'jqwidgets-ng/jqxtogglebutton';
 
 /** Container for state that affects multiple UI elements. */
@@ -76,7 +75,7 @@ export class UiStateService {
     });
   }
 
-  public registerToggleToobarButton(buttonItem: jqwidgets.ToolBarToolItem, subject: Subject<EventInfo>) {
+  public registerToggleToolbarButton(buttonItem: jqwidgets.ToolBarToolItem, subject: Subject<EventInfo>) {
     buttonItem.tool.on('click', () => {
       subject.next({ source: EventOrigin.TOOLBAR, data: buttonItem.tool.jqxToggleButton('toggled') });
     });

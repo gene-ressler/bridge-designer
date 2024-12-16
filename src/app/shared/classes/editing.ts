@@ -4,10 +4,7 @@ export interface Editable {
 }
 
 export class EditCommand {
-  constructor(
-    public readonly description: string,
-    protected readonly context?: any
-  ) {}
+  constructor(public readonly description: string) {}
 
   public do(): void {}
   public undo(): void {}
@@ -20,11 +17,7 @@ export class EditableUtility {
    * The selected index set, if given, is also adjusted to the new numbering. (It can be safely omitted
    * if merging at the end of the target.)
    */
-  public static merge<T extends Editable>(
-    tgt: T[],
-    src: T[],
-    selected: Set<number>
-  ): void {
+  public static merge<T extends Editable>(tgt: T[], src: T[], selected: Set<number>): void {
     var iTgtSrc: number = tgt.length - 1;
     tgt.length += src.length;
     var iTgtDst: number = tgt.length - 1;
@@ -40,11 +33,7 @@ export class EditableUtility {
   }
 
   /** Removes a given subsequence from a mutable target list of Editables. The target is re-indexed. */
-  public static remove<T extends Editable>(
-    tgt: T[],
-    subseq: T[],
-    selected: Set<number>
-  ): void {
+  public static remove<T extends Editable>(tgt: T[], subseq: T[], selected: Set<number>): void {
     var iTgtSrc: number = 0;
     var iTgtDst: number = 0;
     for (var iSubseq = 0; iSubseq < subseq.length; iSubseq++) {
@@ -64,11 +53,7 @@ export class EditableUtility {
     tgt.length -= subseq.length;
   }
 
-  private static adjustSelected(
-    selected: Set<number>,
-    iTgtSrc: number,
-    iTgtDst: number
-  ): void {
+  private static adjustSelected(selected: Set<number>, iTgtSrc: number, iTgtDst: number): void {
     if (iTgtDst === iTgtSrc) {
       return;
     }
@@ -85,6 +70,6 @@ export class EditableUtility {
 
   /** Swap the contents of the given items with the contents of the same-index items in the given vector. */
   public static exchangeAll<T extends Editable>(tgt: T[], src: T[]): void {
-    src.forEach((item) => this.exchange(tgt, item));
+    src.forEach(item => this.exchange(tgt, item));
   }
 }

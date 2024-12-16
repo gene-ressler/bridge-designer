@@ -7,6 +7,9 @@ import { HotElement } from './hot-element.service';
 
 @Injectable({providedIn: 'root'})
 export class MemberCursorService {
+  /** Dash pattern for member medial lines. */
+  public static readonly CENTERLINE_DASH = [4, 4, 16, 4];
+
   private _anchorJoint: Joint | undefined;
   private anchorX: number = 0;
   private anchorY: number = 0;
@@ -53,7 +56,7 @@ export class MemberCursorService {
     const savedLineDash = ctx.getLineDash();
 
     ctx.strokeStyle = 'blue';
-    ctx.setLineDash([4, 4, 16, 4]); // centerline dash
+    ctx.setLineDash(MemberCursorService.CENTERLINE_DASH); 
     if (hotElement instanceof Joint) {
       this.cursorX = this.viewportTransform.worldToViewportX(hotElement.x);
       this.cursorY = this.viewportTransform.worldToViewportY(hotElement.y);

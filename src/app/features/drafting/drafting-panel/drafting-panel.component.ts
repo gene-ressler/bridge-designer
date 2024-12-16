@@ -16,14 +16,16 @@ import { DesignBridgeService } from '../../../shared/services/design-bridge.serv
 import { DesignRenderingService } from '../../../shared/services/design-rendering.service';
 import { EventBrokerService } from '../../../shared/services/event-broker.service';
 import { ViewportTransform2D } from '../../../shared/services/viewport-transform.service';
-import { AddJointCommand } from '../../controls/edit-commands/add-joint-command';
-import { AddMemberCommand } from '../../controls/edit-commands/add-member-command';
-import { DeleteJointCommand } from '../../controls/edit-commands/delete-joint-command';
-import { DeleteMembersCommand } from '../../controls/edit-commands/delete-members-command';
+import { AddJointCommand } from '../../controls/edit-commands/add-joint.command';
+import { AddMemberCommand } from '../../controls/edit-commands/add-member.command';
+import { DeleteJointCommand } from '../../controls/edit-commands/delete-joint.command';
+import { DeleteMembersCommand } from '../../controls/edit-commands/delete-members.command';
 import { CursorOverlayComponent } from '../cursor-overlay/cursor-overlay.component';
 import { SelectedElementsService } from '../services/selected-elements-service';
 import { UndoManagerService } from '../services/undo-manager.service';
 import { ToolSelectorComponent } from '../../controls/tool-selector/tool-selector.component';
+import { ElementSelectorService } from '../services/element-selector.service';
+import { DesignGridDensity, DesignGridService } from '../../../shared/services/design-grid.service';
 
 @Component({
   selector: 'drafting-panel',
@@ -41,11 +43,13 @@ export class DraftingPanelComponent implements AfterViewInit {
 
   constructor(
     private readonly designBridgeService: DesignBridgeService,
+    private readonly designGridService: DesignGridService,
     private readonly designRenderingService: DesignRenderingService,
-    private readonly viewportTransform: ViewportTransform2D,
+    private readonly elementSelectorService: ElementSelectorService,
     private readonly eventBrokerService: EventBrokerService,
-    private readonly undoManagerService: UndoManagerService,
     private readonly selectedElementsService: SelectedElementsService,
+    private readonly undoManagerService: UndoManagerService,
+    private readonly viewportTransform: ViewportTransform2D,
   ) {}
 
   handleResize(reset: boolean = false): void {
@@ -83,24 +87,51 @@ export class DraftingPanelComponent implements AfterViewInit {
 
   deleteRequestHandler(element: Joint | Member): void {
     const selectedElements = this.selectedElementsService.selectedElements;
+    const bridge = this.designBridgeService.bridge;
     const command: EditCommand =
       element instanceof Joint
-        ? new DeleteJointCommand(element, this.designBridgeService.bridge, selectedElements)
-        : DeleteMembersCommand.forMember(element, this.designBridgeService.bridge, selectedElements);
+        ? new DeleteJointCommand(element, bridge, selectedElements)
+        : DeleteMembersCommand.forMember(element, bridge, selectedElements);
     this.undoManagerService.do(command);
   }
 
   deleteSelectionRequestHandler(): void {
     const selectedElements = this.selectedElementsService.selectedElements;
-    this.undoManagerService.do(DeleteMembersCommand.forSelectedMembers(selectedElements, this.designBridgeService));
+    const bridge = this.designBridgeService.bridge;
+    const joint = this.selectedElementsService.getSelectedJoint(bridge);
+    const command: EditCommand = joint
+      ? new DeleteJointCommand(joint, bridge, selectedElements)
+      : DeleteMembersCommand.forSelectedMembers(selectedElements, this.designBridgeService);
+    this.undoManagerService.do(command);
+  }
+
+  selectAllRequestHandler(): void {
+    this.elementSelectorService.selectAllMembers();
+  }
+
+  /** Sets the design grid density from the selection widget (menu or button) index. */
+  selectGridDensityHandler(selectorIndex: number) {
+    switch (selectorIndex) {
+      case 0:
+        this.designGridService.grid.density = DesignGridDensity.COARSE;
+        break;
+      case 1:
+        this.designGridService.grid.density = DesignGridDensity.MEDIUM;
+        break;
+      case 2:
+        this.designGridService.grid.density = DesignGridDensity.FINE;
+        break;
+    }
   }
 
   ngAfterViewInit(): void {
     this.handleResize();
     window.addEventListener('resize', () => this.handleResize());
     this.eventBrokerService.deleteSelectionRequest.subscribe(_info => this.deleteSelectionRequestHandler());
+    this.eventBrokerService.gridDensitySelection.subscribe(info => this.selectGridDensityHandler(info.data));
     this.eventBrokerService.loadBridgeRequest.subscribe(info => this.loadBridge(info.data));
-    this.eventBrokerService.undoManagerStateChange.subscribe(_info => this.render());
+    this.eventBrokerService.selectAllRequest.subscribe(_info => this.selectAllRequestHandler());
     this.eventBrokerService.selectedElementsChange.subscribe(_info => this.render());
+    this.eventBrokerService.undoManagerStateChange.subscribe(_info => this.render());
   }
 }

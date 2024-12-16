@@ -1,9 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { jqxDropDownListModule } from 'jqwidgets-ng/jqxdropdownlist';
 import { jqxToolBarComponent, jqxToolBarModule } from 'jqwidgets-ng/jqxtoolbar';
 import { WidgetHelper } from '../../../shared/classes/widget-helper';
@@ -11,6 +6,7 @@ import { InventorySelectorComponent } from '../../../shared/components/inventory
 import { ComponentService } from '../../../shared/services/component.service';
 import { EventBrokerService } from '../../../shared/services/event-broker.service';
 import { UiStateService } from '../../drafting/services/ui-state.service';
+import { DesignGridDensity, DesignGridService } from '../../../shared/services/design-grid.service';
 
 const enum Tools {
   INVENTORY_SELECTOR,
@@ -45,83 +41,43 @@ export class ToolbarBComponent implements AfterViewInit {
   constructor(
     private readonly uiStateService: UiStateService,
     private readonly eventBrokerService: EventBrokerService,
-    private readonly componentService: ComponentService
+    private readonly componentService: ComponentService,
   ) {
     this.initTools = this.initTools.bind(this);
   }
 
-  initTools(
-    _type?: string,
-    index?: number,
-    tool?: any,
-    _menuToolIninitialization?: boolean
-  ) {
+  initTools(_type?: string, index?: number, tool?: any, _menuToolIninitialization?: boolean) {
     switch (index) {
       case Tools.INVENTORY_SELECTOR:
         this.componentService.load(InventorySelectorComponent, tool[0]);
         break;
       case Tools.SIZE_UP:
-        WidgetHelper.initToolbarImgButton(
-          'Upsize selected members',
-          'img/sizeup.png',
-          tool
-        );
+        WidgetHelper.initToolbarImgButton('Upsize selected members', 'img/sizeup.png', tool);
         break;
       case Tools.SIZE_DOWN:
-        WidgetHelper.initToolbarImgButton(
-          'Downsize selected members',
-          'img/sizedown.png',
-          tool
-        );
+        WidgetHelper.initToolbarImgButton('Downsize selected members', 'img/sizedown.png', tool);
         break;
       case Tools.MEMBER_TABLE:
-        WidgetHelper.initToolbarImgButton(
-          'Show/hide member table',
-          'img/memtable.png',
-          tool
-        );
+        WidgetHelper.initToolbarImgButton('Show/hide member table', 'img/memtable.png', tool);
         break;
       case Tools.MEMBER_NUMBERS:
-        WidgetHelper.initToolbarImgButton(
-          'Show/hide member numbers',
-          'img/numbers.png',
-          tool
-        );
+        WidgetHelper.initToolbarImgButton('Show/hide member numbers', 'img/numbers.png', tool);
         break;
       case Tools.GUIDES:
-        WidgetHelper.initToolbarImgButton(
-          'Show/hide drawing guides',
-          'img/guides.png',
-          tool
-        );
+        WidgetHelper.initToolbarImgButton('Show/hide drawing guides', 'img/guides.png', tool);
         break;
       case Tools.TEMPLATE:
-        WidgetHelper.initToolbarImgButton(
-          'Show/hide template',
-          'img/template.png',
-          tool
-        );
+        WidgetHelper.initToolbarImgButton('Show/hide template', 'img/template.png', tool);
         break;
       case Tools.COARSE_GRID:
-        WidgetHelper.initToolbarImgButton(
-          'Use coarse drawing grid',
-          'img/coarsegrid.png',
-          tool
-        );
+        WidgetHelper.initToolbarImgButton('Use coarse drawing grid', 'img/coarsegrid.png', tool);
+        tool.jqxToggleButton({toggled: true});
         break;
       case Tools.MEDIUM_GRID:
-        WidgetHelper.initToolbarImgButton(
-          'Use medium drawing grid',
-          'img/mediumgrid.png',
-          tool
-        );
+        WidgetHelper.initToolbarImgButton('Use medium drawing grid', 'img/mediumgrid.png', tool);
         break;
       case Tools.FINE_GRID:
-        WidgetHelper.initToolbarImgButton(
-          'Use fine drawing grid',
-          'img/finegrid.png',
-          tool
-        );
+        WidgetHelper.initToolbarImgButton('Use fine drawing grid', 'img/finegrid.png', tool);
         break;
     }
     return { minimizable: false };
@@ -129,26 +85,17 @@ export class ToolbarBComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     const tools = this.toolbar.getTools();
-    this.uiStateService.registerSelectToolbarButtons(
-      tools,
-      [Tools.COARSE_GRID, Tools.MEDIUM_GRID, Tools.FINE_GRID],
-      this.eventBrokerService.gridDensitySelection
-    );
-    this.uiStateService.registerToggleToobarButton(
+    const gridTools = [Tools.COARSE_GRID, Tools.MEDIUM_GRID, Tools.FINE_GRID];
+    this.uiStateService.registerSelectToolbarButtons(tools, gridTools, this.eventBrokerService.gridDensitySelection);
+    this.uiStateService.registerToggleToolbarButton(
       tools[Tools.MEMBER_TABLE],
-      this.eventBrokerService.memberTableToggle
+      this.eventBrokerService.memberTableToggle,
     );
-    this.uiStateService.registerToggleToobarButton(
+    this.uiStateService.registerToggleToolbarButton(
       tools[Tools.MEMBER_NUMBERS],
-      this.eventBrokerService.memberNumbersToggle
+      this.eventBrokerService.memberNumbersToggle,
     );
-    this.uiStateService.registerToggleToobarButton(
-      tools[Tools.GUIDES],
-      this.eventBrokerService.guidesToggle
-    );
-    this.uiStateService.registerToggleToobarButton(
-      tools[Tools.TEMPLATE],
-      this.eventBrokerService.templateToggle
-    );
+    this.uiStateService.registerToggleToolbarButton(tools[Tools.GUIDES], this.eventBrokerService.guidesToggle);
+    this.uiStateService.registerToggleToolbarButton(tools[Tools.TEMPLATE], this.eventBrokerService.templateToggle);
   }
 }

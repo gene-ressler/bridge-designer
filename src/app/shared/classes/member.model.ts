@@ -52,6 +52,11 @@ export class Member implements Editable {
     return this.a === joint || this.b === joint;
   }
 
+  /** Returns joint b of this member if given joint is a, else returns a. */
+  public getOtherJoint(joint: Joint): Joint {
+    return joint === this.a ? this.b : this.a;
+  }
+
   swapContents(other: Member): void {
     [this.index, other.index] = [other.index, this.index];
     [this.a, other.a] = [other.a, this.a];

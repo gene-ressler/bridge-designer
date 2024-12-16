@@ -89,8 +89,16 @@ export class Rectangle2D implements Rectangle2DInterface {
     return this.x0 + this.width;
   }
 
+  public set x1(value: number) {
+    this.width = value - this.x0;
+  }
+
   public get y1(): number {
     return this.y0 + this.height;
+  }
+
+  public set y1(value: number) {
+    this.height = value - this.y0;
   }
 
   public contains(x: number, y: number): boolean {
@@ -133,6 +141,11 @@ export class Rectangle2D implements Rectangle2DInterface {
     this.y0 = ay;
     this.width = bx - ax;
     this.height = by - ay;
+    return this;
+  }
+
+  public makeEmpty(): Rectangle2D {
+    this.x0 = this.y0 = this.width = this.height = 0;
     return this;
   }
 
@@ -217,10 +230,15 @@ export class Geometry {
     bx: number,
     by: number,
     width: number,
+    shortening: number = 0,
   ): boolean {
     const vx = bx - ax;
     const vy = by - ay;
     const vDotV = vx * vx + vy * vy;
+    if (shortening > 0) {
+      const t = Math.min(Math.sqrt((shortening * shortening) / vDotV), 0.5);
+      return this.isInNonAxisAlignedRectangle(px, py, ax + t * vx, ay + t * vy, bx - t * vx, by - t * vy, width);
+    }
     if (vDotV < this.SMALL_SQUARED) {
       return this.distance2D(px, by, ax, ay) < 0.5 * width;
     }
@@ -242,35 +260,57 @@ export class Geometry {
     a: Point2DInterface,
     b: Point2DInterface,
     width: number,
+    shortening: number = 0,
   ): boolean {
-    return this.isInNonAxisAlignedRectangle(p.x, p.y, a.x, a.y, b.x, b.y, width);
+    return this.isInNonAxisAlignedRectangle(p.x, p.y, a.x, a.y, b.x, b.y, width, shortening);
   }
 
   /** Returns a canonical rectangle that exactly includes a list of 2d points or null if the list is empty. */
-  public static getExtent2D(pointList: Point2DInterface[]): Rectangle2D {
+  public static getExtent2D(dst: Rectangle2D, pointList: Point2DInterface[]): Rectangle2D {
     if (pointList.length === 0) {
-      return Rectangle2D.createEmpty();
+      dst.makeEmpty();
+      return dst;
     }
     const p0 = pointList[0];
     var x0 = p0.x;
-    var x1 = p0.x;
     var y0 = p0.y;
+    var x1 = p0.x;
     var y1 = p0.y;
-    for (var i = 1; i < pointList.length; ++i) {
-      if (pointList[i].x < x0) {
-        x0 = pointList[i].x;
+    for (const p of pointList) {
+      if (p.x < x0) {
+        x0 = p.x;
       }
-      if (pointList[i].x > x1) {
-        x1 = pointList[i].x;
+      if (p.y < y0) {
+        y0 = p.y;
       }
-      if (pointList[i].y < y0) {
-        y0 = pointList[i].y;
+      if (p.x > x1) {
+        x1 = p.x;
       }
-      if (pointList[i].y > y1) {
-        y1 = pointList[i].y;
+      if (p.y > y1) {
+        y1 = p.y;
       }
     }
-    return new Rectangle2D(x0, y0, x1 - x0, y1 - y0);
+    return dst.setFromDiagonal(x0, y0, x1, y1).makeCanonical();
+  }
+
+  public static addToExtent2D(dst: Rectangle2D, p: Point2DInterface): Rectangle2D {
+    var x0 = dst.x0;
+    var y0 = dst.y0;
+    var x1 = dst.x1;
+    var y1 = dst.y1;
+    if (p.x < x0) {
+      x0 = p.x;
+    }
+    if (p.y < y0) {
+      y0 = p.y;
+    }
+    if (p.x > x1) {
+      x1 = p.x;
+    }
+    if (p.y > y1) {
+      y1 = p.y;
+    }
+    return dst.setFromDiagonal(x0, y0, x1, y1).makeCanonical();
   }
 
   /** Returns whether point p is on open segment a--b. */

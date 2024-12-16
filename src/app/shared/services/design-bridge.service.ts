@@ -41,12 +41,7 @@ export class DesignBridgeService {
   }
 
   public findMembersWithJoint(joint: Joint): Member[] {
-    return this.bridge.members.filter((member) => member);
-  }
-
-  /** Returns the geometric extent of the bridge. */
-  get extent(): Rectangle2D {
-    return Geometry.getExtent2D(this.bridge.joints);
+    return this.bridge.members.filter((member) => member.hasJoint(joint));
   }
 
   /** Gets the stock used for the most members in the bridge. */

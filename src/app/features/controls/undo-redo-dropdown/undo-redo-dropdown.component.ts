@@ -86,6 +86,8 @@ export class UndoRedoDropdownComponent implements AfterViewInit {
 
   handleDropdownClose(_event: any) {
     this.toolbarButton.jqxToggleButton('toggled', false);
+    // Remove content so it doesn't render briefly before open 
+    // handler replaces it. One item avoids item width weirdness.
     this.listBox.source([UndoRedoDropdownComponent.CANCEL_ITEM]);
     this.listBox.refresh();
   }

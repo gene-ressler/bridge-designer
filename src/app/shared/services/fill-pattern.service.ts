@@ -6,18 +6,9 @@ export type FillPattern = string | CanvasPattern; // String is the error fallbac
 /** Caching container of commonly used fill patterns. */
 @Injectable({ providedIn: 'root' })
 export class FillPatternsService {
-  private earth: Map<CanvasRenderingContext2D, FillPattern> = new Map<
-    CanvasRenderingContext2D,
-    FillPattern
-  >();
-  private concrete: Map<CanvasRenderingContext2D, FillPattern> = new Map<
-    CanvasRenderingContext2D,
-    FillPattern
-  >();
-  private subgrade: Map<CanvasRenderingContext2D, FillPattern> = new Map<
-    CanvasRenderingContext2D,
-    FillPattern
-  >();
+  private earth: Map<CanvasRenderingContext2D, FillPattern> = new Map<CanvasRenderingContext2D, FillPattern>();
+  private concrete: Map<CanvasRenderingContext2D, FillPattern> = new Map<CanvasRenderingContext2D, FillPattern>();
+  private subgrade: Map<CanvasRenderingContext2D, FillPattern> = new Map<CanvasRenderingContext2D, FillPattern>();
 
   public createEarth(ctx: CanvasRenderingContext2D): FillPattern {
     var earth = this.earth.get(ctx);
@@ -98,9 +89,7 @@ export class FillPatternsService {
     return pattern || Colors.CONCRETE;
   }
 
-  private static getPatternContext(
-    size: number
-  ): CanvasRenderingContext2D | undefined {
+  private static getPatternContext(size: number): CanvasRenderingContext2D | undefined {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     if (!ctx) {

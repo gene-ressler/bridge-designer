@@ -2,11 +2,10 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@a
 import { jqxToolBarComponent, jqxToolBarModule } from 'jqwidgets-ng/jqxtoolbar';
 import { WidgetHelper } from '../../../shared/classes/widget-helper';
 import { ComponentService } from '../../../shared/services/component.service';
-import { EventBrokerService, EventInfo, EventOrigin } from '../../../shared/services/event-broker.service';
+import { EventBrokerService } from '../../../shared/services/event-broker.service';
 import { UiStateService } from '../../drafting/services/ui-state.service';
 import { UndoManagerService } from '../../drafting/services/undo-manager.service';
 import { UndoRedoDropdownComponent } from '../undo-redo-dropdown/undo-redo-dropdown.component';
-import { Subject } from 'rxjs';
 
 const enum Tools {
   NEW,
@@ -83,6 +82,7 @@ export class ToolbarAComponent implements AfterViewInit {
         break;
       case Tools.SELECT_ALL:
         WidgetHelper.initToolbarImgButton('Select all', 'img/selectall.png', tool);
+        WidgetHelper.sendEventOnClick(this.eventBrokerService.selectAllRequest, tool);
         break;
       case Tools.DELETE:
         WidgetHelper.initToolbarImgButton('Delete selection', 'img/delete.png', tool);

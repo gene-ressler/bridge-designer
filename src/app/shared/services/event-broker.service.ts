@@ -30,6 +30,7 @@ export class EventBrokerService {
   public readonly memberTableToggle = new Subject<EventInfo>();
   public readonly redoRequest = new Subject<EventInfo>();
   public readonly rulersToggle = new Subject<EventInfo>();
+  public readonly selectAllRequest = new Subject<EventInfo>();
   public readonly selectedElementsChange = new Subject<EventInfo>();
   public readonly templateToggle = new Subject<EventInfo>();
   public readonly titleBlockToggle = new Subject<EventInfo>();
