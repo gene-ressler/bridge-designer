@@ -28,7 +28,7 @@
     [source]="inventoryService.getShapes(0)"
     [displayMember]="'name'"
     [valueMember]="'name'"
-    [selectedIndex]="0"
+    [selectedIndex]="initialSizeIndex"
     [dropDownHeight]="600"
     (onChange)="handleSizeSelectorOnChange($event)"
   ></jqxDropDownList>

@@ -157,7 +157,7 @@ export class ToolbarAComponent implements AfterViewInit {
         WidgetHelper.initToolbarImgButton('Show load test details', 'img/loadtestreport.png', tool);
         break;
     }
-    return { minimizable: false };
+    return { minimizable: false, menuTool: false };
   }
 
   private disableUndo(value: boolean = true) {

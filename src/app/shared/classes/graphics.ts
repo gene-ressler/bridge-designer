@@ -55,6 +55,13 @@ export class TaggedPoint2D<T> extends Point2D {
   }
 }
 
+const enum OutCode {
+  LEFT = 1,
+  RIGHT = 2,
+  TOP = 4,
+  BOTTOM = 8,
+}
+
 export class Rectangle2D implements Rectangle2DInterface {
   constructor(
     public x0: number,
@@ -105,23 +112,48 @@ export class Rectangle2D implements Rectangle2DInterface {
     return Utility.inRange(x, this.x0, this.x1) && Utility.inRange(y, this.y0, this.y1);
   }
 
+  /** Returns Cohen-Sutherland clipping code for given point. */
+  private getOutCode(p: Point2DInterface) {
+    var code: number = 0;
+    if (p.x < this.x0) {
+      code |= OutCode.LEFT;
+    }
+    if (p.x > this.x1) {
+      code |= OutCode.RIGHT;
+    }
+    if (p.y < this.y0) {
+      code |= OutCode.TOP;
+    }
+    if (p.y > this.y1) {
+      code |= OutCode.BOTTOM;
+    }
+    return code;
+  }
+
+  /** Returns whether this rectangle (which must be canonical)- touches a given line segment. */
   public touchesLineSegment(a: Point2DInterface, b: Point2DInterface): boolean {
-    if (this.containsPoint(a) || this.containsPoint(b)) {
+    const codeA = this.getOutCode(a);
+    const codeB = this.getOutCode(b);
+    if (codeA === 0 || codeB === 0) {
+      return true; // endpoint inside
+    }
+    const and = codeA & codeB;
+    if (and) {
+      return false; // entirely above, below, left, or right
+    }
+    const or = codeA | codeB;
+    if (or === (OutCode.TOP | OutCode.BOTTOM) || or === (OutCode.LEFT | OutCode.RIGHT)) {
+      return true; // piercing vertically or horizontally
+    }
+    const m = (b.y - a.y) / (b.x - a.x);
+    if ( // otherwise maybe piercing 2 edges, so only need to check 3
+      Utility.inRange((this.x0 - a.x) * m + a.y, this.y0, this.y1) ||
+      Utility.inRange((this.x1 - a.x) * m + a.y, this.y0, this.y1) ||
+      Utility.inRange((this.y0 - a.y) / m + a.x, this.x0, this.x1)
+    ) {
       return true;
     }
-    const small = 1e-10;
-    if (Math.abs(a.x - b.x) < small) {
-      return Utility.inRange(a.x, this.x0, this.x1) && Utility.inRange(this.y0, a.y, b.y);
-    }
-    if (Math.abs(a.y - b.y) < small) {
-      return Utility.inRange(a.y, this.y0, this.y1) && Utility.inRange(this.x0, a.x, b.x);
-    }
-    const p = (b.x - a.x) / (b.y - a.y);
-    return (
-      Utility.inRange((this.y0 - a.y) * p + a.x, this.x0, this.x1) ||
-      Utility.inRange((this.y1 - a.y) * p + a.x, this.x0, this.x1) ||
-      Utility.inRange((this.x0 - a.x) / p + a.y, this.y0, this.y1)
-    );
+    return false;
   }
 
   public containsPoint(p: Point2DInterface): boolean {
@@ -164,9 +196,9 @@ export class Rectangle2D implements Rectangle2DInterface {
   public pad(dx: number, dy: number): Rectangle2D {
     this.makeCanonical();
     this.x0 -= dx;
-    this.width += 2 * dx;
+    this.width += dx + dx;
     this.y0 -= dy;
-    this.height += 2 * dy;
+    this.height += dy + dy;
     return this;
   }
 }

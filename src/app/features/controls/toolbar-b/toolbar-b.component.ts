@@ -80,7 +80,7 @@ export class ToolbarBComponent implements AfterViewInit {
         WidgetHelper.initToolbarImgButton('Use fine drawing grid', 'img/finegrid.png', tool);
         break;
     }
-    return { minimizable: false };
+    return { minimizable: false, menuTool: false };
   }
 
   ngAfterViewInit(): void {

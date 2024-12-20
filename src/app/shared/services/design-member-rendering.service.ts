@@ -73,6 +73,7 @@ export class DesignMemberRenderingService {
     ];
   }
 
+  // TODO: Factor common functionality of render and renderHot.
   public render(ctx: CanvasRenderingContext2D, member: Member, isSelected: boolean = false): void {
     const outerColor = this.outerColorsFromSelectionState(isSelected)[member.material.index];
     const innerColor =
@@ -87,7 +88,7 @@ export class DesignMemberRenderingService {
       outerColor,
       innerColor,
       undefined,
-      this.showMemberNumbers ? member.number : undefined,
+      this.showMemberNumbers || isSelected ? member.number : undefined,
     );
   }
 
@@ -105,7 +106,7 @@ export class DesignMemberRenderingService {
       outerColor,
       innerColor,
       undefined,
-      this.showMemberNumbers ? member.number : undefined,
+      this.showMemberNumbers || isSelected ? member.number : undefined,
     );
   }
 

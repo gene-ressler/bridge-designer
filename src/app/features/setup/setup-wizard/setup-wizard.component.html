@@ -1,0 +1,193 @@
+<jqxWindow
+  #dialog
+  [isModal]="true"
+  [autoOpen]="false"
+  [width]="850"
+  [height]="590"
+>
+  <div
+    #header
+    class="header"
+  >
+    Design project setup wizard
+  </div>
+  <!-- css style.display must be initially empty for all card-X elements -->
+  <div
+    #content
+    class="content"
+  >
+    <div class="title-bar card-1"><span class="card-number">1</span> Read the design requirement</div>
+    <div class="title-bar card-2"><span class="card-number">2</span> Enter local contest information</div>
+    <div class="title-bar card-3">
+      <span class="card-number">3</span> Select deck elevation and support configuration
+    </div>
+    <div class="title-bar card-4"><span class="card-number">4</span> Select deck material and truck loading</div>
+    <div class="title-bar card-5"><span class="card-number">5</span> Read the design requirement</div>
+    <div class="title-bar card-6"><span class="card-number">6</span> Select a standard truss template (optional)</div>
+    <div class="title-bar card-7"><span class="card-number">7</span> Read the design requirement</div>
+    <div class="data-entry card-1">
+      <fieldset class="grouping fill-to-row-bottom">
+        <legend class="grouping-topic">Design requirement</legend>
+        <div class="paragraph">
+          As a civil engineer working for the state Department of Transportation, you are responsible for designing a
+          truss bridge to carry a two-lane highway across the river valley. Your objectives are:
+        </div>
+        <div class="paragraph">
+          (1) To ensure that the bridge can carry its own weight (to include the weight of the reinforced concrete
+          deck), plus the weight of a standard truck loadking.
+        </div>
+        <div class="paragraph">(2) To keep the cost of the project as low as possible.</div>
+        <div class="paragraph">For the complete Design Specifications, click the Help button below.</div>
+      </fieldset>
+    </div>
+    <div class="data-entry card-2">
+      <fieldset class="grouping fill-to-row-bottom">
+        <legend class="grouping-topic">Local contest code</legend>
+        <div class="paragraph">Are you participating in a local contest?</div>
+        <div class="local-contest-controls">
+          <jqxRadioButton
+            [width]="232"
+            style="margin-bottom: 4px"
+            [checked]="true"
+            >No</jqxRadioButton
+          >
+          <jqxRadioButton
+            [width]="232"
+            style="margin-bottom: 8px"
+            (onChange)="localContestRadioYesHandler($event)"
+            >Yes!</jqxRadioButton
+          >
+          <label
+            for="localContestCode"
+            class="paragraph"
+            >Enter contest code here:
+            <input
+              #localContestCodeInput
+              id="localContestCode"
+              style="width: 232"
+              name="localContestCodeInput"
+              type="text"
+              disabled
+            />
+          </label>
+        </div>
+      </fieldset>
+    </div>
+    <div class="deck">
+      <fieldset class="grouping">
+        <legend class="grouping-topic">Deck cross-section</legend>
+        <img
+          #deckCartoon
+          class="deck-cartoon"
+          src="img/meddeckstdload.png"
+        />
+      </fieldset>
+    </div>
+    <div class="elevation">
+      <fieldset class="grouping fill-to-row-bottom">
+        <legend class="grouping-topic">Elevation view</legend>
+        <canvas
+          #elevationCanvas
+          class="elevation-canvas"
+          width="345"
+          height="200"
+        ></canvas>
+        <div class="legend">
+          <div><img src="img/legendriverbanks.png" /> - River banks</div>
+          <div class="card-2 card-3 card-4 card-5 card-6 card-7">
+            <img src="img/legendexcavation.png" /> - Excavation
+          </div>
+          <div><img src="img/legendriver.png" /> - River</div>
+          <div class="card-2 card-3 card-4 card-5 card-6 card-7"><img src="img/legenddeck.png" /> - Deck</div>
+          <div class="card-2 card-3 card-4 card-5 card-6 card-7"><img src="img/legendabutment.png" /> - Abutment</div>
+          <div
+            #pierLegendEntry
+            style="display: none"
+          >
+            <img src="img/legendpier.png" /> - Pier
+          </div>
+        </div>
+      </fieldset>
+    </div>
+    <div class="tip">
+      <fieldset class="fill-to-row-bottom">
+        <legend class="grouping-topic">Design tip</legend>
+        <div class="card-1">
+          <div class="paragraph">
+            <img
+              class="tip-icon"
+              src="img/tipicon.png"
+            />
+            The bridge designer {{ edition }} will help you satisfy these design requirements.
+          </div>
+          <div class="paragraph">
+            The deck elevation and support configuration (which you will choose in Step&nbsp;3) will be automatically
+            set on the drawing board. The Bridge Designer will also provide a simulated load test to check your bridge
+            for structural safety using the deck weight and standard truck loading that you will choose in Step&nbsp;4.
+            If your structure is not strong enough to carry the required loads, the Bridge Designer will highlight
+            members that need more strength.
+          </div>
+        </div>
+        <div class="card-2">
+          <img
+            class="tip-icon"
+            src="img/tipicon.png"
+          />
+          <div class="paragraph">
+            If you are participating in a local contest using a Local Contest Code furnished by the Bridge Designer
+            team, you may only use the specific design project (i.e., site configuration and load case) designated for
+            that particular local contest.
+          </div>
+          <div class="paragraph">
+            When you enter the Local Contest Code here, the site configuration and load case for the context will be
+            automatically set on the Drawing Board. Then, when you click the Next button, the Design Project Setup
+            Wizard will advance to Step&nbsp;5 because the site configuration and load case are already set.
+          </div>
+        </div>
+      </fieldset>
+    </div>
+    <div class="site-cost">
+      <fieldset>
+        <legend>Site cost:</legend>
+        <span #cost>$0.00</span> (Includes cost of deck, excavation, and supports; not steel trusses.)
+      </fieldset>
+    </div>
+    <div class="wizard-controls">
+      <jqxButton
+        #helpButton
+        (onClick)="helpButtonOnClickHandler()"
+        style="margin-right: 8px"
+        [width]="buttonWidth"
+        >Help...</jqxButton
+      >
+      <jqxButton
+        #cancelButton
+        (onClick)="dialog.close()"
+        style="margin-right: 8px"
+        [width]="buttonWidth"
+        >Cancel</jqxButton
+      >
+      <jqxButton
+        #backButton
+        (onClick)="backButtonOnClickHandler()"
+        style="margin-right: 8px"
+        [width]="buttonWidth"
+        [disabled]="true"
+        >&lt;&lt;&nbsp;Back</jqxButton
+      >
+      <jqxButton
+        #nextButton
+        (onClick)="nextButtonOnClickHandler()"
+        style="margin-right: 8px"
+        [width]="buttonWidth"
+        >Next&nbsp;&gt;&gt;</jqxButton
+      >
+      <jqxButton
+        #finishButton
+        (onClick)="finishButtonOnClickHandler()"
+        [width]="buttonWidth"
+        >Finish</jqxButton
+      >
+    </div>
+  </div>
+</jqxWindow>

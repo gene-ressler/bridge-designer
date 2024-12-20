@@ -1,0 +1,115 @@
+// WARNING to editors: style.display must be empty 
+// in elements with card-X class selectors.
+
+.header {
+  font-weight: bold;
+}
+
+.content {
+  margin: 8px;
+  display: grid;
+  grid-template-columns: min-content min-content auto;
+  grid-template-rows: repeat(min-content, 5);
+}
+
+// Start grid
+
+.title-bar {
+  grid-row: 1;
+  grid-column: 1 / 4;
+
+  font-weight: 900;
+  font-size: x-large;
+  color: darkblue;
+  margin-bottom: 4px;
+}
+
+.data-entry {
+  grid-row: 2 / 4;
+  grid-column: 1;
+  width: 260px;
+}
+
+.deck {
+  grid-row: 2;
+  grid-column: 2;
+}
+
+.elevation {
+  grid-row: 3;
+  grid-column: 2;
+}
+
+.tip {
+  grid-row: 2 / 4;
+  grid-column: 3;
+}
+
+.site-cost {
+  grid-row: 4;
+  grid-column: 1 / 4;
+}
+
+.wizard-controls {
+  grid-row: 5;
+  grid-column: 1 / 4;
+  display: flex;
+  justify-content: right;
+}
+
+// End grid
+
+.card-number {
+  display: inline-block;
+  text-align: center;
+  background-color: darkblue;
+  color: white;
+  width: 22px;
+  //font-weight: 700;
+  //font-size: large;
+}
+
+.deck-cartoon {
+  border-style: inset;
+  border-width: 2px;
+}
+
+.elevation-canvas {
+  border-style: inset;
+  border-width: 2px;
+}
+
+.fill-to-row-bottom {
+  height: calc(100% - 20px);
+}
+
+.grouping-topic {
+  font-weight: 700;
+  color: darkblue;
+  font-size: larger;
+}
+
+.legend {
+  border-style: groove;
+  border-width: 2px;
+  padding: 5px;
+  height: 38px;
+}
+
+.legend > div {
+  display: inline-block;
+  margin-right: 8px;
+  width: 100px;
+}
+
+input:disabled {
+  background: lightgray;
+}
+
+label:has(:disabled) {
+  color: lightgray;
+}
+
+.paragraph {
+  margin-bottom: 4px;
+}

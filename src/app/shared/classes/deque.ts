@@ -31,11 +31,7 @@ export class Deque<T> {
   }
 
   public clear(): void {
-    this.left.data.length =
-      this.right.data.length =
-      this.left.base =
-      this.right.base =
-        0;
+    this.left.data.length = this.right.data.length = this.left.base = this.right.base = 0;
   }
 
   public get length(): number {
@@ -47,16 +43,17 @@ export class Deque<T> {
     return den > 0 ? (this.left.length + this.right.length) / den : 1;
   }
 
+  /** Copy the current deque contents to an array with optional limit on number of elements copied. */
   public copyTo(list: T[], limit: number = -1): T[] {
     list.length = 0;
     for (var i: number = this.left.data.length - 1; i >= this.left.base; --i) {
-      if (limit >= 0 && limit-- <= 0) {
+      if (limit >= 0 && limit-- == 0) {
         return list;
       }
       list.push(this.left.data[i]);
     }
     for (var i: number = this.right.base; i < this.right.data.length; ++i) {
-      if (limit >= 0 && limit-- <= 0) {
+      if (limit >= 0 && limit-- == 0) {
         return list;
       }
       list.push(this.right.data[i]);
@@ -66,7 +63,10 @@ export class Deque<T> {
 }
 
 class Side<T> {
-  constructor(public base: number = 0, public data: T[] = []) {}
+  constructor(
+    public base: number = 0,
+    public data: T[] = [],
+  ) {}
 
   get length(): number {
     return this.data.length - this.base;

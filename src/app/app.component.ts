@@ -16,6 +16,7 @@ import { MenusComponent } from './features/controls/menus/menus.component';
 import { ToolbarAComponent } from './features/controls/toolbar-a/toolbar-a.component';
 import { ToolbarBComponent } from './features/controls/toolbar-b/toolbar-b.component';
 import { SampleSelectionDialogComponent } from './features/sample-bridges/sample-selection-dialog/sample-selection-dialog.component';
+import { SetupWizardComponent } from './features/setup/setup-wizard/setup-wizard.component';
 
 @Component({
   selector: 'app-root',
@@ -24,6 +25,7 @@ import { SampleSelectionDialogComponent } from './features/sample-bridges/sample
     DraftingPanelComponent,
     MenusComponent,
     SampleSelectionDialogComponent,
+    SetupWizardComponent,
     ToolbarAComponent,
     ToolbarBComponent,
     jqxDropDownButtonModule,

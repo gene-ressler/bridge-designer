@@ -11,19 +11,12 @@ export class BridgeModel {
   public readonly joints: Joint[] = [];
   public readonly members: Member[] = [];
 
-  // TODO: Change this parameter to prescribed joints (LoD!).
   constructor(public designConditions: DesignConditions) {
-    designConditions.prescribedJoints.forEach((joint) =>
-      this.joints.push(joint)
-    );
+    designConditions.prescribedJoints.forEach(joint => this.joints.push(joint));
   }
 
   public getJointByNumber(n: number): Joint {
     return this.joints[n - 1];
-  }
-
-  public getMember(a: Joint, b: Joint) {
-    this.members.find((member) => member);
   }
 
   clear() {
