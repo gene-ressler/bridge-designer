@@ -8,7 +8,7 @@ import {
 import { jqxToolBarComponent, jqxToolBarModule } from 'jqwidgets-ng/jqxtoolbar';
 import { WidgetHelper } from '../../../shared/classes/widget-helper';
 import { InventorySelectorComponent } from '../../../shared/components/inventory-selector/inventory-selector.component';
-import { ComponentService } from '../../../shared/services/component.service';
+import { ComponentService } from '../../../shared/core/component.service';
 
 @Component({
   selector: 'toolbar-exp',

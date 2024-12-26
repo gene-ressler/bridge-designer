@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Rectangle2D } from '../../../shared/classes/graphics';
-import { SelectedElements, SelectedElementsService } from './selected-elements-service';
+import { SelectedElementsService } from './selected-elements-service';
 import { ViewportTransform2D } from '../../../shared/services/viewport-transform.service';
 import { Joint } from '../../../shared/classes/joint.model';
 import { HotElementService } from './hot-element.service';

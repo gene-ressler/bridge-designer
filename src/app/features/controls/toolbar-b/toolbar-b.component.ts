@@ -3,10 +3,9 @@ import { jqxDropDownListModule } from 'jqwidgets-ng/jqxdropdownlist';
 import { jqxToolBarComponent, jqxToolBarModule } from 'jqwidgets-ng/jqxtoolbar';
 import { WidgetHelper } from '../../../shared/classes/widget-helper';
 import { InventorySelectorComponent } from '../../../shared/components/inventory-selector/inventory-selector.component';
-import { ComponentService } from '../../../shared/services/component.service';
+import { ComponentService } from '../../../shared/core/component.service';
 import { EventBrokerService } from '../../../shared/services/event-broker.service';
 import { UiStateService } from '../../drafting/services/ui-state.service';
-import { DesignGridDensity, DesignGridService } from '../../../shared/services/design-grid.service';
 
 const enum Tools {
   INVENTORY_SELECTOR,

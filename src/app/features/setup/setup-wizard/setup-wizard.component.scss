@@ -9,7 +9,7 @@
   margin: 8px;
   display: grid;
   grid-template-columns: min-content min-content auto;
-  grid-template-rows: repeat(min-content, 5);
+  grid-template-rows: min-content min-content min-content max-content;
 }
 
 // Start grid
@@ -58,9 +58,12 @@
 .wizard-controls {
   grid-row: 4;
   grid-column: 1 / 4;
-  display: flex;
-  justify-content: right;
+  text-align: right;
   margin-top: 4px;
+}
+
+.wizard-controls > * {
+  vertical-align: bottom;
 }
 
 .vertical-gap {
@@ -81,6 +84,60 @@
   border-style: ridge;
   border-width: 2px;
   padding: 5px;
+}
+
+.cost-summary-line {
+  width: 760px;
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.site-condition {
+  flex-grow: 1;
+  text-align: right;
+}
+
+.cost-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid black;
+  padding: 1px;
+}
+
+.cost-table tr td {
+  border: 1px solid black;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+// Description column
+.cost-table tr td:nth-child(1) {
+  width: 200px;
+  text-align: center;
+}
+
+// Calculation column
+.cost-table tr td:nth-child(2) {
+  width: auto;
+  text-align: right;
+  border-right: 0;
+}
+
+// Equal sign column
+.cost-table tr td:nth-child(3) {
+  width:fit-content;
+  border-left: 0;
+  padding-right: 0;
+}
+
+// Cost column
+.cost-table tr td:nth-child(4) {
+  width: 100px;
+  text-align: right;
+}
+
+.total {
+  font-weight: 700;
 }
 
 .deck-cartoon {
@@ -121,6 +178,10 @@ input:disabled {
   display: inline-block;
   margin-right: 8px;
   width: 100px;
+}
+
+.legend img {
+  vertical-align: middle;
 }
 
 label:has(:disabled) {

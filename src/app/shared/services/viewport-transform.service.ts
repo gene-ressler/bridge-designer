@@ -16,22 +16,22 @@ export class ViewportTransform2D {
   private _yWindow = 0;
   private _widthWindow = 1;
   private _heightWindow = 1;
-  private _vpTx = 0.5;
-  private _vpTy = 0.5;
-  private _vpX = 0.5;
-  private _vpY = 0.5;
+  // private _vpTx = 0.5;
+  // private _vpTy = 0.5;
+  //private _vpX = 0.5;
+  //private _vpY = 0.5;
   private _xViewport = 0;
   private _yViewport = 0;
-  private _zWindow = 0;
+  //private _zWindow = 0;
   private _widthViewport = 1;
   private _heightViewport = 1;
   private _xMargin = 0;
   private _yMargin = 0;
   private _xScaleFactor = 1;
   private _yScaleFactor = 1;
-  private _zScale = 1;
-  private _nWindowUpdates = 0;
-  private _nViewportUpdates = 0;
+  //private _zScale = 1;
+  //private _nWindowUpdates = 0;
+  //private _nViewportUpdates = 0;
   private _hAlign = Justification.CENTER;
   private _vAlign = Justification.CENTER;
 
@@ -51,21 +51,13 @@ export class ViewportTransform2D {
     return Math.abs(this._heightViewport - this._yMargin);
   }
 
-  public setAlignment(
-    horizontal: Justification,
-    vertical: Justification
-  ): void {
+  public setAlignment(horizontal: Justification, vertical: Justification): void {
     this._hAlign = horizontal;
     this._vAlign = vertical;
     this.setScaleFactor();
   }
 
-  public setViewport(
-    x: number,
-    y: number,
-    width: number,
-    height: number
-  ): void {
+  public setViewport(x: number, y: number, width: number, height: number): void {
     this._xViewport = x;
     this._yViewport = y;
     this._widthViewport = width;
@@ -82,48 +74,31 @@ export class ViewportTransform2D {
   }
 
   public worldToViewportX(x: number): number {
-    return (
-      this._xMargin + this._xViewport + (x - this._xWindow) * this._xScaleFactor
-    );
+    return this._xMargin + this._xViewport + (x - this._xWindow) * this._xScaleFactor;
   }
 
   public worldToViewportY(y: number): number {
-    return (
-      this._yMargin + this._yViewport + (y - this._yWindow) * this._yScaleFactor
-    );
+    return this._yMargin + this._yViewport + (y - this._yWindow) * this._yScaleFactor;
   }
 
-  public worldToViewportPoint(
-    dst: Point2DInterface,
-    src: Point2DInterface
-  ): void {
+  public worldToViewportPoint(dst: Point2DInterface, src: Point2DInterface): void {
     dst.x = this.worldToViewportX(src.x);
     dst.y = this.worldToViewportY(src.y);
   }
 
   public worldToViewportDistance(d: number): number {
-    return ViewportTransform2D.copySign(
-      Math.round(d * Math.abs(this._xScaleFactor)),
-      d
-    );
+    return ViewportTransform2D.copySign(Math.round(d * Math.abs(this._xScaleFactor)), d);
   }
 
   public viewportToworldX(x: number): number {
-    return (
-      this._xWindow + (x - this._xMargin - this._xViewport) / this._xScaleFactor
-    );
+    return this._xWindow + (x - this._xMargin - this._xViewport) / this._xScaleFactor;
   }
 
   public viewportToworldY(y: number): number {
-    return (
-      this._yWindow + (y - this._yMargin - this._yViewport) / this._yScaleFactor
-    );
+    return this._yWindow + (y - this._yMargin - this._yViewport) / this._yScaleFactor;
   }
 
-  public viewportToWorldPoint(
-    dst: Point2DInterface,
-    src: Point2DInterface
-  ): void {
+  public viewportToWorldPoint(dst: Point2DInterface, src: Point2DInterface): void {
     dst.x = this.viewportToworldX(src.x);
     dst.y = this.viewportToworldY(src.y);
   }
@@ -132,10 +107,7 @@ export class ViewportTransform2D {
     return ViewportTransform2D.copySign(d / this._xScaleFactor, d);
   }
 
-  public viewportToWorldRectangle2D(
-    dst: Rectangle2D,
-    src: Rectangle2D
-  ): Rectangle2D {
+  public viewportToWorldRectangle2D(dst: Rectangle2D, src: Rectangle2D): Rectangle2D {
     dst.x0 = this.viewportToworldX(src.x0);
     dst.y0 = this.viewportToworldY(src.y0);
     dst.width = this.viewportToworldX(src.x1) - dst.x0;
@@ -146,16 +118,18 @@ export class ViewportTransform2D {
   /** 
    * Set vanishing point as a fraction/parameter of x and y viewport. 
    * Also the window z-coordinate, which governs scale.
-   */
+   *
   public setVanishingPoint(vpTx: number, vpTy: number, zWindow: number) {
     this._vpTx = vpTx;
     this._vpTy = vpTy;
     this._zWindow = zWindow;
-  }
+  }*/
 
+  /*
   public set zScale(zScale: number) {
     this._zScale = zScale;
   }
+  */
 
   private setScaleFactor(): void {
     if (this._widthWindow == 0 || this._heightWindow == 0) {
@@ -168,8 +142,7 @@ export class ViewportTransform2D {
     if (Math.abs(sfX) < Math.abs(sfY)) {
       this._xScaleFactor = sfX;
       this._yScaleFactor = ViewportTransform2D.copySign(sfX, sfY);
-      const margin =
-        this._heightViewport - this._heightWindow * this._yScaleFactor;
+      const margin = this._heightViewport - this._heightWindow * this._yScaleFactor;
       switch (this._vAlign) {
         case Justification.TOP:
           this._yMargin = Math.round(margin);
@@ -181,8 +154,7 @@ export class ViewportTransform2D {
     } else {
       this._yScaleFactor = sfY;
       this._xScaleFactor = ViewportTransform2D.copySign(sfY, sfX);
-      const margin =
-        this._widthViewport - this._widthWindow * this._xScaleFactor;
+      const margin = this._widthViewport - this._widthWindow * this._xScaleFactor;
       switch (this._hAlign) {
         case Justification.RIGHT:
           this._xMargin = Math.round(margin);
@@ -192,12 +164,13 @@ export class ViewportTransform2D {
           break;
       }
     }
+    /*
     this._vpX = this.worldToViewportX(
       this._xWindow + this._vpTx * this._widthWindow
     );
     this._vpY = this.worldToViewportY(
       this._yWindow + this._vpTy * this._heightWindow
-    );
+    );*/
   }
 
   private static copySign(x: number, signSource: number): number {

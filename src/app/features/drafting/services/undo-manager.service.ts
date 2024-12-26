@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Deque } from '../../../shared/classes/deque';
+import { Deque } from '../../../shared/core/deque';
 import { EditCommand } from '../../../shared/classes/editing';
 import { EventBrokerService, EventInfo, EventOrigin } from '../../../shared/services/event-broker.service';
 

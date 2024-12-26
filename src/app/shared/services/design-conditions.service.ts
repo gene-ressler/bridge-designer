@@ -2,13 +2,13 @@ import { Injectable } from '@angular/core';
 import { Joint } from '../classes/joint.model';
 import { Utility } from '../classes/utility';
 
-const enum LoadType {
+export const enum LoadType {
   NONE = -1,
   STANDARD_TRUCK,
   HEAVY_TRUCK,
 }
 
-const enum DeckType {
+export const enum DeckType {
   NONE = -1,
   MEDIUM_STRENGTH_DECK,
   HIGH_STRENGTH_DECK,
@@ -36,10 +36,32 @@ const enum CodeError {
   UPPER_HEIGHT_OUT_OF_RANGE,
 }
 
+export type FixedCostSummary = {
+  siteCondition: string;
+  panelCount: number;
+  deckCostRate: number;
+  deckCost: number;
+  excavationVolume: number;
+  excavationCostRate: number;
+  excavationCost: number;
+  abutmentType: string;
+  abutmentCount: number;
+  abutmentCostRate: number;
+  abutmentCost: number;
+  isPier: boolean;
+  pierHeight: number;
+  pierCost: number;
+  anchorageCount: number;
+  anchorageCostRate: number;
+  anchorageCost: number;
+  totalFixedCost: number;
+};
+
 export class DesignConditions {
   public static readonly ANCHOR_OFFSET = 8;
   public static readonly GAP_DEPTH = 24;
   public static readonly MAX_MEMBER_COUNT = 200;
+  public static readonly PANEL_SIZE_WORLD = 4;
 
   private static readonly ANCHORAGE_COST = 6000;
   private static readonly ARCH_INCREMENTAL_COST_PER_DECK_PANEL = 3300;
@@ -49,7 +71,6 @@ export class DesignConditions {
   private static readonly FROM_KEY_CODE_TAG = '99Z';
   private static readonly MAX_SLENDERNESS = 300;
   private static readonly MIN_OVERHEAD = 8;
-  private static readonly PANEL_SIZE_WORLD = 4;
   private static readonly PIER_BASE_COST = 0;
   private static readonly PIER_COST_PER_DECK_PANEL = 4500;
   private static readonly STANDARD_ABUTMENT_BASE_COST = 6000;
@@ -71,7 +92,7 @@ export class DesignConditions {
   public readonly leftAnchorageJointIndex: number = 0;
   public readonly loadedJointCount: number = 0;
   public readonly loadType: LoadType = LoadType.NONE;
-  public readonly nAnchorages: number = 0;
+  public readonly anchorageCount: number = 0;
   public readonly overClearance: number = 0;
   public readonly overMargin: number = 0;
   public readonly panelCount: number = 0;
@@ -87,6 +108,7 @@ export class DesignConditions {
   public readonly underClearance: number = 0;
   public readonly xLeftmostDeckJoint: number = 0;
   public readonly xRightmostDeckJoint: number = 0;
+  public readonly fixedCostSummary?: FixedCostSummary;
 
   private constructor(tag: string, codeLong: number) {
     this.tag = tag;
@@ -115,12 +137,8 @@ export class DesignConditions {
     // digit 1 is the load case, 1-based
     // -1 correction for 0-based load_case table
     const loadCaseIndex = code[0] - 1;
-    this.loadType =
-      (loadCaseIndex & 1) == 0 ? LoadType.STANDARD_TRUCK : LoadType.HEAVY_TRUCK;
-    this.deckType =
-      (loadCaseIndex & 2) == 0
-        ? DeckType.MEDIUM_STRENGTH_DECK
-        : DeckType.HIGH_STRENGTH_DECK;
+    this.loadType = (loadCaseIndex & 1) == 0 ? LoadType.STANDARD_TRUCK : LoadType.HEAVY_TRUCK;
+    this.deckType = (loadCaseIndex & 2) == 0 ? DeckType.MEDIUM_STRENGTH_DECK : DeckType.HIGH_STRENGTH_DECK;
 
     // Precomputation of condition-dependent site geometry, design constraints, and costs.
 
@@ -132,22 +150,12 @@ export class DesignConditions {
       this.deckElevation = 4 * (this.panelCount - 5);
       this.archHeight = -1;
     }
-    this.overMargin =
-      DesignConditions.GAP_DEPTH +
-      DesignConditions.MIN_OVERHEAD -
-      this.deckElevation;
-    this.pierHeight = this.isHiPier
-      ? this.deckElevation
-      : this.isPier
-      ? this.deckElevation - this.underClearance
-      : -1;
+    this.overMargin = DesignConditions.GAP_DEPTH + DesignConditions.MIN_OVERHEAD - this.deckElevation;
+    this.pierHeight = this.isHiPier ? this.deckElevation : this.isPier ? this.deckElevation - this.underClearance : -1;
 
     // Prescribed joint information.
     var prescribedJointCount = this.panelCount + 1;
-    this.archJointIndex =
-      this.leftAnchorageJointIndex =
-      this.rightAnchorageJointIndex =
-        -1;
+    this.archJointIndex = this.leftAnchorageJointIndex = this.rightAnchorageJointIndex = -1;
     // Add one prescribed joint for the intermediate support, if any.
     if (this.isPier && !this.isHiPier) {
       this.pierJointIndex = prescribedJointCount;
@@ -160,15 +168,15 @@ export class DesignConditions {
       prescribedJointCount += 2;
     }
     // And more for the anchorages, if any.
-    this.nAnchorages = 0;
+    this.anchorageCount = 0;
     if (isLeftCable) {
       this.leftAnchorageJointIndex = prescribedJointCount;
-      this.nAnchorages++;
+      this.anchorageCount++;
       prescribedJointCount++;
     }
     if (isRightCable) {
       this.rightAnchorageJointIndex = prescribedJointCount;
-      this.nAnchorages++;
+      this.anchorageCount++;
       prescribedJointCount++;
     }
 
@@ -184,8 +192,7 @@ export class DesignConditions {
       x += DesignConditions.PANEL_SIZE_WORLD;
     }
     this.xLeftmostDeckJoint = this.prescribedJoints[0].x;
-    this.xRightmostDeckJoint =
-      this.prescribedJoints[this.loadedJointCount - 1].x;
+    this.xRightmostDeckJoint = this.prescribedJoints[this.loadedJointCount - 1].x;
     // Standard abutments, no pier, no anchorages = 3 restraints.
     this.jointRestraintCount = 3;
     if (this.isPier) {
@@ -197,59 +204,36 @@ export class DesignConditions {
           i,
           this.pierPanelIndex * DesignConditions.PANEL_SIZE_WORLD,
           -this.underClearance,
-          true
+          true,
         );
         i++;
         this.jointRestraintCount += 2;
       }
     }
     if (isArch) {
-      this.prescribedJoints[i] = new Joint(
-        i,
-        this.xLeftmostDeckJoint,
-        -this.underClearance,
-        true
-      );
+      this.prescribedJoints[i] = new Joint(i, this.xLeftmostDeckJoint, -this.underClearance, true);
       i++;
-      this.prescribedJoints[i] = new Joint(
-        i,
-        this.xRightmostDeckJoint,
-        -this.underClearance,
-        true
-      );
+      this.prescribedJoints[i] = new Joint(i, this.xRightmostDeckJoint, -this.underClearance, true);
       i++;
       // Both abutment joints are fully constrained, but the deck joints become unconstrained.
       this.jointRestraintCount += 4 - 3;
     }
     if (isLeftCable) {
-      this.prescribedJoints[i] = new Joint(
-        i,
-        this.xLeftmostDeckJoint - DesignConditions.ANCHOR_OFFSET,
-        0,
-        true
-      );
+      this.prescribedJoints[i] = new Joint(i, this.xLeftmostDeckJoint - DesignConditions.ANCHOR_OFFSET, 0, true);
       i++;
       this.jointRestraintCount += 2;
     }
     if (isRightCable) {
-      this.prescribedJoints[i] = new Joint(
-        i,
-        this.xRightmostDeckJoint + DesignConditions.ANCHOR_OFFSET,
-        0,
-        true
-      );
+      this.prescribedJoints[i] = new Joint(i, this.xRightmostDeckJoint + DesignConditions.ANCHOR_OFFSET, 0, true);
       i++;
       this.jointRestraintCount += 2;
     }
 
     // Slenderness limit.
-    this.allowableSlenderness =
-      isLeftCable || isRightCable ? 1e100 : DesignConditions.MAX_SLENDERNESS;
+    this.allowableSlenderness = isLeftCable || isRightCable ? 1e100 : DesignConditions.MAX_SLENDERNESS;
 
     // Cost calculations.
-    this.excavationVolume = DesignConditions.getExcavationVolume(
-      this.deckElevation
-    );
+    this.excavationVolume = DesignConditions.getExcavationVolume(this.deckElevation);
     this.deckCostRate =
       this.deckType == DeckType.MEDIUM_STRENGTH_DECK
         ? DesignConditions.DECK_COST_PER_PANEL_MED_STRENGTH
@@ -260,41 +244,32 @@ export class DesignConditions {
       this.totalFixedCost = 170000;
       // Non-standard case.
       if (this.isPier) {
-        this.abutmentCost = DesignConditions.getKeyCodeAbutmentCost(
-          this.deckElevation
-        );
+        this.abutmentCost = DesignConditions.getKeyCodeAbutmentCost(this.deckElevation);
         this.pierCost =
           this.totalFixedCost -
           this.panelCount * this.deckCostRate -
           this.excavationVolume * DesignConditions.EXCAVATION_COST_RATE -
           this.abutmentCost -
-          this.nAnchorages * DesignConditions.ANCHORAGE_COST;
+          this.anchorageCount * DesignConditions.ANCHORAGE_COST;
       } else {
         this.abutmentCost =
           this.totalFixedCost -
           this.panelCount * this.deckCostRate -
           this.excavationVolume * DesignConditions.EXCAVATION_COST_RATE -
-          this.nAnchorages * DesignConditions.ANCHORAGE_COST;
+          this.anchorageCount * DesignConditions.ANCHORAGE_COST;
         this.pierCost = 0;
       }
     } else {
       // Standard case.
-      this.abutmentCost =
-        // New for 2011: Quadratic arch site cost relationship.
-        isArch
-          ? this.panelCount *
-              DesignConditions.ARCH_INCREMENTAL_COST_PER_DECK_PANEL +
-            DesignConditions.getArchCost(this.underClearance)
-          : this.isPier
+      this.abutmentCost = isArch
+        ? this.panelCount * DesignConditions.ARCH_INCREMENTAL_COST_PER_DECK_PANEL +
+          DesignConditions.getArchAbutmentCost(this.underClearance)
+        : this.isPier
           ? DesignConditions.STANDARD_ABUTMENT_BASE_COST +
-            Math.max(
-              this.pierPanelIndex,
-              this.panelCount - this.pierPanelIndex
-            ) *
+            Math.max(this.pierPanelIndex, this.panelCount - this.pierPanelIndex) *
               DesignConditions.STANDARD_ABUTMENT_COST_PER_DECK_PANEL
           : DesignConditions.STANDARD_ABUTMENT_BASE_COST +
-            this.panelCount *
-              DesignConditions.STANDARD_ABUTMENT_COST_PER_DECK_PANEL;
+            this.panelCount * DesignConditions.STANDARD_ABUTMENT_COST_PER_DECK_PANEL;
       this.pierCost = this.isPier
         ? Math.max(this.pierPanelIndex, this.panelCount - this.pierPanelIndex) *
             DesignConditions.PIER_COST_PER_DECK_PANEL +
@@ -306,7 +281,7 @@ export class DesignConditions {
         this.abutmentCost +
         this.pierCost +
         this.panelCount * this.deckCostRate +
-        this.nAnchorages * DesignConditions.ANCHORAGE_COST;
+        this.anchorageCount * DesignConditions.ANCHORAGE_COST;
     }
     this.abutmentCost *= 0.5; // Steve's calcs are for both abutments. UI presents unit cost.
 
@@ -314,8 +289,34 @@ export class DesignConditions {
     this.abutmentJointIndices = isArch
       ? [0, this.panelCount, this.archJointIndex, this.archJointIndex + 1]
       : this.isPier
-      ? [0, this.panelCount, this.pierJointIndex]
-      : [0, this.panelCount];
+        ? [0, this.panelCount, this.pierJointIndex]
+        : [0, this.panelCount];
+
+    this.fixedCostSummary = {
+      siteCondition: this.tag,
+      panelCount: this.panelCount,
+      deckCostRate: this.deckCostRate,
+      deckCost: this.panelCount * this.deckCostRate,
+      excavationVolume: this.excavationVolume,
+      excavationCostRate: DesignConditions.EXCAVATION_COST_RATE,
+      excavationCost: this.excavationVolume * DesignConditions.EXCAVATION_COST_RATE,
+      abutmentType: this.isArch ? 'arch' : 'standard',
+      abutmentCount: 2,
+      abutmentCostRate: this.abutmentCost * 0.5,
+      abutmentCost: this.abutmentCost,
+      isPier: this.isPier,
+      pierHeight: this.pierHeight,
+      pierCost: this.pierCost,
+      anchorageCount: this.anchorageCount,
+      anchorageCostRate: DesignConditions.ANCHORAGE_COST,
+      anchorageCost: this.anchorageCount * DesignConditions.ANCHORAGE_COST,
+      totalFixedCost: this.totalFixedCost,
+    };
+  }
+
+  /** Use DesignConditionsService.PLACEHOLDER_CONDITIONS. */
+  static get placeholderConditions(): DesignConditions {
+    return new DesignConditions('00X', 4061612100 /* 1072408000 /*1110824000*/);
   }
 
   static createPlaceholderConditions(): DesignConditions {
@@ -323,27 +324,19 @@ export class DesignConditions {
   }
 
   private static getKeyCodeAbutmentCost(deckElevation: number): number {
-    return [7000, 7000, 7500, 7500, 8000, 8000, 8500][
-      Math.floor(deckElevation / 4)
-    ];
+    return [7000, 7000, 7500, 7500, 8000, 8000, 8500][Math.floor(deckElevation / 4)];
   }
 
   private static getExcavationVolume(deckElevation: number): number {
-    return [106500, 90000, 71500, 54100, 38100, 19400, 0][
-      Math.floor(deckElevation / 4)
-    ];
+    return [106500, 90000, 71500, 54100, 38100, 19400, 0][Math.floor(deckElevation / 4)];
   }
 
-  private static getArchCost(underClearance: number) {
-    return [200, 11300, 20800, 30300, 39000, 49700][
-      Math.floor(underClearance / 4) - 1
-    ];
+  private static getArchAbutmentCost(underClearance: number) {
+    return [200, 11300, 20800, 30300, 39000, 49700][Math.floor(underClearance / 4) - 1];
   }
 
   private static getPierHeightCost(pierHeight: number) {
-    return [0, 2800, 5600, 8400, 10200, 12500, 14800][
-      Math.floor(pierHeight / 4)
-    ];
+    return [0, 2800, 5600, 8400, 10200, 12500, 14800][Math.floor(pierHeight / 4)];
   }
 
   public get deckThickness(): number {
@@ -376,9 +369,7 @@ export class DesignConditions {
 
   public isGeometricallyIdentical(other: DesignConditions): boolean {
     // code[0] is load condition; the rest are geometry.
-    return this.code
-      .slice(1)
-      .every((value, index) => value === other.code[index]);
+    return this.code.slice(1).every((value, index) => value === other.code[index]);
   }
 
   /*
@@ -531,6 +522,29 @@ export class DesignConditions {
     return CodeError.NONE;
   }
 
+  public get setupKey(): string {
+    return DesignConditions.getSetupKey(
+      this.deckElevation,
+      this.archHeight,
+      this.pierHeight,
+      this.anchorageCount,
+      this.loadType,
+      this.deckCostRate,
+    );
+  }
+
+  /** Returns a unique string key for given design condition attributes. */
+  static getSetupKey(
+    deckElevation: number,
+    archHeight: number,
+    pierHeight: number,
+    anchorageCount: number,
+    loadType: LoadType,
+    deckType: DeckType,
+  ): string {
+    return `${deckElevation}|${archHeight}|${pierHeight}|${anchorageCount}|${loadType}|${deckType}`;
+  }
+
   // Static factory intended to be called only by the service.
   static fromTaggedCodeLong(tag: string, codeLong: number): DesignConditions {
     return new DesignConditions(tag, codeLong);
@@ -587,7 +601,7 @@ export class DesignConditions {
       ',pierHeight: ' +
       this.pierHeight +
       ',nAnchorages: ' +
-      this.nAnchorages +
+      this.anchorageCount +
       ',excavationVolume: ' +
       this.excavationVolume +
       ',abutmentCost: ' +
@@ -598,6 +612,8 @@ export class DesignConditions {
       this.deckCostRate +
       ',totalFixedCost: ' +
       this.totalFixedCost +
+      ',setupKey: ' +
+      this.setupKey +
       '}'
     );
   }
@@ -606,8 +622,7 @@ export class DesignConditions {
 @Injectable({ providedIn: 'root' })
 export class DesignConditionsService {
   /** Placeholder design conditions used e.g. for un-initialized bridge models. */
-  public static readonly PLACEHOLDER_CONDITIONS =
-    DesignConditions.createPlaceholderConditions();
+  public static readonly PLACEHOLDER_CONDITIONS = DesignConditions.placeholderConditions;
 
   /** Pre-defined design conditions. Intent is that the list of tuples can be garbage-collected. */
   public static readonly STANDARD_CONDITIONS: DesignConditions[] = (
@@ -1007,49 +1022,38 @@ export class DesignConditionsService {
       ['98D', 4053200331],
       //#endregion
     ] as [string, number][]
-  ).map((p) => DesignConditions.fromTaggedCodeLong(...p));
+  ).map(p => DesignConditions.fromTaggedCodeLong(...p));
 
-  private static readonly STANDARD_CONDITIONS_FROM_CODE: Map<
-    number,
-    DesignConditions
-  > = DesignConditionsService.STANDARD_CONDITIONS.reduce(
-    (index, conditions) => {
-      index.set(conditions.codeLong, conditions);
-      return index;
-    },
-    new Map<number, DesignConditions>()
-  );
+  public static readonly STANDARD_CONDITIONS_FROM_SETUP_KEY: Map<string, DesignConditions> = 
+  DesignConditionsService.STANDARD_CONDITIONS.reduce((map, conditions) => {
+    map.set(conditions.setupKey, conditions);
+    return map;
+  }, new Map<string, DesignConditions>());
 
-  private static readonly STANDARD_CONDITIONS_FROM_TAG: Map<
-    string,
-    DesignConditions
-  > = DesignConditionsService.STANDARD_CONDITIONS.reduce(
-    (index, conditions) => {
+  private static readonly STANDARD_CONDITIONS_FROM_CODE: Map<number, DesignConditions> =
+    DesignConditionsService.STANDARD_CONDITIONS.reduce((map, conditions) => {
+      map.set(conditions.codeLong, conditions);
+      return map;
+    }, new Map<number, DesignConditions>());
+
+  private static readonly STANDARD_CONDITIONS_FROM_TAG: Map<string, DesignConditions> =
+    DesignConditionsService.STANDARD_CONDITIONS.reduce((index, conditions) => {
       index.set(conditions.tag, conditions);
       return index;
-    },
-    new Map<string, DesignConditions>()
-  );
+    }, new Map<string, DesignConditions>());
 
   /** Tries to fetch conditions for the given code from tagged standards. If none exists, builds a new one tagged as a key code. */
   public getConditionsForCodeLong(code: number): DesignConditions {
-    const conditions =
-      DesignConditionsService.STANDARD_CONDITIONS_FROM_CODE.get(code);
-    return conditions === undefined
-      ? DesignConditions.fromKeyCodeLong(code)
-      : conditions;
+    const conditions = DesignConditionsService.STANDARD_CONDITIONS_FROM_CODE.get(code);
+    return conditions === undefined ? DesignConditions.fromKeyCodeLong(code) : conditions;
   }
 
   /** Fetches conditions with given standard tag. Returns undefined if none. */
-  public getStandardConditionsForTag(
-    tag: string
-  ): DesignConditions | undefined {
+  public getStandardConditionsForTag(tag: string): DesignConditions | undefined {
     return DesignConditionsService.STANDARD_CONDITIONS_FROM_TAG.get(tag);
   }
 
-  public getConditionsForKeyCode(
-    keyCode: string
-  ): DesignConditions | CodeError {
+  public getConditionsForKeyCode(keyCode: string): DesignConditions | CodeError {
     return DesignConditions.fromKeyCode(keyCode);
   }
 
@@ -1066,9 +1070,7 @@ export class DesignConditionsService {
     var hi = DesignConditionsService.STANDARD_CONDITIONS.length - 1;
     while (lo < hi) {
       const mid = Math.floor((lo + hi) / 2);
-      const midKey = DesignConditionsService.STANDARD_CONDITIONS[
-        mid
-      ].tag.substring(0, s.length);
+      const midKey = DesignConditionsService.STANDARD_CONDITIONS[mid].tag.substring(0, s.length);
       if (s < midKey) {
         hi = mid - 1;
       } else if (s > midKey) {

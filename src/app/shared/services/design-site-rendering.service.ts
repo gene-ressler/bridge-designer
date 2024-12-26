@@ -1,11 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Colors, Point2D } from '../classes/graphics';
 import { SiteConstants } from '../classes/site-model';
-import {
-  AbutmentSide,
-  SiteDetailRenderers,
-  SiteRenderingHelper2D,
-} from '../classes/site-rendering-helper-2d';
+import { AbutmentSide, SiteDetailRenderers, SiteRenderingHelper2D } from '../classes/site-rendering-helper-2d';
 import { DesignBridgeService } from './design-bridge.service';
 import { FillPatternsService as FillPatternService } from './fill-pattern.service';
 import { ViewportTransform2D } from './viewport-transform.service';
@@ -13,9 +9,9 @@ import { ViewportTransform2D } from './viewport-transform.service';
 @Injectable({ providedIn: 'root' })
 export class DesignSiteRenderingService implements SiteDetailRenderers {
   constructor(
-    private readonly draftBridgeService: DesignBridgeService,
+    private readonly designBridgeService: DesignBridgeService,
     private readonly fillPatternService: FillPatternService,
-    private readonly viewportTransform: ViewportTransform2D
+    private readonly viewportTransform: ViewportTransform2D,
   ) {}
 
   public render(ctx: CanvasRenderingContext2D) {
@@ -24,9 +20,9 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     this.renderInSituCrossSection(ctx);
     SiteRenderingHelper2D.renderAbutmentsAndPier(
       ctx,
-      this.draftBridgeService.designConditions,
+      this.designBridgeService.designConditions,
       this,
-      this.viewportTransform
+      this.viewportTransform,
     );
   }
 
@@ -40,44 +36,29 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     const savedFillStyle = ctx.fillStyle;
     const savedLineWidth = ctx.lineWidth;
 
-    const conditions = this.draftBridgeService.designConditions;
+    const conditions = this.designBridgeService.designConditions;
 
     // Calculate deck beam dimensions in viewport pixel coordinates.
-    const halfBeamFlangeWidth =
-      this.viewportTransform.worldToViewportDistance(0.18);
-    const ySlabTop = this.viewportTransform.worldToViewportY(
-      SiteConstants.WEAR_SURFACE_HEIGHT
-    );
+    const halfBeamFlangeWidth = this.viewportTransform.worldToViewportDistance(0.18);
+    const ySlabTop = this.viewportTransform.worldToViewportY(SiteConstants.WEAR_SURFACE_HEIGHT);
     const ySlabBottom = this.viewportTransform.worldToViewportY(
-      SiteConstants.WEAR_SURFACE_HEIGHT - conditions.deckThickness
+      SiteConstants.WEAR_SURFACE_HEIGHT - conditions.deckThickness,
     );
     const yBeamTop = ySlabBottom + 2;
-    const yBeamBottom =
-      yBeamTop +
-      this.viewportTransform.worldToViewportDistance(SiteConstants.BEAM_HEIGHT);
+    const yBeamBottom = yBeamTop + this.viewportTransform.worldToViewportDistance(SiteConstants.BEAM_HEIGHT);
 
     const xSlabLeft = this.viewportTransform.worldToViewportX(
-      conditions.xLeftmostDeckJoint - SiteConstants.DECK_CANTILEVER
+      conditions.xLeftmostDeckJoint - SiteConstants.DECK_CANTILEVER,
     );
     const xSlabRight = this.viewportTransform.worldToViewportX(
-      conditions.xRightmostDeckJoint + SiteConstants.DECK_CANTILEVER
+      conditions.xRightmostDeckJoint + SiteConstants.DECK_CANTILEVER,
     );
 
     // Draw the deck slab as a single polygon.
     ctx.fillStyle = this.fillPatternService.createConcrete(ctx);
-    ctx.fillRect(
-      xSlabLeft,
-      ySlabTop,
-      xSlabRight - xSlabLeft,
-      ySlabBottom - ySlabTop
-    );
+    ctx.fillRect(xSlabLeft, ySlabTop, xSlabRight - xSlabLeft, ySlabBottom - ySlabTop);
     ctx.strokeStyle = Colors.CONCRETE;
-    ctx.strokeRect(
-      xSlabLeft,
-      ySlabTop,
-      xSlabRight - xSlabLeft,
-      ySlabBottom - ySlabTop
-    );
+    ctx.strokeRect(xSlabLeft, ySlabTop, xSlabRight - xSlabLeft, ySlabBottom - ySlabTop);
 
     ctx.lineWidth = 3;
     ctx.strokeStyle = Colors.CONCRETE;
@@ -88,9 +69,7 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
 
     // Draw the deck beams and also the deck slab joints.
     for (var i = 0; i < conditions.loadedJointCount; i++) {
-      const x = this.viewportTransform.worldToViewportX(
-        conditions.prescribedJoints[i].x
-      );
+      const x = this.viewportTransform.worldToViewportX(conditions.prescribedJoints[i].x);
       ctx.lineWidth = 3;
       ctx.strokeStyle = Colors.STEEL;
       ctx.beginPath();
@@ -120,35 +99,25 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     const savedFillStyle = ctx.fillStyle;
     const savedStrokeStyle = ctx.strokeStyle;
     const savedLineWidth = ctx.lineWidth;
-    const siteInfo = this.draftBridgeService.siteInfo;
+    const siteInfo = this.designBridgeService.siteInfo;
 
     // Set up return values for earth profile.
     const earthProfile: Path2D = new Path2D();
     const leftAccess: Point2D[] = [];
     const rightAccess: Point2D[] = [];
-    SiteRenderingHelper2D.fillEarthProfileInfo(
-      earthProfile,
-      leftAccess,
-      rightAccess,
-      siteInfo,
-      this.viewportTransform
-    );
+    SiteRenderingHelper2D.fillEarthProfileInfo(earthProfile, leftAccess, rightAccess, siteInfo, this.viewportTransform);
     ctx.fillStyle = this.fillPatternService.createEarth(ctx);
     ctx.fill(earthProfile);
 
     // Now stroke the edge of the portion of the elevation terrain between abutments.
     ctx.strokeStyle = Colors.EARTH;
     ctx.beginPath();
-    for (
-      var i = siteInfo.rightAbutmentInterfaceTerrainIndex;
-      i <= siteInfo.leftAbutmentInterfaceTerrainIndex;
-      i++
-    ) {
+    for (var i = siteInfo.rightAbutmentInterfaceTerrainIndex; i <= siteInfo.leftAbutmentInterfaceTerrainIndex; i++) {
       const x = this.viewportTransform.worldToViewportX(
-        SiteConstants.ELEVATION_TERRAIN_POINTS[i].x + siteInfo.halfCutGapWidth
+        SiteConstants.ELEVATION_TERRAIN_POINTS[i].x + siteInfo.halfCutGapWidth,
       );
       const y = this.viewportTransform.worldToViewportY(
-        SiteConstants.ELEVATION_TERRAIN_POINTS[i].y + siteInfo.yGradeLevel
+        SiteConstants.ELEVATION_TERRAIN_POINTS[i].y + siteInfo.yGradeLevel,
       );
       ctx.lineTo(x, y);
     }
@@ -208,26 +177,16 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
   private renderInSituCrossSection(ctx: CanvasRenderingContext2D) {
     const savedStrokeStyle = ctx.strokeStyle;
     const savedLineDash = ctx.getLineDash();
-    const siteInfo = this.draftBridgeService.siteInfo;
+    const siteInfo = this.designBridgeService.siteInfo;
 
     // Draw the high water mark.
     ctx.strokeStyle = Colors.WATER;
-    const leftShore: Point2D =
-      SiteConstants.ELEVATION_TERRAIN_POINTS[SiteConstants.LEFT_SHORE_INDEX];
-    const rightShore: Point2D =
-      SiteConstants.ELEVATION_TERRAIN_POINTS[SiteConstants.RIGHT_SHORE_INDEX];
-    var x0 = this.viewportTransform.worldToViewportX(
-      leftShore.x + siteInfo.halfCutGapWidth
-    );
-    var y0 = this.viewportTransform.worldToViewportY(
-      leftShore.y + siteInfo.yGradeLevel
-    );
-    var x1 = this.viewportTransform.worldToViewportX(
-      rightShore.x + siteInfo.halfCutGapWidth
-    );
-    var y1 = this.viewportTransform.worldToViewportY(
-      rightShore.y + siteInfo.yGradeLevel
-    );
+    const leftShore: Point2D = SiteConstants.ELEVATION_TERRAIN_POINTS[SiteConstants.LEFT_SHORE_INDEX];
+    const rightShore: Point2D = SiteConstants.ELEVATION_TERRAIN_POINTS[SiteConstants.RIGHT_SHORE_INDEX];
+    var x0 = this.viewportTransform.worldToViewportX(leftShore.x + siteInfo.halfCutGapWidth);
+    var y0 = this.viewportTransform.worldToViewportY(leftShore.y + siteInfo.yGradeLevel);
+    var x1 = this.viewportTransform.worldToViewportX(rightShore.x + siteInfo.halfCutGapWidth);
+    var y1 = this.viewportTransform.worldToViewportY(rightShore.y + siteInfo.yGradeLevel);
     ctx.beginPath();
     for (var i = 0; i < 3; i++) {
       ctx.moveTo(x0, y0);
@@ -248,12 +207,8 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     ctx.beginPath();
     for (var i = 1; i <= siteInfo.rightAbutmentInterfaceTerrainIndex; i++) {
       const pi = SiteConstants.ELEVATION_TERRAIN_POINTS[i];
-      const x = this.viewportTransform.worldToViewportX(
-        pi.x + siteInfo.halfCutGapWidth
-      );
-      const y = this.viewportTransform.worldToViewportY(
-        pi.y + siteInfo.yGradeLevel
-      );
+      const x = this.viewportTransform.worldToViewportX(pi.x + siteInfo.halfCutGapWidth);
+      const y = this.viewportTransform.worldToViewportY(pi.y + siteInfo.yGradeLevel);
       ctx.lineTo(x, y);
     }
     ctx.stroke();
@@ -266,12 +221,8 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
       i++
     ) {
       const pi = SiteConstants.ELEVATION_TERRAIN_POINTS[i];
-      const x = this.viewportTransform.worldToViewportX(
-        pi.x + siteInfo.halfCutGapWidth
-      );
-      const y = this.viewportTransform.worldToViewportY(
-        pi.y + siteInfo.yGradeLevel
-      );
+      const x = this.viewportTransform.worldToViewportX(pi.x + siteInfo.halfCutGapWidth);
+      const y = this.viewportTransform.worldToViewportY(pi.y + siteInfo.yGradeLevel);
       ctx.lineTo(x, y);
     }
     ctx.stroke();
@@ -285,7 +236,7 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     location: Point2D,
     side: AbutmentSide,
     _constraintCount: number,
-    viewportTransform: ViewportTransform2D
+    viewportTransform: ViewportTransform2D,
   ): void {
     SiteRenderingHelper2D.renderStandardAbutmentImpl(
       ctx,
@@ -294,7 +245,7 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
       location,
       side == AbutmentSide.RIGHT,
       DesignSiteRenderingService.renderAbutmentWearSurface,
-      viewportTransform
+      viewportTransform,
     );
   }
 
@@ -303,7 +254,7 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     location: Point2D,
     side: AbutmentSide,
     archHeight: number,
-    viewportTransform: ViewportTransform2D
+    viewportTransform: ViewportTransform2D,
   ): void {
     SiteRenderingHelper2D.renderArchAbutmentImpl(
       ctx,
@@ -313,7 +264,7 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
       side == AbutmentSide.RIGHT,
       archHeight,
       DesignSiteRenderingService.renderAbutmentWearSurface,
-      viewportTransform
+      viewportTransform,
     );
   }
 
@@ -321,7 +272,7 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     ctx: CanvasRenderingContext2D,
     location: Point2D,
     height: number,
-    viewportTransform: ViewportTransform2D
+    viewportTransform: ViewportTransform2D,
   ): void {
     SiteRenderingHelper2D.renderPierImpl(
       ctx,
@@ -329,16 +280,11 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
       Colors.CONCRETE,
       location,
       height,
-      viewportTransform
+      viewportTransform,
     );
   }
 
-  private static renderAbutmentWearSurface(
-    ctx: CanvasRenderingContext2D,
-    x0: number,
-    x1: number,
-    y: number
-  ): void {
+  private static renderAbutmentWearSurface(ctx: CanvasRenderingContext2D, x0: number, x1: number, y: number): void {
     const savedLineWidth = ctx.lineWidth;
     const savedStrokeStyle = ctx.strokeStyle;
     const savedLineCap = ctx.lineCap;

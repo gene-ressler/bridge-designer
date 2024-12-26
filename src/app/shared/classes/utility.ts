@@ -1,3 +1,16 @@
+export const DOLLARS_FORMATTER = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+  useGrouping: true,
+});
+export const COUNT_FORMATTER = new Intl.NumberFormat('en-US', {
+  style: 'decimal',
+  maximumFractionDigits: 0,
+  useGrouping: true,
+});
+
 /** Generic static utility functions. */
 export class Utility {
   public static sqr(x: number): number {

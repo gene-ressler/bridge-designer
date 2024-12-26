@@ -55,7 +55,7 @@ export class DraftingPanelComponent implements AfterViewInit {
     private readonly viewportTransform: ViewportTransform2D,
   ) {}
 
-  handleResize(reset: boolean = false): void {
+  handleResize(): void {
     const parent = this.draftingPanel.nativeElement.parentElement;
     if (!parent) {
       throw new Error('missing parent in setViewport');

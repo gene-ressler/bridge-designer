@@ -1,18 +1,9 @@
-import {
-  DesignConditions,
-  DesignConditionsService,
-} from '../services/design-conditions.service';
-import {
-  Point2D,
-  Rectangle2D,
-  Rectangle2DInterface,
-  TaggedPoint2D,
-} from './graphics';
+import { DesignConditions, DesignConditionsService } from '../services/design-conditions.service';
+import { Point2D, Rectangle2D, TaggedPoint2D } from './graphics';
 
 /** Immutable container for site geometry and other info that depends only on design conditions. */
 export class SiteModel {
-  public readonly designConditions: DesignConditions =
-    DesignConditionsService.PLACEHOLDER_CONDITIONS;
+  public readonly designConditions: DesignConditions = DesignConditionsService.PLACEHOLDER_CONDITIONS;
   public readonly spanExtent: Rectangle2D = Rectangle2D.createEmpty();
   public readonly drawingWindow: Rectangle2D = Rectangle2D.createEmpty();
   public readonly halfCutGapWidth: number;
@@ -22,43 +13,27 @@ export class SiteModel {
   public readonly leftAbutmentInterfaceTerrainIndex: number;
   public readonly rightAbutmentInterfaceTerrainIndex: number;
 
-  constructor(
-    conditions: DesignConditions,
-    drawingWindowCustomizer?: (drawingWindow: Rectangle2DInterface) => void
-  ) {
+  constructor(conditions: DesignConditions) {
     this.xLeftmostDeckJoint = conditions.xLeftmostDeckJoint;
     this.xRightmostDeckJoint = conditions.xRightmostDeckJoint;
-    this.yGradeLevel =
-      DesignConditions.GAP_DEPTH -
-      conditions.deckElevation +
-      SiteConstants.WEAR_SURFACE_HEIGHT;
-    this.halfCutGapWidth =
-      0.5 * (this.xRightmostDeckJoint - this.xLeftmostDeckJoint);
+    this.yGradeLevel = DesignConditions.GAP_DEPTH - conditions.deckElevation + SiteConstants.WEAR_SURFACE_HEIGHT;
+    this.halfCutGapWidth = 0.5 * (this.xRightmostDeckJoint - this.xLeftmostDeckJoint);
 
     // Find indices in the terrain profile point array that are hidden by the abutments.  This gives us
     // a way to separate excavation area from remaining bank material.  Note: x coords of the elevation terrain
     // curve are descending (CCW order for the polygon).
-    this.leftAbutmentInterfaceTerrainIndex =
-      SiteConstants.ELEVATION_TERRAIN_POINTS.length - 1;
-    const leftLimit =
-      this.xLeftmostDeckJoint - SiteConstants.ABUTMENT_INTERFACE_OFFSET;
+    this.leftAbutmentInterfaceTerrainIndex = SiteConstants.ELEVATION_TERRAIN_POINTS.length - 1;
+    const leftLimit = this.xLeftmostDeckJoint - SiteConstants.ABUTMENT_INTERFACE_OFFSET;
     while (
-      SiteConstants.ELEVATION_TERRAIN_POINTS[
-        this.leftAbutmentInterfaceTerrainIndex
-      ].x +
-        this.halfCutGapWidth <
+      SiteConstants.ELEVATION_TERRAIN_POINTS[this.leftAbutmentInterfaceTerrainIndex].x + this.halfCutGapWidth <
       leftLimit
     ) {
       this.leftAbutmentInterfaceTerrainIndex--;
     }
     this.rightAbutmentInterfaceTerrainIndex = 0;
-    const rightLimit =
-      this.xRightmostDeckJoint + SiteConstants.ABUTMENT_INTERFACE_OFFSET;
+    const rightLimit = this.xRightmostDeckJoint + SiteConstants.ABUTMENT_INTERFACE_OFFSET;
     while (
-      SiteConstants.ELEVATION_TERRAIN_POINTS[
-        this.rightAbutmentInterfaceTerrainIndex
-      ].x +
-        this.halfCutGapWidth >
+      SiteConstants.ELEVATION_TERRAIN_POINTS[this.rightAbutmentInterfaceTerrainIndex].x + this.halfCutGapWidth >
       rightLimit
     ) {
       this.rightAbutmentInterfaceTerrainIndex++;
@@ -68,12 +43,10 @@ export class SiteModel {
     this.spanExtent.x0 = this.xLeftmostDeckJoint;
     this.spanExtent.y0 = -conditions.underClearance;
     this.spanExtent.width = conditions.spanLength;
-    this.spanExtent.height =
-      conditions.underClearance + conditions.overClearance;
+    this.spanExtent.height = conditions.underClearance + conditions.overClearance;
 
     this.drawingWindow.x0 = this.spanExtent.x0 - SiteConstants.DRAWING_X_MARGIN;
-    this.drawingWindow.width =
-      this.spanExtent.width + 2 * SiteConstants.DRAWING_X_MARGIN;
+    this.drawingWindow.width = this.spanExtent.width + 2 * SiteConstants.DRAWING_X_MARGIN;
     if (conditions.isLeftAnchorage) {
       this.drawingWindow.x0 -= DesignConditions.ANCHOR_OFFSET;
       this.drawingWindow.width += DesignConditions.ANCHOR_OFFSET;
@@ -81,19 +54,11 @@ export class SiteModel {
     if (conditions.isRightAnchorage) {
       this.drawingWindow.width += DesignConditions.ANCHOR_OFFSET;
     }
-    // Extra 3.5 shows bottom of lowest abutment position.
-    this.drawingWindow.y0 =
-      this.yGradeLevel - SiteConstants.WATER_BELOW_GRADE - 3.5;
-    this.drawingWindow.height =
-      this.yGradeLevel +
-      SiteConstants.OVERHEAD_CLEARANCE +
-      1.0 -
-      this.drawingWindow.y0;
+    // Extra 4 shows bottom of lowest abutment position.
+    this.drawingWindow.y0 = this.yGradeLevel - SiteConstants.WATER_BELOW_GRADE - 4;
+    this.drawingWindow.height = this.yGradeLevel + SiteConstants.OVERHEAD_CLEARANCE + 1.5 - this.drawingWindow.y0;
     this.designConditions = conditions;
-    if (drawingWindowCustomizer) {
-      drawingWindowCustomizer(this.drawingWindow);
-    }
-  }
+  } 
 
   public get leftBankX() {
     return this.halfCutGapWidth - SiteConstants.HALF_NATURAL_GAP_WIDTH;
@@ -181,7 +146,7 @@ export class SiteConstants {
       [-this.FAR_AWAY, -this.FAR_AWAY],
       // #endregion
     ] as [number, number][]
-  ).map((pair) => new Point2D(...pair));
+  ).map(pair => new Point2D(...pair));
 
   static readonly STANDARD_ABUTMENT_POINTS: Point2D[] = (
     [
@@ -198,33 +163,24 @@ export class SiteConstants {
       [-this.ABUTMENT_INTERFACE_OFFSET, -5.0],
       // #endregion
     ] as [number, number][]
-  ).map((pair) => new Point2D(...pair));
+  ).map(pair => new Point2D(...pair));
 
-  static readonly ARCH_ABUTMENT_POINTS: TaggedPoint2D<PointTag | undefined>[] =
-    (
-      [
-        // #region(collapsed) TABLE
-        [this.WEAR_SURFACE_X0, this.WEAR_SURFACE_HEIGHT],
-        [this.WEAR_SURFACE_X1, this.WEAR_SURFACE_HEIGHT],
-        [
-          this.ABUTMENT_STEP_INSET,
-          this.ABUTMENT_STEP_HEIGHT,
-          PointTag.HEIGHT_ADJUSTED,
-        ],
-        [
-          this.ABUTMENT_STEP_WIDTH,
-          this.ABUTMENT_STEP_HEIGHT,
-          PointTag.HEIGHT_ADJUSTED,
-        ],
-        [this.ABUTMENT_STEP_WIDTH, -5.0, PointTag.HEIGHT_ADJUSTED],
-        [0.75, -5.0, PointTag.HEIGHT_ADJUSTED],
-        [0.75, -5.5, PointTag.HEIGHT_ADJUSTED],
-        [-2.0, -5.5, PointTag.HEIGHT_ADJUSTED],
-        [-2.0, -5.0, PointTag.HEIGHT_ADJUSTED],
-        [-this.ABUTMENT_INTERFACE_OFFSET, -5.0, PointTag.HEIGHT_ADJUSTED],
-        // #endregion
-      ] as [number, number, PointTag | undefined][]
-    ).map((triple) => new TaggedPoint2D<PointTag | undefined>(...triple));
+  static readonly ARCH_ABUTMENT_POINTS: TaggedPoint2D<PointTag | undefined>[] = (
+    [
+      // #region(collapsed) TABLE
+      [this.WEAR_SURFACE_X0, this.WEAR_SURFACE_HEIGHT],
+      [this.WEAR_SURFACE_X1, this.WEAR_SURFACE_HEIGHT],
+      [this.ABUTMENT_STEP_INSET, this.ABUTMENT_STEP_HEIGHT, PointTag.HEIGHT_ADJUSTED],
+      [this.ABUTMENT_STEP_WIDTH, this.ABUTMENT_STEP_HEIGHT, PointTag.HEIGHT_ADJUSTED],
+      [this.ABUTMENT_STEP_WIDTH, -5.0, PointTag.HEIGHT_ADJUSTED],
+      [0.75, -5.0, PointTag.HEIGHT_ADJUSTED],
+      [0.75, -5.5, PointTag.HEIGHT_ADJUSTED],
+      [-2.0, -5.5, PointTag.HEIGHT_ADJUSTED],
+      [-2.0, -5.0, PointTag.HEIGHT_ADJUSTED],
+      [-this.ABUTMENT_INTERFACE_OFFSET, -5.0, PointTag.HEIGHT_ADJUSTED],
+      // #endregion
+    ] as [number, number, PointTag | undefined][]
+  ).map(triple => new TaggedPoint2D<PointTag | undefined>(...triple));
 
   static readonly PIER_POINTS: TaggedPoint2D<PointTag | undefined>[] = (
     [
@@ -243,7 +199,7 @@ export class SiteConstants {
       [-0.5, -0.2],
       // #endregion
     ] as [number, number, PointTag | undefined][]
-  ).map((triple) => new TaggedPoint2D<PointTag | undefined>(...triple));
+  ).map(triple => new TaggedPoint2D<PointTag | undefined>(...triple));
 
   private static createAccessCurve(): Point2D[] {
     const pointCount = 6;
@@ -255,10 +211,7 @@ export class SiteConstants {
       curve[i] = new Point2D(x, a * x * x);
     }
     const prev = curve[i - 1];
-    curve[i] = new Point2D(
-      prev.x + this.ACCESS_LENGTH,
-      prev.y + this.ACCESS_SLOPE * this.ACCESS_LENGTH
-    );
+    curve[i] = new Point2D(prev.x + this.ACCESS_LENGTH, prev.y + this.ACCESS_SLOPE * this.ACCESS_LENGTH);
     return curve;
   }
 }

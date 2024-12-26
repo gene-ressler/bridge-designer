@@ -4,7 +4,10 @@ import { Utility } from './utility';
 /** Colors meant to be consistent across the application. */
 export class Colors {
   public static readonly CONCRETE = 'rgb(128, 128, 0)';
+  public static readonly CARTOON_EARTH = 'rgb(220, 208, 188)';
   public static readonly EARTH = 'rgb(128, 64, 64)';
+  public static readonly EXCAVATION = 'rgb(128, 64, 64)';
+  public static readonly SKY = 'rgb(192, 255, 255)';
   public static readonly STEEL = 'gray';
   public static readonly WATER = 'blue';
 }
@@ -146,7 +149,8 @@ export class Rectangle2D implements Rectangle2DInterface {
       return true; // piercing vertically or horizontally
     }
     const m = (b.y - a.y) / (b.x - a.x);
-    if ( // otherwise maybe piercing 2 edges, so only need to check 3
+    if (
+      // otherwise maybe piercing 2 edges, so only need to check 3
       Utility.inRange((this.x0 - a.x) * m + a.y, this.y0, this.y1) ||
       Utility.inRange((this.x1 - a.x) * m + a.y, this.y0, this.y1) ||
       Utility.inRange((this.y0 - a.y) / m + a.x, this.x0, this.x1)
@@ -358,6 +362,9 @@ export class Geometry {
 }
 
 export class Graphics {
+  private static readonly ARROW_HALF_WIDTH = 3;
+  private static readonly ARROW_LENGTH = 8;
+
   /** Compute a color with options to modify intensity and blueness of the result. */
   public static computeColor(
     r: number,
@@ -389,5 +396,54 @@ export class Graphics {
       throw new Error('Get canvas 2d context failed');
     }
     return ctx;
+  }
+
+  /**
+   * Draw an arrowhead that aligns with the given segment.
+   * No join style is set. Default miter and limit give a sharp tip.
+   */
+  public static drawArrowhead(
+    ctx: CanvasRenderingContext2D,
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+    halfWidth: number = Graphics.ARROW_HALF_WIDTH,
+    length: number = Graphics.ARROW_LENGTH,
+  ): void {
+    const dx = x1 - x0;
+    const dy = y1 - y0;
+    if (dx == 0 && dy == 0) {
+      return;
+    }
+    const len = Math.sqrt(dx * dx + dy * dy);
+    const ux = dx / len;
+    const uy = dy / len;
+    const bx = x1 - ux * length;
+    const by = y1 - uy * length;
+    const dhx = -uy * halfWidth;
+    const dhy = ux * halfWidth;
+    ctx.beginPath();
+    ctx.moveTo(bx + dhx, by + dhy);
+    ctx.lineTo(x1, y1);
+    ctx.lineTo(bx - dhx, by - dhy);
+    ctx.stroke();
+  }
+
+  public static drawDoubleArrow(
+    ctx: CanvasRenderingContext2D,
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+    halfWidth: number = Graphics.ARROW_HALF_WIDTH,
+    length: number = Graphics.ARROW_LENGTH,
+  ): void {
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+    ctx.stroke();
+    Graphics.drawArrowhead(ctx, x0, y0, x1, y1, halfWidth, length);
+    Graphics.drawArrowhead(ctx, x1, y1, x0, y0, halfWidth, length);
   }
 }

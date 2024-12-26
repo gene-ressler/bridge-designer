@@ -127,7 +127,7 @@ class SaveSetParser {
     saveSet.bridge.designConditions = this.designConditionsService.getConditionsForCodeLong(scenarioCode);
     const jointCount = this.scanNumber(false, JOINT_COUNT_LENGTH, 'number of joints');
     const memberCount = this.scanNumber(false, MEMBER_COUNT_LENGTH, 'number of members');
-    for (let i = 0, n = 1; i < jointCount; i++, n++) {
+    for (var i: number = 0, n: number = 1; i < jointCount; i++, n++) {
       const x = this.scanNumber(true, JOINT_COORD_LENGTH, `joint ${n} x-coordinate`);
       const y = this.scanNumber(true, JOINT_COORD_LENGTH, `joint ${n} y-coordinate`);
       var joint;
@@ -141,7 +141,7 @@ class SaveSetParser {
       }
       saveSet.bridge.joints.push(joint);
     }
-    for (let i = 0, n = 1; i < memberCount; i++) {
+    for (var i: number = 0, n: number = 1; i < memberCount; i++) {
       const jointAnumber = this.scanNumber(false, MEMBER_JOINT_LENGTH, `first joint of member ${n}`);
       const jointA = saveSet.bridge.getJointByNumber(jointAnumber);
       const jointBnumber = this.scanNumber(false, MEMBER_JOINT_LENGTH, `second joint of member ${n}`);
@@ -157,7 +157,7 @@ class SaveSetParser {
         this.inventoryService.getShape(sectionIndex, sizeIndex));
       saveSet.bridge.members.push(member);
     }
-    for (let i = 0, n = 1; i < memberCount; i++) {
+    for (var i: number = 0; i < memberCount; i++) {
       const compressionRatioText = this.scanToDelimiter('compression/strength ratio');
       const compressionRatio = SaveSetParser.extractRatioFromText(compressionRatioText);
       const tensionRatioText = this.scanToDelimiter('compression/strength ratio');
@@ -193,8 +193,8 @@ class SaveSetParser {
   };
 
   scanNumber(allowSign: boolean, width: number, what: string): number {
-    let val: number = 0;
-    let isNegated = false;
+    var val: number = 0;
+    var isNegated = false;
     while (width > 0 && this.text[this.readPtr] === ' ') {
       width--;
       this.readPtr++;

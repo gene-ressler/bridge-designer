@@ -104,7 +104,8 @@ describe('Geometry', () => {
 
   it('should calculate extent of points', () => {
     const points = [new Point2D(0, 0), new Point2D(10, 0), new Point2D(5, 5)];
-    const extent = Geometry.getExtent2D(points);
+    const dst = Rectangle2D.createEmpty();
+    const extent = Geometry.getExtent2D(dst, points);
     expect(extent.x0).toBe(0);
     expect(extent.y0).toBe(0);
     expect(extent.width).toBe(10);

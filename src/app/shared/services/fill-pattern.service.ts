@@ -7,17 +7,9 @@ export type FillPattern = string | CanvasPattern; // String is the error fallbac
 @Injectable({ providedIn: 'root' })
 export class FillPatternsService {
   private earth: Map<CanvasRenderingContext2D, FillPattern> = new Map<CanvasRenderingContext2D, FillPattern>();
+  private excavation: Map<CanvasRenderingContext2D, FillPattern> = new Map<CanvasRenderingContext2D, FillPattern>();
   private concrete: Map<CanvasRenderingContext2D, FillPattern> = new Map<CanvasRenderingContext2D, FillPattern>();
   private subgrade: Map<CanvasRenderingContext2D, FillPattern> = new Map<CanvasRenderingContext2D, FillPattern>();
-
-  public createEarth(ctx: CanvasRenderingContext2D): FillPattern {
-    var earth = this.earth.get(ctx);
-    if (!earth) {
-      earth = this.createEarthImpl(ctx);
-      this.earth.set(ctx, earth);
-    }
-    return earth;
-  }
 
   public createConcrete(ctx: CanvasRenderingContext2D): FillPattern {
     var concrete = this.concrete.get(ctx);
@@ -28,6 +20,24 @@ export class FillPatternsService {
     return concrete;
   }
 
+  public createEarth(ctx: CanvasRenderingContext2D): FillPattern {
+    var earth = this.earth.get(ctx);
+    if (!earth) {
+      earth = this.createEarthImpl(ctx);
+      this.earth.set(ctx, earth);
+    }
+    return earth;
+  }
+  
+  public createExcavation(ctx: CanvasRenderingContext2D): FillPattern {
+    var excavation = this.excavation.get(ctx);
+    if (!excavation) {
+      excavation = this.createExcavationImpl(ctx);
+      this.excavation.set(ctx, excavation);
+    }
+    return excavation;
+  }
+
   public createSubgrade(ctx: CanvasRenderingContext2D): FillPattern {
     var subgrade = this.subgrade.get(ctx);
     if (!subgrade) {
@@ -35,6 +45,24 @@ export class FillPatternsService {
       this.subgrade.set(ctx, subgrade);
     }
     return subgrade;
+  }
+
+  private createConcreteImpl(ctx: CanvasRenderingContext2D): FillPattern {
+    const patternCtx = FillPatternsService.getPatternContext(64);
+    if (!patternCtx) {
+      return Colors.CONCRETE;
+    }
+    patternCtx.fillStyle = Colors.CONCRETE;
+    patternCtx.beginPath();
+    const dotCount = patternCtx.canvas.width * patternCtx.canvas.height * 0.25;
+    for (var i = 0; i < dotCount; ++i) {
+      const x = Math.floor(Math.random() * patternCtx.canvas.width);
+      const y = Math.floor(Math.random() * patternCtx.canvas.height);
+      patternCtx.fillRect(x, y, 1, 1);
+    }
+    patternCtx.stroke();
+    const pattern = ctx.createPattern(patternCtx.canvas, 'repeat');
+    return pattern || Colors.CONCRETE;
   }
 
   private createEarthImpl(ctx: CanvasRenderingContext2D): FillPattern {
@@ -57,22 +85,21 @@ export class FillPatternsService {
     return pattern || Colors.EARTH;
   }
 
-  private createConcreteImpl(ctx: CanvasRenderingContext2D): FillPattern {
-    const patternCtx = FillPatternsService.getPatternContext(64);
+  private createExcavationImpl(ctx: CanvasRenderingContext2D): FillPattern {
+    const size = 8;
+    const patternCtx = FillPatternsService.getPatternContext(size);
     if (!patternCtx) {
-      return Colors.CONCRETE;
+      return Colors.EXCAVATION;
     }
-    patternCtx.fillStyle = Colors.CONCRETE;
+    patternCtx.fillStyle = 'white';
+    patternCtx.fillRect(0, 0, size, size);
+    patternCtx.strokeStyle = Colors.EXCAVATION;
     patternCtx.beginPath();
-    const dotCount = patternCtx.canvas.width * patternCtx.canvas.height * 0.25;
-    for (var i = 0; i < dotCount; ++i) {
-      const x = Math.floor(Math.random() * patternCtx.canvas.width);
-      const y = Math.floor(Math.random() * patternCtx.canvas.height);
-      patternCtx.fillRect(x, y, 1, 1);
-    }
+    patternCtx.moveTo(0, 0);
+    patternCtx.lineTo(size, size);
     patternCtx.stroke();
     const pattern = ctx.createPattern(patternCtx.canvas, 'repeat');
-    return pattern || Colors.CONCRETE;
+    return pattern || Colors.EXCAVATION;
   }
 
   private createSubgradeImpl(ctx: CanvasRenderingContext2D): FillPattern {

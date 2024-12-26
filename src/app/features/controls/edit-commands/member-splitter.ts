@@ -1,5 +1,5 @@
 import { EditableUtility } from '../../../shared/classes/editing';
-import { Geometry, Point2DInterface } from '../../../shared/classes/graphics';
+import { Geometry } from '../../../shared/classes/graphics';
 import { Joint } from '../../../shared/classes/joint.model';
 import { Member } from '../../../shared/classes/member.model';
 import { DesignConditions } from '../../../shared/services/design-conditions.service';

@@ -9,7 +9,7 @@ import {
 import { jqxListBoxComponent, jqxListBoxModule } from 'jqwidgets-ng/jqxlistbox';
 import { jqxWindowComponent, jqxWindowModule } from 'jqwidgets-ng/jqxwindow';
 import { Subject } from 'rxjs';
-import { Deque } from '../../../shared/classes/deque';
+import { Deque } from '../../../shared/core/deque';
 import { EditCommand } from '../../../shared/classes/editing';
 import {
   EventInfo,

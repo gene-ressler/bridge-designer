@@ -3,9 +3,7 @@ import { Deque } from './deque';
 describe('Deque', () => {
   const deque = new Deque<number>();
 
-  beforeEach(() => {
-    deque.clear();
-  });
+  beforeEach(() => deque.clear());
 
   it('should have zero length when empty', () => {
     expect(deque.length).toBe(0);
@@ -120,5 +118,37 @@ describe('Deque', () => {
     deque.popLeft();
     const copy = deque.copyTo([]);
     expect(copy).toEqual([2, 4, 5, 6]);
+  });
+
+  it('should iterate on empty', () => {
+    expect(Array.from(deque)).toHaveSize(0);
+  });
+
+  it('should iterate on the left', () => {
+    deque.pushLeft(1);
+    deque.pushLeft(2);
+    deque.pushLeft(3);
+    deque.popRight();
+    expect(Array.from(deque)).toEqual([3, 2]);
+  });
+
+  it('should iterate on the right', () => {
+    deque.pushRight(1);
+    deque.pushRight(2);
+    deque.pushRight(3);
+    deque.popLeft();
+    expect(Array.from(deque)).toEqual([2, 3]);
+  });
+
+  it('should iterate over a complex case', () => {
+    deque.pushLeft(3);
+    deque.pushLeft(2);
+    deque.pushLeft(1);
+    deque.popRight();
+    deque.pushRight(4);
+    deque.pushRight(5);
+    deque.pushRight(6);
+    deque.popLeft();
+    expect(Array.from(deque)).toEqual([2, 4, 5, 6]);
   });
 });

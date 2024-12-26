@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { jqxToolBarComponent, jqxToolBarModule } from 'jqwidgets-ng/jqxtoolbar';
 import { WidgetHelper } from '../../../shared/classes/widget-helper';
-import { ComponentService } from '../../../shared/services/component.service';
+import { ComponentService } from '../../../shared/core/component.service';
 import { EventBrokerService } from '../../../shared/services/event-broker.service';
 import { UiStateService } from '../../drafting/services/ui-state.service';
 import { UndoManagerService } from '../../drafting/services/undo-manager.service';
@@ -77,6 +77,7 @@ export class ToolbarAComponent implements AfterViewInit {
         break;
       case Tools.DESIGN:
         WidgetHelper.initToolbarImgToggleButton('Design bridge', 'img/design.png', tool);
+        tool.jqxToggleButton({toggled: true});
         break;
       case Tools.LOAD_TEST:
         WidgetHelper.initToolbarImgToggleButton('Load test bridge', 'img/loadtest.png', tool);

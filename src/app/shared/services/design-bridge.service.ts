@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BridgeModel } from '../classes/bridge.model';
-import { Geometry, Point2DInterface, Rectangle2D } from '../classes/graphics';
+import { Point2DInterface, Rectangle2D } from '../classes/graphics';
 import { Joint } from '../classes/joint.model';
 import { Member } from '../classes/member.model';
 import { SiteModel } from '../classes/site-model';

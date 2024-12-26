@@ -2,8 +2,8 @@
   #dialog
   [isModal]="true"
   [autoOpen]="false"
-  [width]="850"
-  [height]="588"
+  [width]="dialogWidth"
+  [height]="dialogHeight"
 >
   <div
     #header
@@ -77,6 +77,7 @@
       <fieldset class="grouping">
         <legend class="grouping-topic">Deck elevation</legend>
         <jqxDropDownList
+          #deckElevationList
           [width]="200"
           [source]="deckElevations"
           [selectedIndex]="0"
@@ -86,6 +87,7 @@
         <legend class="grouping-topic">Support configuration</legend>
         <div class="control-grouping">
           <jqxRadioButton
+            #standardAbutmentsButton
             [groupName]="'support'"
             [width]="200"
             [checked]="true"
@@ -93,6 +95,7 @@
             Standard abutments
           </jqxRadioButton>
           <jqxRadioButton
+            #archAbutmentsButton
             [groupName]="'support'"
             [width]="200"
             style="margin-top: 8px"
@@ -115,6 +118,7 @@
         </div>
         <div class="control-grouping vertical-gap">
           <jqxRadioButton
+            #noPierButton
             [groupName]="'pier'"
             [width]="200"
             [checked]="true"
@@ -122,6 +126,7 @@
             No pier (one span)
           </jqxRadioButton>
           <jqxRadioButton
+            #isPierButton
             [groupName]="'pier'"
             [width]="200"
             style="margin-top: 8px"
@@ -144,6 +149,7 @@
         </div>
         <div class="control-grouping vertical-gap">
           <jqxRadioButton
+            #noAnchoragesButton
             [groupName]="'anchorage'"
             [width]="200"
             [checked]="true"
@@ -151,6 +157,7 @@
             No cable anchorages
           </jqxRadioButton>
           <jqxRadioButton
+            #oneAnchorageButton
             [groupName]="'anchorage'"
             [width]="200"
             style="margin-top: 8px"
@@ -158,6 +165,7 @@
             One cable anchorage
           </jqxRadioButton>
           <jqxRadioButton
+            #twoAnchoragesButton
             [groupName]="'anchorage'"
             [width]="200"
             style="margin-top: 8px"
@@ -171,6 +179,7 @@
       <fieldset class="grouping">
         <legend class="grouping-topic">Deck material</legend>
         <jqxRadioButton
+          #mediumStrengthConcreteButton
           [groupName]="'deckMaterial'"
           [width]="200"
           [checked]="true"
@@ -178,6 +187,7 @@
           Medium-strength concrete<br />(0.23 meters thick)
         </jqxRadioButton>
         <jqxRadioButton
+          #highStrengthConcreteButton
           [groupName]="'deckMaterial'"
           [width]="200"
           [checked]="true"
@@ -189,6 +199,7 @@
       <fieldset class="grouping vertical-gap fill-row">
         <legend class="grouping-topic">Loading</legend>
         <jqxRadioButton
+          #standardTruckLoad
           [groupName]="'truckLoad'"
           [width]="200"
           [checked]="true"
@@ -196,6 +207,7 @@
           Standard 2.25 kN truck<br />(two lanes)
         </jqxRadioButton>
         <jqxRadioButton
+          #permitTruckLoad
           [groupName]="'truckLoad'"
           [width]="200"
           [checked]="true"
@@ -252,7 +264,7 @@
             >Project ID:<br />
             <span>
               <span
-                #scenarioIdText
+                #projectIdPrefix
                 class="scenarioIdText"
                 >00001A</span
               ><span class="scenarioIdText">&#8209;</span
@@ -429,10 +441,88 @@
         </div>
       </fieldset>
     </div>
-    <div class="site-cost">
-      <fieldset>
+    <div
+      #siteCostPane
+      class="site-cost"
+    >
+      <fieldset style="padding-top: 0">
         <legend>Site cost:</legend>
-        <span #cost>$0.00</span> (Includes cost of deck, excavation, and supports; not steel trusses.)
+        <jqxExpander
+          [width]="'100%'"
+          [expanded]="false"
+          (onExpanding)="siteCostExpandingHandler()"
+          (onCollapsed)="siteCostCollapsedHandler()"
+        >
+          <div>
+            <div class="cost-summary-line">
+              <div>
+                {{ toDollars(costSummary.totalFixedCost) }} (Includes cost of deck, excavation, and supports; not steel trusses.)
+              </div>
+              <div class="site-condition">Site condition: {{ costSummary.siteCondition }}</div>
+            </div>
+          </div>
+          <div>
+            <table class="cost-table">
+              <tr>
+                <td>Deck cost</td>
+                <td>
+                  ({{ costSummary.panelCount }} each 4-meter panels) x ({{ toDollars(costSummary.deckCostRate) }} per
+                  panel)
+                </td>
+                <td>=</td>
+                <td>{{ toDollars(costSummary.deckCost) }}</td>
+              </tr>
+              <tr>
+                <td>Excavation cost</td>
+                <td>
+                  ({{ toCount(costSummary.excavationVolume) }} cubic meters) x (
+                  {{ toDollars(costSummary.excavationCostRate) }} per cubic meter)
+                </td>
+                <td>=</td>
+                <td>{{ toDollars(costSummary.excavationCost) }}</td>
+              </tr>
+              <tr>
+                <td>Abutment cost</td>
+                <td>
+                  ({{ costSummary.abutmentCount }} {{ costSummary.abutmentType }} abutments) x ({{
+                    toDollars(costSummary.abutmentCostRate)
+                  }})
+                </td>
+                <td>=</td>
+                <td>{{ toDollars(costSummary.abutmentCost) }}</td>
+              </tr>
+              <tr>
+                <td>Pier cost</td>
+                <td>
+                  <div *ngIf="costSummary.isPier; then hasPier; else noPier"></div>
+                  <ng-template #hasPier>(1 each {{ costSummary.pierHeight }} meter pier)</ng-template>
+                  <ng-template #noPier>No pier</ng-template>
+                </td>
+                <td>=</td>
+                <td>{{ toDollars(costSummary.pierCost) }}</td>
+              </tr>
+              <tr>
+                <td>Anchorage cost</td>
+                <td>
+                  <div *ngIf="costSummary.anchorageCount > 0; then hasAnchorages; else noAnchorages"></div>
+                  <ng-template #hasAnchorages
+                    >({{ costSummary.anchorageCount }} anchorages) x ({{ toDollars(costSummary.anchorageCostRate) }} per
+                    anchorage)</ng-template
+                  >
+                  <ng-template #noAnchorages>No anchorage</ng-template>
+                </td>
+                <td>=</td>
+                <td>{{ toDollars(costSummary.anchorageCost) }}</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td class="total">Total site cost</td>
+                <td>=</td>
+                <td class="total">{{ toDollars(costSummary.totalFixedCost) }}</td>
+              </tr>
+            </table>
+          </div>
+        </jqxExpander>
       </fieldset>
     </div>
     <div class="wizard-controls">

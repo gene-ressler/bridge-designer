@@ -196,6 +196,7 @@ export class DesignMemberRenderingService {
       ctx.moveTo(a.x, a.y);
       ctx.lineTo(b.x, b.y);
       ctx.stroke();
+      ctx.strokeStyle = markColor || ''; // TODO: Dummy use. Implement for real.
     }
     ctx.lineCap = savedLineCap;
     ctx.lineWidth = savedLineWidth;
