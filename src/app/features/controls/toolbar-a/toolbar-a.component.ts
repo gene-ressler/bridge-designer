@@ -60,7 +60,7 @@ export class ToolbarAComponent implements AfterViewInit {
     this.initTools = this.initTools.bind(this);
   }
 
-  initTools(_type?: string, index?: number, tool?: any, _menuToolIninitialization?: boolean) {
+  initTools(_type?: string, index?: number, tool?: any, _menuToolIninitialization?: boolean):any {
     switch (index) {
       case Tools.NEW:
         WidgetHelper.initToolbarImgButton('Make new bridge', 'img/new.png', tool);

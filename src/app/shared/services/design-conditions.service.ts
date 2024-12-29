@@ -10,8 +10,8 @@ export const enum LoadType {
 
 export const enum DeckType {
   NONE = -1,
-  MEDIUM_STRENGTH_DECK,
-  HIGH_STRENGTH_DECK,
+  MEDIUM_STRENGTH,
+  HIGH_STRENGTH,
 }
 
 const enum CodeError {
@@ -138,7 +138,7 @@ export class DesignConditions {
     // -1 correction for 0-based load_case table
     const loadCaseIndex = code[0] - 1;
     this.loadType = (loadCaseIndex & 1) == 0 ? LoadType.STANDARD_TRUCK : LoadType.HEAVY_TRUCK;
-    this.deckType = (loadCaseIndex & 2) == 0 ? DeckType.MEDIUM_STRENGTH_DECK : DeckType.HIGH_STRENGTH_DECK;
+    this.deckType = (loadCaseIndex & 2) == 0 ? DeckType.MEDIUM_STRENGTH : DeckType.HIGH_STRENGTH;
 
     // Precomputation of condition-dependent site geometry, design constraints, and costs.
 
@@ -235,7 +235,7 @@ export class DesignConditions {
     // Cost calculations.
     this.excavationVolume = DesignConditions.getExcavationVolume(this.deckElevation);
     this.deckCostRate =
-      this.deckType == DeckType.MEDIUM_STRENGTH_DECK
+      this.deckType == DeckType.MEDIUM_STRENGTH
         ? DesignConditions.DECK_COST_PER_PANEL_MED_STRENGTH
         : DesignConditions.DECK_COST_PER_PANEL_HI_STRENGTH;
 
@@ -340,7 +340,7 @@ export class DesignConditions {
   }
 
   public get deckThickness(): number {
-    return this.deckType == DeckType.MEDIUM_STRENGTH_DECK ? 0.23 : 0.15;
+    return this.deckType == DeckType.MEDIUM_STRENGTH ? 0.23 : 0.15;
   }
 
   public get isArch() {

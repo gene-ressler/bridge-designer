@@ -1,0 +1,15 @@
+.container {
+  display: grid;
+  grid-template-columns: min-content min-content;
+}
+
+.list {
+  grid-column: 1;
+}
+
+.spinner {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}

@@ -81,6 +81,7 @@
           [width]="200"
           [source]="deckElevations"
           [selectedIndex]="0"
+          (onSelect)="deckElevationSelectHandler($event)"
         ></jqxDropDownList>
       </fieldset>
       <fieldset class="grouping fill-row">
@@ -107,7 +108,7 @@
             <label>
               Height of arch:
               <jqxDropDownList
-                #archHeightDropDownList
+                #archHeightList
                 [width]="184"
                 [source]="archHeights"
                 [selectedIndex]="0"

@@ -189,7 +189,7 @@ export class CartoonSiteRenderingService {
   }
 
   /**
-   * Traces the line of a generic arch. A parabola because the
+   * Traces the line of a generic arch. Uses a parabola because the
    * parameter for the proper catenary doesn't have a closed form.
    */
   private renderArchLine(ctx: CanvasRenderingContext2D): void {
@@ -209,7 +209,7 @@ export class CartoonSiteRenderingService {
     const x1 = p1.x - xMid;
     const y1 = p1.y;
     const x2 = p2.x - xMid;
-    const y2 = p2.y - 0.25 * (p2.y - p1.y);
+    const y2 = p2.y - 0.1 * (p2.y - p1.y);
     const a = (y2 - y1) / (x2 * x2 - x1 * x1);
     const b = y1 - a * x1 * x1;
     ctx.strokeStyle = 'lightgray';
