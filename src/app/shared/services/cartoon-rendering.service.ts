@@ -3,17 +3,17 @@ import { CartoonSiteRenderingService } from './cartoon-site-rendering.service';
 import { Colors } from '../classes/graphics';
 
 export const enum CartoonOptionMask {
-  ABUTMENTS = 1,
-  ARCH_LINE = 2,
-  BRIDGE = 4,
-  DECK = 8,
-  JOINTS = 16,
-  MEASUREMENTS = 32,
-  SKETCH = 64,
-  TERRAIN = 128,
-  TITLE_BLOCK = 256,
+  ABUTMENTS = 0x1,
+  ARCH_LINE = 0x2,
+  BRIDGE = 0x4,
+  DECK = 0x8,
+  JOINTS = 0x10,
+  MEASUREMENTS = 0x20,
+  SKETCH = 0x40,
+  TERRAIN = 0x80,
+  TITLE_BLOCK = 0x100,
+  ALL = 0x200 - 1,
   STANDARD_ITEMS = ABUTMENTS | ARCH_LINE | BRIDGE | DECK | TERRAIN,
-  ALL = 511,
 }
 
 @Injectable({ providedIn: 'root' })

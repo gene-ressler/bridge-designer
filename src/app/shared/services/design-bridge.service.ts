@@ -63,7 +63,6 @@ export class DesignBridgeService {
     return mostCommonStockId;
   }
 
-  // TODO: FIX ME! This doesn't work.
   /** Returns joints in index order that need deletion along with a set of members. */
   public getJointsForMembersDeletion(deletedMemberIndices: Set<number>): Joint[] {
     const members = this.bridge.members;
@@ -92,7 +91,7 @@ export class DesignBridgeService {
       .map(i => this.bridge.joints[i]);
   }
 
-  private canonicalCursorRect = Rectangle2D.createEmpty();
+  private readonly canonicalCursorRect = Rectangle2D.createEmpty();
 
   /** Returns members inside or partially inside a given world rectangle.  */
   public getMembersTouchingRectangle(rectangle: Rectangle2D): Member[] {

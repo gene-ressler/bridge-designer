@@ -1,4 +1,10 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  ViewChild,
+} from '@angular/core';
 import { jqxButtonModule } from 'jqwidgets-ng/jqxbuttons';
 import { jqxDropDownListComponent, jqxDropDownListModule } from 'jqwidgets-ng/jqxdropdownlist';
 
@@ -10,35 +16,57 @@ import { jqxDropDownListComponent, jqxDropDownListModule } from 'jqwidgets-ng/jq
   styleUrl: './height-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HeightListComponent implements AfterViewInit, OnChanges {
+export class HeightListComponent implements AfterViewInit {
   @ViewChild('heightList') heightList!: jqxDropDownListComponent;
   @Input() heights: string[] = [];
   @Input() onSelect: (event: any) => void = () => undefined;
-  @Input() disabled: boolean = false;
+  @Input() get disabled(): boolean {
+    return this._disabled;
+  }
+  set disabled(value: boolean) {
+    if (this.heightList) {
+      this.heightList.disabled(value);
+    }
+    this._disabled = value;
+  }
 
-  /** Suffix of input heights visible to the user. */
-  visibleHeights: string[] = [];
-
+  private _disabled: boolean = false;
   private _startIndex: number = 0;
   private _selectedIndex: number = 0;
 
-  public set startIndex(startIndex: number) {
-    if (startIndex < 0) {
-      startIndex = 0;
+  public set startIndex(value: number) {
+    // Chop value to valid range.
+    if (value < 0) {
+      value = 0;
     }
-    if (startIndex > this.heights.length) {
-      startIndex = this.heights.length;
+    const heightsCount = this.heights.length;
+    if (value > heightsCount) {
+      value = heightsCount;
     }
-    if (startIndex === this._startIndex) {
+    // Do nothing if no change.
+    if (value === this._startIndex) {
       return;
     }
-    this._startIndex = startIndex;
-    // Invokes change detection.
-    this.visibleHeights = this.heights.slice(startIndex);
+    this._startIndex = value;
+    // Push selection to valid range.
+    if (this._selectedIndex < value && value < heightsCount) {
+      this._selectedIndex = value;
+    }
+    // Zero-length dropdowns create styling problems.
+    if (value < heightsCount) {
+      this.heightList.source(this.heights.slice(value));
+    }
+    this.updateWidget();
   }
 
-  public set selectedIndex(selectedIndex: number) {
-    this._selectedIndex = selectedIndex;
+  public set selectedIndex(value: number) {
+    if (value < 0) {
+      value = 0;
+    }
+    if (value > this.heights.length) {
+      value = this.heights.length;
+    }
+    this._selectedIndex = value;
     this.updateWidget();
   }
 
@@ -47,29 +75,38 @@ export class HeightListComponent implements AfterViewInit, OnChanges {
   }
 
   selectHandler(event: any): void {
+    // Ignore programmatic selection.
+    if (event.args.type === 'none') {
+      return;
+    }
     this._selectedIndex = event.args.index + this._startIndex;
-    this.onSelect({ args: { index: this._selectedIndex }})
+    this.onSelect({ args: { index: this._selectedIndex } });
+    this.updateWidget();
+  }
+
+  /** Workaround for jqxDropDownList not closing when disabled. */
+  private disableList(value: boolean = true) {
+    if (value) {
+      // Delay to avoid a race. Re-calculation of list content margins just 
+      // after source change results in contents text too low in list box.
+      setTimeout(() =>this.heightList.close());
+    }
+    this.heightList.disabled(value);
   }
 
   private updateWidget(): void {
-    if (this._startIndex == this.heights.length) {
+    if (this._startIndex === this.heights.length) {
+      this.disableList();
       this.heightList.setContent('');
-      this.heightList.disabled(true);
     } else {
-      this.heightList.disabled(this.disabled);
-      if (this._selectedIndex < this._startIndex) {
-        this._selectedIndex = this._startIndex;
-      }
+      this.disableList(this.disabled);
       this.heightList.selectIndex(this._selectedIndex - this._startIndex);
       this.heightList.setContent(this.heights[this._selectedIndex]);
     }
   }
 
   ngAfterViewInit(): void {
-    this.visibleHeights = this.heights;
-  }
-
-  ngOnChanges(_changes: SimpleChanges): void {
+    this.heightList.source(this.heights);
     this.updateWidget();
   }
 }

@@ -1024,11 +1024,15 @@ export class DesignConditionsService {
     ] as [string, number][]
   ).map(p => DesignConditions.fromTaggedCodeLong(...p));
 
-  public static readonly STANDARD_CONDITIONS_FROM_SETUP_KEY: Map<string, DesignConditions> = 
-  DesignConditionsService.STANDARD_CONDITIONS.reduce((map, conditions) => {
-    map.set(conditions.setupKey, conditions);
-    return map;
-  }, new Map<string, DesignConditions>());
+  private static readonly STANDARD_CONDITIONS_FROM_SETUP_KEY: Map<string, DesignConditions> =
+    DesignConditionsService.STANDARD_CONDITIONS.reduce((map, conditions) => {
+      map.set(conditions.setupKey, conditions);
+      return map;
+    }, new Map<string, DesignConditions>());
+
+  public getConditionsForSetupKey(key: string): DesignConditions {
+    return DesignConditionsService.STANDARD_CONDITIONS_FROM_SETUP_KEY.get(key) || this.placeholderConditions;
+  }
 
   private static readonly STANDARD_CONDITIONS_FROM_CODE: Map<number, DesignConditions> =
     DesignConditionsService.STANDARD_CONDITIONS.reduce((map, conditions) => {

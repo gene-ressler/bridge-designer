@@ -2,13 +2,12 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChil
 import { CommonModule } from '@angular/common';
 import { jqxButtonComponent, jqxButtonModule } from 'jqwidgets-ng/jqxbuttons';
 import { jqxDropDownListComponent, jqxDropDownListModule } from 'jqwidgets-ng/jqxdropdownlist';
-import { jqxExpanderModule } from 'jqwidgets-ng/jqxexpander';
+import { jqxExpanderComponent, jqxExpanderModule } from 'jqwidgets-ng/jqxexpander';
 import { jqxInputModule } from 'jqwidgets-ng/jqxinput';
 import { jqxListBoxModule } from 'jqwidgets-ng/jqxlistbox';
 import { jqxRadioButtonComponent, jqxRadioButtonModule } from 'jqwidgets-ng/jqxradiobutton';
 import { jqxWindowComponent, jqxWindowModule } from 'jqwidgets-ng/jqxwindow';
 import { EventBrokerService } from '../../../shared/services/event-broker.service';
-import { WidgetHelper } from '../../../shared/classes/widget-helper';
 import { COUNT_FORMATTER, DOLLARS_FORMATTER } from '../../../shared/classes/utility';
 import {
   DeckType,
@@ -22,12 +21,15 @@ import { ViewportTransform2D } from '../../../shared/services/viewport-transform
 import { DesignBridgeService } from '../../../shared/services/design-bridge.service';
 import { CartoonSiteRenderingService } from '../../../shared/services/cartoon-site-rendering.service';
 import { Graphics } from '../../../shared/classes/graphics';
+import { HeightListComponent } from '../height-list/height-list.component';
+import { BridgeModel } from '../../../shared/classes/bridge.model';
 
 @Component({
   selector: 'setup-wizard',
   standalone: true,
   imports: [
     CommonModule,
+    HeightListComponent,
     jqxButtonModule,
     jqxDropDownListModule,
     jqxExpanderModule,
@@ -36,20 +38,12 @@ import { Graphics } from '../../../shared/classes/graphics';
     jqxRadioButtonModule,
     jqxWindowModule,
   ],
-  providers: [CartoonRenderingService, CartoonSiteRenderingService, ViewportTransform2D],
+  providers: [CartoonRenderingService, CartoonSiteRenderingService, DesignBridgeService, ViewportTransform2D],
   templateUrl: './setup-wizard.component.html',
   styleUrl: './setup-wizard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SetupWizardComponent implements AfterViewInit {
-  private static readonly ALL_ARCH_HEIGHTS = [
-    '24 meters',
-    '20 meters',
-    '16 meters',
-    '12 meters',
-    '8 meters',
-    '4 meters',
-  ];
   private static readonly ALL_DECK_ELEVATIONS = [
     '24 meters',
     '20 meters',
@@ -59,23 +53,15 @@ export class SetupWizardComponent implements AfterViewInit {
     '4 meters',
     '0 meters',
   ];
-  private static readonly ALL_PIER_HEIGHTS = [
-    '24 meters',
-    '20 meters',
-    '16 meters',
-    '12 meters',
-    '8 meters',
-    '4 meters',
-    '0 meters',
-  ];
+  private static readonly ALL_PIER_HEIGHTS = SetupWizardComponent.ALL_DECK_ELEVATIONS;
+  private static readonly ALL_ARCH_HEIGHTS = SetupWizardComponent.ALL_DECK_ELEVATIONS.slice(0, -1);
   private static readonly CARD_COUNT = 7;
-  /** Pixel height of site cost dropdown. Can't reasonably be computed (until after it's needed). */
+  /** Pixel height of site cost dropdown. Can't reasonably be computed. */
   private static readonly SITE_COST_DROPDOWN_HEIGHT = 115;
 
   private readonly cardElements: NodeListOf<HTMLElement>[] = new Array<NodeListOf<HTMLElement>>(
     SetupWizardComponent.CARD_COUNT,
   );
-  private readonly designConditions: DesignConditions;
 
   archHeights: string[] = SetupWizardComponent.ALL_ARCH_HEIGHTS.slice();
   readonly buttonWidth = 80;
@@ -92,7 +78,7 @@ export class SetupWizardComponent implements AfterViewInit {
   toCount = COUNT_FORMATTER.format;
 
   @ViewChild('archAbutmentsButton') archAbutmentsButton!: jqxRadioButtonComponent;
-  @ViewChild('archHeightList') archHeightList!: jqxDropDownListComponent;
+  @ViewChild('archHeightList') archHeightList!: HeightListComponent;
   @ViewChild('backButton') backButton!: jqxButtonComponent;
   @ViewChild('content') content!: ElementRef<HTMLDivElement>;
   @ViewChild('deckElevationList') deckElevationList!: jqxDropDownListComponent;
@@ -108,19 +94,29 @@ export class SetupWizardComponent implements AfterViewInit {
   @ViewChild('noPierButton') noPierButton!: jqxRadioButtonComponent;
   @ViewChild('oneAnchorageButton') oneAnchorageButton!: jqxRadioButtonComponent;
   @ViewChild('permitTruckLoad') permitTruckLoad!: jqxRadioButtonComponent;
-  @ViewChild('pierHeightDropDownList') pierHeightList!: jqxDropDownListComponent;
+  @ViewChild('pierHeightList') pierHeightList!: HeightListComponent;
   @ViewChild('projectIdSiteConditionsCode') projectIdSiteConditionsCode!: ElementRef<HTMLSpanElement>;
+  @ViewChild('siteCostExpander') siteCostExpander!: jqxExpanderComponent;
   @ViewChild('standardAbutmentsButton') standardAbutmentsButton!: jqxRadioButtonComponent;
   @ViewChild('standardTruckLoad') standardTruckLoad!: jqxRadioButtonComponent;
   @ViewChild('twoAnchoragesButton') twoAnchoragesButton!: jqxRadioButtonComponent;
 
   constructor(
     private readonly designBridgeService: DesignBridgeService,
+    private readonly designConditionsService: DesignConditionsService,
     private readonly cartoonRenderingService: CartoonRenderingService,
     private readonly viewportTransform: ViewportTransform2D,
     private readonly eventBrokerService: EventBrokerService,
   ) {
     this.designConditions = designBridgeService.designConditions;
+  }
+
+  private get designConditions(): DesignConditions {
+    return this.designBridgeService.designConditions;
+  }
+
+  private set designConditions(value: DesignConditions) {
+    this.designBridgeService.bridge = new BridgeModel(value);
   }
 
   /** Sets up widgets directly associated with bridge service design conditions. */
@@ -135,7 +131,7 @@ export class SetupWizardComponent implements AfterViewInit {
     if (conditions.isArch) {
       this.archAbutmentsButton.check();
       const archHeightIndex = Math.trunc((24 - conditions.archHeight) / 4);
-      this.archHeightList.selectIndex(archHeightIndex);
+      this.archHeightList.selectedIndex = archHeightIndex;
     } else {
       this.standardAbutmentsButton.check();
     }
@@ -144,7 +140,7 @@ export class SetupWizardComponent implements AfterViewInit {
     if (conditions.isPier) {
       this.isPierButton.check();
       const pierHeightIndex = Math.trunc((24 - conditions.pierHeight) / 4);
-      this.pierHeightList.selectIndex(pierHeightIndex);
+      this.pierHeightList.selectedIndex = pierHeightIndex;
     } else {
       this.noPierButton.check();
     }
@@ -176,38 +172,32 @@ export class SetupWizardComponent implements AfterViewInit {
     this.setDependentWidgets();
   }
 
-  public getDesignConditionsFromWidgets(): DesignConditions {
-    const deckSelectedIndex = this.deckElevationList.getSelectedIndex();
-    const archHeightSelectedIndex = this.archHeightList.getSelectedIndex() + deckSelectedIndex;
-    const pierSelectedIndex = this.pierHeightList.getSelectedIndex() + deckSelectedIndex;
+  public setDesignConditionsFromWidgets(): void {
     const key = DesignConditions.getSetupKey(
-      24 - 4 * deckSelectedIndex,
-      this.archAbutmentsButton.checked() ? 24 - 4 * archHeightSelectedIndex : -1,
-      this.isPierButton.checked() ? 24 - 4 * pierSelectedIndex : -1,
+      24 - 4 * this.deckElevationList.getSelectedIndex(),
+      this.archAbutmentsButton.checked() ? 24 - 4 * this.archHeightList.selectedIndex : -1,
+      this.isPierButton.checked() ? 24 - 4 * this.pierHeightList.selectedIndex : -1,
       this.oneAnchorageButton.checked() ? 1 : this.twoAnchoragesButton.checked() ? 2 : 0,
       this.standardTruckLoad.checked() ? LoadType.STANDARD_TRUCK : LoadType.HEAVY_TRUCK,
       this.highStrengthConcreteButton.checked() ? DeckType.HIGH_STRENGTH : DeckType.MEDIUM_STRENGTH,
     );
-    const conditions = DesignConditionsService.STANDARD_CONDITIONS_FROM_SETUP_KEY.get(key);
-    if (!conditions) {
-      throw new Error(`No conditions for key ${key}`);
-    }
-    return conditions;
+    this.designConditions = this.designConditionsService.getConditionsForSetupKey(key);
+    this.setDependentWidgets();
   }
 
   /** Sets up widgets that depend on those directly associated with design conditions. */
   private setDependentWidgets(): void {}
 
-  private setCardDisplay(index: number, value: string = ''): void {
-    this.cardElements[index].forEach(element => (element.style.display = value));
+  private setCardVisibility(index: number, isVisible: boolean = true): void {
+    this.cardElements[index].forEach(element => (element.style.display = isVisible ? '' : 'none'));
   }
 
   private goToCard(newCardIndex: number): void {
     if (newCardIndex < 0 || newCardIndex >= this.cardElements.length) {
       return;
     }
-    this.setCardDisplay(this.cardIndex, 'none');
-    this.setCardDisplay(newCardIndex);
+    this.setCardVisibility(this.cardIndex, false);
+    this.setCardVisibility(newCardIndex);
     this.backButton.disabled(newCardIndex == 0);
     this.nextButton.disabled(newCardIndex == SetupWizardComponent.CARD_COUNT - 1);
     this.cardIndex = newCardIndex;
@@ -218,53 +208,23 @@ export class SetupWizardComponent implements AfterViewInit {
   }
 
   archAbutmentSelectHandler(event: any): void {
-    WidgetHelper.disableDropDownList(this.archHeightList, !event.args.checked);
+    this.archHeightList.disabled = !event.args.checked;
   }
 
   backButtonOnClickHandler(): void {
     this.goToCard(this.cardIndex - 1);
   }
 
-  private selectedElevationIndex: number = 0;
-
   deckElevationSelectHandler(event: any): void {
     const index = event.args.index;
-    const elevationIndexChange = index - this.selectedElevationIndex;
-    if (elevationIndexChange === 0) {
-      return;
-    }
-    this.selectedElevationIndex = index;
-
-    // Handle deck elevations high enough for an arch and not.
-    var isArchHeightListDisabled: boolean | undefined;
-    var selectedArchIndex: number | undefined;
-    if (index < SetupWizardComponent.ALL_ARCH_HEIGHTS.length) {
-      selectedArchIndex = Math.max(0, this.archHeightList.selectedIndex() - elevationIndexChange);
-      this.archHeights = SetupWizardComponent.ALL_ARCH_HEIGHTS.slice(index);
-      this.archAbutmentsButton.enable();
-      isArchHeightListDisabled = this.archHeightList.disabled();
-    } else {
-      this.archHeightList.setContent('');
+    this.archHeightList.startIndex = this.pierHeightList.startIndex = index;
+    // Handle deck height where no arch is possible.
+    if (index >= SetupWizardComponent.ALL_ARCH_HEIGHTS.length) {
       this.standardAbutmentsButton.check();
       this.archAbutmentsButton.disable();
-      isArchHeightListDisabled = true;
+    } else {
+      this.archAbutmentsButton.enable();
     }
-
-    const selectedPierIndex = Math.max(0, this.pierHeightList.selectedIndex() - elevationIndexChange);
-    const isPierHeightListDisabled = this.pierHeightList.disabled();
-    this.pierHeights = SetupWizardComponent.ALL_PIER_HEIGHTS.slice(index);
-
-    // Restore after [source] change detection has completed.
-    setTimeout(() => {
-      this.archHeightList.disabled(isArchHeightListDisabled);
-      this.pierHeightList.disabled(isPierHeightListDisabled);
-      if (selectedArchIndex !== undefined) {
-        console.log(`Set arch: ${selectedArchIndex}`);
-        this.archHeightList.selectIndex(selectedArchIndex);
-      }
-      console.log(`Set pier: ${selectedPierIndex}`);
-      this.pierHeightList.selectIndex(selectedPierIndex);
-    });
   }
 
   finishButtonOnClickHandler(): void {
@@ -287,7 +247,7 @@ export class SetupWizardComponent implements AfterViewInit {
   }
 
   pierSelectHandler(event: any): void {
-    WidgetHelper.disableDropDownList(this.pierHeightList, !event.args.checked);
+    this.pierHeightList.disabled = !event.args.checked;
   }
 
   siteCostExpandingHandler() {
@@ -312,7 +272,7 @@ export class SetupWizardComponent implements AfterViewInit {
     for (var i: number = 0; i < SetupWizardComponent.CARD_COUNT; ++i) {
       this.cardElements[i] = this.content.nativeElement.querySelectorAll(`.card-${i + 1}`);
       if (i !== this.cardIndex) {
-        this.setCardDisplay(i, 'none');
+        this.setCardVisibility(i, false);
       }
     }
     const canvas = this.elevationCtx.canvas;

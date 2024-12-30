@@ -107,6 +107,12 @@
           <div class="indent vertical-gap">
             <label>
               Height of arch:
+              <height-dropdown-list
+                #archHeightList
+                [heights]="archHeights"
+                [disabled]="true"
+              ></height-dropdown-list>
+              <!--
               <jqxDropDownList
                 #archHeightList
                 [width]="184"
@@ -114,6 +120,7 @@
                 [selectedIndex]="0"
                 [disabled]="true"
               ></jqxDropDownList>
+              -->
             </label>
           </div>
         </div>
@@ -138,13 +145,19 @@
           <div class="indent vertical-gap">
             <label>
               Height of pier:
-              <jqxDropDownList
+              <height-dropdown-list
+                #pierHeightList
+                [heights]="pierHeights"
+                [disabled]="true"
+              ></height-dropdown-list>
+              <!--<jqxDropDownList
                 #pierHeightDropDownList
                 [width]="184"
                 [source]="archHeights"
                 [selectedIndex]="0"
                 [disabled]="true"
               ></jqxDropDownList>
+              -->
             </label>
           </div>
         </div>
@@ -449,6 +462,7 @@
       <fieldset style="padding-top: 0">
         <legend>Site cost:</legend>
         <jqxExpander
+          #siteCostExpander
           [width]="'100%'"
           [expanded]="false"
           (onExpanding)="siteCostExpandingHandler()"
@@ -457,7 +471,8 @@
           <div>
             <div class="cost-summary-line">
               <div>
-                {{ toDollars(costSummary.totalFixedCost) }} (Includes cost of deck, excavation, and supports; not steel trusses.)
+                {{ toDollars(costSummary.totalFixedCost) }} (Includes cost of deck, excavation, and supports; not steel
+                trusses.)
               </div>
               <div class="site-condition">Site condition: {{ costSummary.siteCondition }}</div>
             </div>

@@ -21,11 +21,11 @@ export interface WizardPagesView {
 }
 
 /**
- * Container for per-setup-wizard-page info. Has a view of the 
- * wizard that is read-only by convention .
+ * Container for per-setup-wizard-page logic. Calls back to an 
+ * interface to query and mutate the wizard.
  */
 export abstract class PageInfo {
-  constructor(protected readonly wizard: WizardPagesView) {}
+  constructor(protected readonly wizardView: WizardPagesView) {}
 
   abstract pageNumber: number;
 
@@ -39,7 +39,7 @@ export abstract class PageInfo {
 
   get deckCartoonSrc(): number {
     // TODO: || local contest code is valid.
-    return this.wizard.hasPageBeenLoaded(4) || this.wizard.isValidLocalContestCode ? this.
+    return this.wizardView.hasPageBeenLoaded(4) || this.wizardView.isValidLocalContestCode ? this.
   }
   abstract get elevationCartoonOptions(): number;
   abstract get disabledLegends(): number;

@@ -1,19 +1,19 @@
 import { Injectable } from '@angular/core';
 
 export const enum LegendMask {
-  RIVER_BANK = 1,
-  EXCAVATION = 2,
-  RIVER = 4,
-  DECK = 8,
-  ABUTMENT = 16,
-  PIER = 32,
+  RIVER_BANK = 0x1,
+  EXCAVATION = 0x2,
+  RIVER = 0x4,
+  DECK = 0x8,
+  ABUTMENT = 0x10,
+  PIER = 0x20,
 }
 
-export const enum DisabledElement {
-  BACK_BUTTON,
-  NEXT_BUTTON,
-  FINISH_BUTTON,
-  SITE_COST,
+export const enum DisabledElementMask {
+  BACK_BUTTON = 0x1,
+  NEXT_BUTTON = 0x2,
+  FINISH_BUTTON = 0x4,
+  SITE_COST = 0x8,
 }
 
 /** Container for setup wizard page presentation and control logic. */
@@ -67,24 +67,3 @@ abstract class PageInfo {
   abstract get disabledElementMask(): number;
 }
 
-class Page1 extends PageInfo {
-  override pageNumber: number = 1;
- 
-  override get nextPageNumber(): number {
-  }
- 
-  override get backPageNumber(): number {
-  }
- 
-  override get deckCartoonSrc(): number {
-  }
- 
-  override get elevationCartoonOptions(): number {
-  }
- 
-  override getDisabledLegends(): number {
-  }
- 
-  override get disabledElementMask(): number {
-  }
-}
