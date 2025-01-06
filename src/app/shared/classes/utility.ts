@@ -38,7 +38,21 @@ export class Utility {
     return set.size === items.length && items.every(item => set.has(item));
   }
 
-  // TODO: Not currently used. Remove?
+  public static assertNotUndefined<T>(value: T | undefined, what: string = 'value'): T {
+    if (value === undefined) {
+      throw new Error(`undefined ${what}`);
+    }
+    return value;
+  }
+
+  public static assertNotNull<T>(value: T | null, what: string = 'value'): T {
+    if (value === null) {
+      throw new Error(`null ${what}`);
+    }
+    return value;
+  }
+
+  /* TODO: Not currently used. Remove?
   public static setsEqual<T>(a: Set<T>, b: Set<T>) {
     if (a.size !== b.size) {
       return false;
@@ -49,10 +63,10 @@ export class Utility {
       }
     }
     return true;
-  }
+  }*/
 
-  // TODO: Not currently used. Remove?
+  /* TODO: Not currently used. Remove?
   public static arraysEqual<T>(a: T[], b: T[]): boolean {
     return a.length === b.length && a.every((aElement, index) => aElement === b[index]);
-  }
+  }*/
 }

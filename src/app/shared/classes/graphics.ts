@@ -391,11 +391,7 @@ export class Graphics {
   }
 
   public static getContext(canvasRef: ElementRef<HTMLCanvasElement>): CanvasRenderingContext2D {
-    const ctx = canvasRef.nativeElement.getContext('2d');
-    if (ctx == null) {
-      throw new Error('Get canvas 2d context failed');
-    }
-    return ctx;
+    return Utility.assertNotNull(canvasRef.nativeElement.getContext('2d'));
   }
 
   /**

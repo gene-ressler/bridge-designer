@@ -1,0 +1,32 @@
+.local-contest-code-input {
+  width: 222px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+label:has(:disabled) {
+  color: gray;
+}
+
+label:has(.jqx-dropdownlist-content-disabled) {
+  color: gray;
+}
+
+.feedback {
+  font-style: italic;
+  font-weight: bold;
+  margin-top: 4px;
+}
+
+.error {
+  color: red;
+}
+
+.okay-so-far {
+  color: blue;
+}
+
+.done {
+  font-weight: normal;
+  color: darkblue;
+}

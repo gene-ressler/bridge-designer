@@ -529,7 +529,7 @@ export class DesignConditions {
       this.pierHeight,
       this.anchorageCount,
       this.loadType,
-      this.deckCostRate,
+      this.deckType,
     );
   }
 
@@ -1031,7 +1031,7 @@ export class DesignConditionsService {
     }, new Map<string, DesignConditions>());
 
   public getConditionsForSetupKey(key: string): DesignConditions {
-    return DesignConditionsService.STANDARD_CONDITIONS_FROM_SETUP_KEY.get(key) || this.placeholderConditions;
+    return Utility.assertNotUndefined(DesignConditionsService.STANDARD_CONDITIONS_FROM_SETUP_KEY.get(key), 'design conditions for key');
   }
 
   private static readonly STANDARD_CONDITIONS_FROM_CODE: Map<number, DesignConditions> =

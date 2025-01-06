@@ -1,0 +1,23 @@
+<div class="local-contest-code-container">
+  <label for="local-contest-code"
+    >{{ label }}
+    <input
+      #localContestCodeInputRef
+      type="text"
+      id="local-contest-code"
+      name="local-contest-code"
+      class="local-contest-code-input"
+      maxlength="6"
+      spellcheck="false"
+      [formControl]="localContestCodeInput"
+    />
+  </label>
+  <div
+    *ngIf="localContestCodeInput.invalid && (localContestCodeInput.dirty || localContestCodeInput.touched)"
+    class="feedback"
+  >
+    <div *ngIf="localContestCodeInput.hasError('error')" class="error">Oops... That wasn't right.</div>
+    <div *ngIf="localContestCodeInput.hasError('prefix')" class="okay-so-far">Looking good so far...</div>
+  </div>
+  <div *ngIf="localContestCodeInput.value?.length !== 0 && localContestCodeInput.valid" class="feedback done">Looks fine, but double check!</div>
+</div>

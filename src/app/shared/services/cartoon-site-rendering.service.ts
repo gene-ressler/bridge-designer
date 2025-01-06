@@ -95,8 +95,12 @@ export class CartoonSiteRenderingService {
       }
     } else {
       // Just the anchorages.
-      renderJoint(ctx, conditions.prescribedJoints[conditions.leftAnchorageJointIndex]);
-      renderJoint(ctx, conditions.prescribedJoints[conditions.rightAnchorageJointIndex]);
+      if (conditions.isLeftAnchorage) {
+        renderJoint(ctx, conditions.prescribedJoints[conditions.leftAnchorageJointIndex]);
+      }
+      if (conditions.isRightAnchorage) {
+        renderJoint(ctx, conditions.prescribedJoints[conditions.rightAnchorageJointIndex]);
+      }
     }
 
     function renderJoint(ctx: CanvasRenderingContext2D, joint: Joint): void {

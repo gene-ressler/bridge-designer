@@ -58,18 +58,7 @@
           Yes!
         </jqxRadioButton>
         <div class="vertical-gap">
-          <label
-            for="localContestCode"
-            class="vertical-gap paragraph"
-            >Enter contest code here:
-            <input
-              #localContestCodeInput
-              id="localContestCode"
-              style="width: 222px"
-              type="text"
-              disabled
-            />
-          </label>
+          <local-contest-code-input #localContestCodeInput></local-contest-code-input>
         </div>
       </fieldset>
     </div>
@@ -277,11 +266,7 @@
             class="paragraph"
             >Project ID:<br />
             <span>
-              <span
-                #projectIdPrefix
-                class="scenarioIdText"
-                >00001A</span
-              ><span class="scenarioIdText">&#8209;</span
+              <span class="scenarioIdText">{{ scenarioId }}&nbsp;&#8209;&nbsp;</span
               ><input
                 #projectIdInput
                 id="projectId"
@@ -310,9 +295,8 @@
       <fieldset class="grouping">
         <legend class="grouping-topic">Deck cross-section</legend>
         <img
-          #deckCartoon
           class="deck-cartoon"
-          src="img/nodecknoload.png"
+          [src]="deckCartoonSrc"
         />
       </fieldset>
       <fieldset class="grouping fill-row">
@@ -324,19 +308,12 @@
           height="200"
         ></canvas>
         <div class="legend">
-          <div><img src="img/legendriverbanks.png" /> - River banks</div>
-          <div class="card-2 card-3 card-4 card-5 card-6 card-7">
-            <img src="img/legendexcavation.png" /> - Excavation
-          </div>
-          <div><img src="img/legendriver.png" /> - River</div>
-          <div class="card-2 card-3 card-4 card-5 card-6 card-7"><img src="img/legenddeck.png" /> - Deck</div>
-          <div class="card-2 card-3 card-4 card-5 card-6 card-7"><img src="img/legendabutment.png" /> - Abutment</div>
-          <div
-            #pierLegendEntry
-            style="display: none"
-          >
-            <img src="img/legendpier.png" /> - Pier
-          </div>
+          <div class="legenditem banks"><img src="img/legendriverbanks.png" /> - River banks</div>
+          <div class="legenditem excavation"><img src="img/legendexcavation.png" /> - Excavation</div>
+          <div class="legenditem river"><img src="img/legendriver.png" /> - River</div>
+          <div class="legenditem deck"><img src="img/legenddeck.png" /> - Deck</div>
+          <div class="legenditem abutment"><img src="img/legendabutment.png" /> - Abutment</div>
+          <div class="legenditem pier"><img src="img/legendpier.png" /> - Pier</div>
         </div>
       </fieldset>
     </div>

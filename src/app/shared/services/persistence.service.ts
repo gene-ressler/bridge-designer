@@ -6,6 +6,7 @@ import { Member } from "../classes/member.model";
 import { DesignConditions, DesignConditionsService } from "./design-conditions.service";
 import { InventoryService } from "./inventory.service";
 import { AnalysisSummary } from "./analysis.service";
+import { Utility } from "../classes/utility";
 
 const DELIMITER = '|';
 const JOINT_COORD_LENGTH = 3;
@@ -180,12 +181,9 @@ class SaveSetParser {
   scanToDelimiter(what: string): string {
     const start = this.readPtr;
     while (true) {
-      const ch = this.text[this.readPtr];
+      const ch = Utility.assertNotUndefined(this.text[this.readPtr], what);
       if (ch === DELIMITER) {
         break;
-      }
-      if (ch === undefined) {
-        throw `Couldn't scan ${what}`;
       }
       this.readPtr++;
     }

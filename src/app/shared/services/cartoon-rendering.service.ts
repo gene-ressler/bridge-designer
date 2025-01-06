@@ -15,6 +15,7 @@ export const enum CartoonOptionMask {
   TITLE_BLOCK = 0x100,
   ALL = 0x200 - 1,
   STANDARD_ITEMS = ABUTMENTS | ARCH_LINE | BRIDGE | DECK | TERRAIN,
+  SITE_ONLY = TERRAIN | MEASUREMENTS,
 }
 
 @Injectable({ providedIn: 'root' })
