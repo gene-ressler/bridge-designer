@@ -18,11 +18,10 @@ export class CartoonSiteRenderingService {
   ) {}
 
   public render(ctx: CanvasRenderingContext2D, options: CartoonOptionMask): void {
-    if (options & CartoonOptionMask.DECK) {
-      this.renderDeck(ctx, options);
-    }
-    if (options & CartoonOptionMask.TERRAIN) {
+    if (options & CartoonOptionMask.IN_SITU_TERRAIN) {
       this.renderInSituCrossSection(ctx, options);
+    }
+    if (options & CartoonOptionMask.EXCAVATED_TERRAIN) {
       this.renderExavatedCrossSection(ctx);
     }
     if (options & CartoonOptionMask.ARCH_LINE) {
@@ -35,6 +34,9 @@ export class CartoonSiteRenderingService {
         this,
         this.viewportTransform,
       );
+    }
+    if (options & CartoonOptionMask.DECK) {
+      this.renderDeck(ctx, options);
     }
     if (options & CartoonOptionMask.MEASUREMENTS) {
       this.renderMeasurements(ctx);
@@ -52,7 +54,7 @@ export class CartoonSiteRenderingService {
     const viewportTransform = this.viewportTransform;
     const ySlabTop = viewportTransform.worldToViewportY(SiteConstants.WEAR_SURFACE_HEIGHT);
     const ySlabBottom = ySlabTop + 2;
-    const yBeamBottom = ySlabBottom + 6; //viewportTransform.worldToViewportDistance(beamHeight);
+    const yBeamBottom = ySlabBottom + 5; //viewportTransform.worldToViewportDistance(beamHeight);
     const xSlabLeft = viewportTransform.worldToViewportX(conditions.xLeftmostDeckJoint - SiteConstants.DECK_CANTILEVER);
     const xSlabRight = viewportTransform.worldToViewportX(
       conditions.xRightmostDeckJoint + SiteConstants.DECK_CANTILEVER,
@@ -70,6 +72,10 @@ export class CartoonSiteRenderingService {
     ctx.lineTo(xSlabRight + 1, ySlabTop);
     ctx.stroke();
 
+    ctx.lineWidth = savedLineWidth;
+    ctx.fillStyle = savedFillStyle;
+    ctx.strokeStyle = savedStrokeStyle;
+
     // Deck beams and associated joints.
     for (var i = 0; i < conditions.loadedJointCount; i++) {
       const joint = conditions.prescribedJoints[i];
@@ -82,10 +88,6 @@ export class CartoonSiteRenderingService {
         renderJoint(ctx, joint);
       }
     }
-
-    ctx.lineWidth = savedLineWidth;
-    ctx.fillStyle = savedFillStyle;
-    ctx.strokeStyle = savedStrokeStyle;
 
     // Draw the prescribed joints other than those on the deck.
     if (options & CartoonOptionMask.JOINTS) {
@@ -104,7 +106,6 @@ export class CartoonSiteRenderingService {
     }
 
     function renderJoint(ctx: CanvasRenderingContext2D, joint: Joint): void {
-      const savedLineWidth = ctx.lineWidth;
       const savedStrokeStyle = ctx.strokeStyle;
       const savedFillStyle = ctx.fillStyle;
 
@@ -114,13 +115,11 @@ export class CartoonSiteRenderingService {
       ctx.arc(x, y, 2, 0, 2 * Math.PI);
       ctx.fillStyle = 'white';
       ctx.fill();
-      ctx.lineWidth = 1;
       ctx.strokeStyle = 'black';
       ctx.stroke();
 
       ctx.fillStyle = savedFillStyle;
       ctx.strokeStyle = savedStrokeStyle;
-      ctx.lineWidth = savedLineWidth;
     }
   }
 
@@ -183,7 +182,9 @@ export class CartoonSiteRenderingService {
       ctx.lineTo(x, y);
     }
     ctx.fillStyle =
-      options & CartoonOptionMask.DECK ? this.fillPatternService.createExcavation(ctx) : Colors.CARTOON_EARTH;
+      options & CartoonOptionMask.EXCAVATED_TERRAIN
+        ? this.fillPatternService.createExcavation(ctx)
+        : Colors.CARTOON_EARTH;
     ctx.fill();
     ctx.strokeStyle = 'black';
     ctx.stroke();
@@ -207,7 +208,7 @@ export class CartoonSiteRenderingService {
 
     const iArchJoints = conditions.archJointIndex;
     const p1 = conditions.prescribedJoints[iArchJoints];
-    const p2 = conditions.prescribedJoints[conditions.panelCount / 2];
+    const p2 = conditions.prescribedJoints[Math.trunc(conditions.panelCount / 2)];
     const p3 = conditions.prescribedJoints[iArchJoints + 1];
     const xMid = 0.5 * (p1.x + p3.x);
     const x1 = p1.x - xMid;
@@ -264,6 +265,7 @@ export class CartoonSiteRenderingService {
     ctx.lineTo(xGapLeft, yTickBottom);
     ctx.moveTo(xGapRight, yTickTop);
     ctx.lineTo(xGapRight, yTickBottom);
+    ctx.stroke();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
     ctx.fillText('44 meters', xGapMiddle, yGapDim - 3);
@@ -271,36 +273,38 @@ export class CartoonSiteRenderingService {
     const xGapHeightDim = xGapMiddle - 40;
     Graphics.drawDoubleArrow(ctx, xGapHeightDim, yGrade, xGapHeightDim, yWater);
     const yAir = (yGrade + yWater) / 2;
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('24 meters', xGapHeightDim + 3, yAir);
+    ctx.beginPath();
     ctx.moveTo(xGapHeightDim - tickHalfSize, yWater);
     ctx.lineTo(xGapHeightDim + tickHalfSize, yWater);
     ctx.moveTo(xGapLeft - 3, yGrade);
     ctx.lineTo(xGapHeightDim + tickHalfSize, yGrade);
+    ctx.stroke();
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('24 meters', xGapHeightDim + 3, yAir);
 
     // Slope icon
-    const xSlopeIcon = xGapMiddle + 75;
+    const xSlopeIcon = xGapMiddle + 70;
     const widthSlopeIcon = 24;
     const heightSlopeIcon = widthSlopeIcon * 2;
     const ySlopeIcon = yAir + heightSlopeIcon / 2;
     const xSlopeIconTop = xSlopeIcon + widthSlopeIcon;
     const ySlopeIconTop = ySlopeIcon - heightSlopeIcon;
     const widthSlopeIconTail = 4;
+    ctx.beginPath();
     ctx.moveTo(xSlopeIcon, ySlopeIcon);
     ctx.lineTo(xSlopeIcon, ySlopeIconTop);
+    ctx.moveTo(xSlopeIcon, ySlopeIconTop);
+    ctx.lineTo(xSlopeIconTop, ySlopeIconTop);
+    ctx.moveTo(xSlopeIcon - widthSlopeIconTail, ySlopeIcon + 2 * widthSlopeIconTail);
+    ctx.lineTo(xSlopeIconTop + widthSlopeIconTail, ySlopeIconTop - 2 * widthSlopeIconTail);
+    ctx.stroke();
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
     ctx.fillText('2', xSlopeIcon - 3, yAir);
-    ctx.moveTo(xSlopeIcon, ySlopeIconTop);
-    ctx.lineTo(xSlopeIconTop, ySlopeIconTop);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
     ctx.fillText('1', xSlopeIcon + widthSlopeIcon / 2, ySlopeIconTop - 3);
-    ctx.moveTo(xSlopeIcon - widthSlopeIconTail, ySlopeIcon + 2 * widthSlopeIconTail);
-    ctx.lineTo(xSlopeIconTop + widthSlopeIconTail, ySlopeIconTop - 2 * widthSlopeIconTail);
-
-    ctx.stroke();
 
     ctx.textBaseline = savedTextBaseline;
     ctx.textAlign = savedTextAlign;

@@ -7,7 +7,7 @@ import { jqxInputModule } from 'jqwidgets-ng/jqxinput';
 import { jqxListBoxModule } from 'jqwidgets-ng/jqxlistbox';
 import { jqxRadioButtonComponent, jqxRadioButtonModule } from 'jqwidgets-ng/jqxradiobutton';
 import { jqxWindowComponent, jqxWindowModule } from 'jqwidgets-ng/jqxwindow';
-import { EventBrokerService } from '../../../shared/services/event-broker.service';
+import { EventBrokerService, EventOrigin } from '../../../shared/services/event-broker.service';
 import { COUNT_FORMATTER, DOLLARS_FORMATTER } from '../../../shared/classes/utility';
 import {
   DeckType,
@@ -23,7 +23,7 @@ import { CartoonSiteRenderingService } from '../../../shared/services/cartoon-si
 import { Graphics } from '../../../shared/classes/graphics';
 import { HeightListComponent } from '../height-list/height-list.component';
 import { BridgeModel } from '../../../shared/classes/bridge.model';
-import { CardService, DeckCartoonSrc, SetupWizardCardView } from './card-service';
+import { CardService, DeckCartoonSrc, LegendItemName, SetupWizardCardView } from './card-service';
 import { LocalContestCodeInputComponent } from '../local-contest-code-input/local-contest-code-input.component';
 
 @Component({
@@ -67,6 +67,8 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
 
   /** Elements with 'card-X' classes. Display style is set to switch cards. */
   private readonly cardElements: NodeListOf<HTMLElement>[] = new Array<NodeListOf<HTMLElement>>(CardService.CARD_COUNT);
+
+  private readonly legendItemsByName = new Map<LegendItemName, HTMLDivElement>();
 
   readonly archHeights: string[] = SetupWizardComponent.ALL_DECK_ELEVATIONS.slice(0, -1);
   readonly buttonWidth = 80;
@@ -182,7 +184,7 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
     this.updateDependentWidgets();
   }
 
-  public setDesignConditionsFromWidgets(): void {
+  setDesignConditionsFromWidgets(): void {
     const key = DesignConditions.getSetupKey(
       24 - 4 * this.deckElevationList.getSelectedIndex(),
       this.archAbutmentsButton.checked() ? 24 - 4 * this.archHeightList.selectedIndex : -1,
@@ -198,8 +200,10 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
   /** Sets up widgets that depend on those directly associated with design conditions. */
   private updateDependentWidgets(): void {
     const card = this.cardService.card;
+    // TODO: If this ends up only manipulating card, move these to a cardservice update method.
     card.renderDeckCartoon();
     card.renderElevationCartoon();
+    card.renderLegendItemsForCartoon();
   }
 
   private setCardVisibility(index: number, isVisible: boolean = true): void {
@@ -215,14 +219,28 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
     this.backButton.disabled(newCardIndex == 0);
     this.nextButton.disabled(newCardIndex == CardService.CARD_COUNT - 1);
     this.cardService.goToCard(newCardIndex);
+    this.updateDependentWidgets();
   }
 
   get costSummary(): FixedCostSummary {
     return this.designConditions.fixedCostSummary!;
   }
 
-  archAbutmentSelectHandler(event: any): void {
-    this.archHeightList.disabled = !event.args.checked;
+  archAbutmentRadioChangeHandler(event: any): void {
+    if (event.args.checked) {
+      this.archHeightList.disabled = false;
+      this.noPierButton.check();
+      this.isPierButton.disable();
+      this.pierHeightList.disabled = true;
+      this.noAnchoragesButton.check();
+      this.oneAnchorageButton.disable();
+      this.twoAnchoragesButton.disable();
+    } else {
+      this.isPierButton.enable();
+      this.pierHeightList.disabled = false;
+      this.oneAnchorageButton.enable();
+      this.twoAnchoragesButton.enable();
+    }
     this.setDesignConditionsFromWidgets();
   }
 
@@ -244,17 +262,20 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
   }
 
   finishButtonOnClickHandler(): void {
+    this.eventBrokerService.loadBridgeRequest.next({
+      source: EventOrigin.SETUP_DIALOG,
+      data: this.designBridgeService.bridge,
+    });
     this.dialog.close();
   }
 
   helpButtonOnClickHandler(): void {
     // TODO: Dev only. Implement me for real.
-    this.setWidgetsFromDesignConditions();
     // console.log(DesignConditionsService.STANDARD_CONDITIONS);
     // window.open('https://google.com', '_blank', 'location=yes,height=570,width=520,scrollbars=yes,status=yes');
   }
 
-  localContestRadioYesHandler(event: any) {
+  localContestYesRadioChangeHandler(event: any) {
     if (event.args.checked) {
       this.localContestCodeInput.disabled = false;
       this.localContestCodeInput.focus();
@@ -267,8 +288,17 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
     this.goToCard(this.cardService.card.nextCardIndex);
   }
 
-  pierSelectHandler(event: any): void {
-    this.pierHeightList.disabled = !event.args.checked;
+  isPierRadioChangeHandler(event: any): void {
+    if (event.args.checked) {
+      this.pierHeightList.disabled = false;
+      if (this.oneAnchorageButton.checked()) {
+        this.noAnchoragesButton.check();
+      }
+      this.oneAnchorageButton.disable();
+    } else {
+      this.pierHeightList.disabled = true;
+      this.oneAnchorageButton.enable();
+    }
     this.setDesignConditionsFromWidgets();
   }
 
@@ -290,8 +320,29 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
     this.cartoonRenderingService.render(this.elevationCtx);
   }
 
+  /** Returns the current, validated content of the local contest code input. */
   get localContestCode(): string | undefined {
     return this.localContestCodeInput.code;
+  }
+
+  /** Opens the dialog, setting up widgets with given design conditions. */
+  private open(conditions: DesignConditions) {
+    this.designConditions = conditions;
+    this.setWidgetsFromDesignConditions();
+    this.dialog.open();
+  }
+
+  enableSiteCostExpander(isEnabled: boolean): void {
+    if (isEnabled) {
+    this.siteCostExpander.enable();
+    } else {
+      this.siteCostExpander.collapse();
+      this.siteCostExpander.disable();
+    }
+  }
+
+  setLegendItemVisibility(item: LegendItemName, isVisible: boolean = true) {
+    this.legendItemsByName.get(item)!.style.display = isVisible ? '' : 'none';
   }
 
   ngAfterViewInit(): void {
@@ -302,11 +353,17 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
         this.setCardVisibility(i, false);
       }
     }
+    // In html, legend items look like <div class="legenditem NAME">..., where NAME is bank|river|deck|...
+    const elementList: NodeListOf<HTMLDivElement> = this.content.nativeElement.querySelectorAll('.legenditem');
+    elementList.forEach(element => {
+      const legendItemName = element.classList[1].toString();
+      this.legendItemsByName.set(legendItemName as LegendItemName, element);
+    });
     const canvas = this.elevationCtx.canvas;
     const w = canvas.width;
     const h = canvas.height;
     this.viewportTransform.setViewport(0, h - 1, w - 1, 1 - h);
     this.cardService.card.renderElevationCartoon();
-    this.eventBrokerService.newDesignRequest.subscribe(_info => this.dialog.open());
+    this.eventBrokerService.newDesignRequest.subscribe(info => this.open(info.data));
   }
 }

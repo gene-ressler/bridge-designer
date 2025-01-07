@@ -6,6 +6,7 @@ export const enum EventOrigin {
   MENU,
   SAMPLE_DIALOG,
   SERVICE,
+  SETUP_DIALOG,
   TOOLBAR,
 }
 

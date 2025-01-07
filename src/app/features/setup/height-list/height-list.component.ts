@@ -2,7 +2,9 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
+  Output,
   ViewChild,
 } from '@angular/core';
 import { jqxButtonModule } from 'jqwidgets-ng/jqxbuttons';
@@ -19,7 +21,7 @@ import { jqxDropDownListComponent, jqxDropDownListModule } from 'jqwidgets-ng/jq
 export class HeightListComponent implements AfterViewInit {
   @ViewChild('heightList') heightList!: jqxDropDownListComponent;
   @Input() heights: string[] = [];
-  @Input() onSelect: (event: any) => void = () => undefined;
+  @Output() readonly onSelect = new EventEmitter<any>();
   @Input() get disabled(): boolean {
     return this._disabled;
   }
@@ -80,7 +82,7 @@ export class HeightListComponent implements AfterViewInit {
       return;
     }
     this._selectedIndex = event.args.index + this._startIndex;
-    this.onSelect({ args: { index: this._selectedIndex } });
+    this.onSelect.emit({ args: { index: this._selectedIndex } });
     this.updateWidget();
   }
 

@@ -6,6 +6,7 @@ import { EventBrokerService } from '../../../shared/services/event-broker.servic
 import { UiStateService } from '../../drafting/services/ui-state.service';
 import { UndoManagerService } from '../../drafting/services/undo-manager.service';
 import { UndoRedoDropdownComponent } from '../undo-redo-dropdown/undo-redo-dropdown.component';
+import { DesignBridgeService } from '../../../shared/services/design-bridge.service';
 
 const enum Tools {
   NEW,
@@ -52,10 +53,11 @@ export class ToolbarAComponent implements AfterViewInit {
     'button';
 
   constructor(
-    private readonly undoManagerService: UndoManagerService,
     private readonly componentService: ComponentService,
-    private readonly uiStateService: UiStateService,
+    private readonly designBridgeService: DesignBridgeService,
     private readonly eventBrokerService: EventBrokerService,
+    private readonly uiStateService: UiStateService,
+    private readonly undoManagerService: UndoManagerService,
   ) {
     this.initTools = this.initTools.bind(this);
   }
@@ -64,7 +66,7 @@ export class ToolbarAComponent implements AfterViewInit {
     switch (index) {
       case Tools.NEW:
         WidgetHelper.initToolbarImgButton('Make new bridge', 'img/new.png', tool);
-        WidgetHelper.sendEventOnClick(this.eventBrokerService.newDesignRequest, tool);
+        WidgetHelper.sendEventOnClick(this.eventBrokerService.newDesignRequest, tool, this.designBridgeService.designConditions);
         break;
       case Tools.OPEN:
         WidgetHelper.initToolbarImgButton('Open an existing bridge', 'img/open.png', tool);

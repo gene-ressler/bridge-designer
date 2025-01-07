@@ -52,7 +52,7 @@
         </jqxRadioButton>
         <jqxRadioButton
           [width]="232"
-          (onChange)="localContestRadioYesHandler($event)"
+          (onChange)="localContestYesRadioChangeHandler($event)"
           style="margin-top: 8px"
         >
           Yes!
@@ -89,7 +89,7 @@
             [groupName]="'support'"
             [width]="200"
             style="margin-top: 8px"
-            (onChange)="archAbutmentSelectHandler($event)"
+            (onChange)="archAbutmentRadioChangeHandler($event)"
           >
             Arch abutments
           </jqxRadioButton>
@@ -100,16 +100,8 @@
                 #archHeightList
                 [heights]="archHeights"
                 [disabled]="true"
+                (onSelect)="setDesignConditionsFromWidgets()"
               ></height-dropdown-list>
-              <!--
-              <jqxDropDownList
-                #archHeightList
-                [width]="184"
-                [source]="archHeights"
-                [selectedIndex]="0"
-                [disabled]="true"
-              ></jqxDropDownList>
-              -->
             </label>
           </div>
         </div>
@@ -127,7 +119,7 @@
             [groupName]="'pier'"
             [width]="200"
             style="margin-top: 8px"
-            (onChange)="pierSelectHandler($event)"
+            (onChange)="isPierRadioChangeHandler($event)"
           >
             Pier (two spans)
           </jqxRadioButton>
@@ -138,15 +130,8 @@
                 #pierHeightList
                 [heights]="pierHeights"
                 [disabled]="true"
+                (onSelect)="setDesignConditionsFromWidgets()"
               ></height-dropdown-list>
-              <!--<jqxDropDownList
-                #pierHeightDropDownList
-                [width]="184"
-                [source]="archHeights"
-                [selectedIndex]="0"
-                [disabled]="true"
-              ></jqxDropDownList>
-              -->
             </label>
           </div>
         </div>
@@ -156,6 +141,7 @@
             [groupName]="'anchorage'"
             [width]="200"
             [checked]="true"
+            (onUnchecked)="setDesignConditionsFromWidgets()"
           >
             No cable anchorages
           </jqxRadioButton>
@@ -164,6 +150,7 @@
             [groupName]="'anchorage'"
             [width]="200"
             style="margin-top: 8px"
+            (onUnchecked)="setDesignConditionsFromWidgets()"
           >
             One cable anchorage
           </jqxRadioButton>
@@ -172,6 +159,7 @@
             [groupName]="'anchorage'"
             [width]="200"
             style="margin-top: 8px"
+            (onUnchecked)="setDesignConditionsFromWidgets()"
           >
             Two cable anchorages
           </jqxRadioButton>
@@ -186,16 +174,17 @@
           [groupName]="'deckMaterial'"
           [width]="200"
           [checked]="true"
-        >
+          (onUnchecked)="setDesignConditionsFromWidgets()"
+          >
           Medium-strength concrete<br />(0.23 meters thick)
         </jqxRadioButton>
         <jqxRadioButton
           #highStrengthConcreteButton
           [groupName]="'deckMaterial'"
           [width]="200"
-          [checked]="true"
           style="margin-top: 8px"
-        >
+          (onUnchecked)="setDesignConditionsFromWidgets()"
+          >
           High-strength concrete<br />(0.15 meters thick)
         </jqxRadioButton>
       </fieldset>
@@ -206,16 +195,17 @@
           [groupName]="'truckLoad'"
           [width]="200"
           [checked]="true"
-        >
+          (onUnchecked)="setDesignConditionsFromWidgets()"
+          >
           Standard 2.25 kN truck<br />(two lanes)
         </jqxRadioButton>
         <jqxRadioButton
           #permitTruckLoad
           [groupName]="'truckLoad'"
           [width]="200"
-          [checked]="true"
           style="margin-top: 8px"
-        >
+          (onUnchecked)="setDesignConditionsFromWidgets()"
+          >
           480 kN permit loading<br />(centered)
         </jqxRadioButton>
       </fieldset>
@@ -308,7 +298,7 @@
           height="200"
         ></canvas>
         <div class="legend">
-          <div class="legenditem banks"><img src="img/legendriverbanks.png" /> - River banks</div>
+          <div class="legenditem bank"><img src="img/legendriverbanks.png" /> - River banks</div>
           <div class="legenditem excavation"><img src="img/legendexcavation.png" /> - Excavation</div>
           <div class="legenditem river"><img src="img/legendriver.png" /> - River</div>
           <div class="legenditem deck"><img src="img/legenddeck.png" /> - Deck</div>

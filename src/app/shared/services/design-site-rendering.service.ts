@@ -81,10 +81,10 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
       ctx.lineTo(x, yBeamBottom);
       ctx.stroke();
       // Draw concrete joints.
+      ctx.strokeStyle = Colors.CONCRETE;
+      ctx.lineWidth = 1;
       if (i != 0 && i != conditions.loadedJointCount - 1) {
         ctx.beginPath();
-        ctx.strokeStyle = Colors.CONCRETE;
-        ctx.lineWidth = 1;
         ctx.moveTo(x, ySlabTop);
         ctx.lineTo(x, ySlabBottom);
         ctx.stroke();
@@ -99,6 +99,7 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     const savedFillStyle = ctx.fillStyle;
     const savedStrokeStyle = ctx.strokeStyle;
     const savedLineWidth = ctx.lineWidth;
+    
     const siteInfo = this.designBridgeService.siteInfo;
 
     // Set up return values for earth profile.
