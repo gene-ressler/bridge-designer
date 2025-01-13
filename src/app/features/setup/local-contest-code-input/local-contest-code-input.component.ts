@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormControl, ReactiveFormsModule, ValidationErrors } from '@angular/forms';
-import { DesignConditionsService } from '../../../shared/services/design-conditions.service';
+import { DesignConditions, DesignConditionsService } from '../../../shared/services/design-conditions.service';
 
 export const enum LocalContestCodeInputState {
   NONE,
@@ -23,7 +23,7 @@ export class LocalContestCodeInputComponent {
   private static readonly PREFIX = { prefix: 'Looks good so far!' };
 
   @Input() label: string = 'Enter contest code:';
-  @Output() readonly change = new EventEmitter<LocalContestCodeInputState>();
+  @Output() readonly onChange = new EventEmitter<LocalContestCodeInputState>();
   @ViewChild('localContestCodeInputRef') localContestCodeInputRef!: ElementRef<HTMLInputElement>;
 
   localContestCodeInput = new FormControl({ value: '', disabled: true }, this.validateLocalContestCode.bind(this));
@@ -33,27 +33,33 @@ export class LocalContestCodeInputComponent {
 
   public set disabled(value: boolean) {
     if (value) {
+      this.localContestCodeInput.setValue('');
       this.localContestCodeInput.disable();
     } else {
       this.localContestCodeInput.enable();
     }
   }
 
-  /** Returns a valid code, the empty string if none, or undefined if partial.  */
-  public get code(): string | undefined {
-    const value = this.localContestCodeInput.value;
-    switch (value?.length) {
-      case 0:
-        return '';
-      case 6:
-        return value.toUpperCase();
-      default:
-        return undefined;
+  /** Returns undefined if input is disabled, else a valid code if one has been input, else null. */
+  public get code(): string | null | undefined {
+    if (!this.localContestCodeInput.enabled) {
+      return undefined;
     }
+    const value = this.localContestCodeInput.value;
+    return value?.length === 6 ? value.toUpperCase() : null;
+  }
+
+  public get designConditions(): DesignConditions | undefined {
+    const code = this.code;
+    if (typeof code !== 'string') {
+      return undefined;
+    }
+    return this.designConditionsService.getStandardConditionsForTag(code.substring(3));
   }
 
   public focus(): void {
     this.localContestCodeInputRef.nativeElement.focus();
+    this.emitStateChangeEvent(this.localContestCodeInput.value?.length);
   }
 
   private validateLocalContestCode(control: AbstractControl<string, string>): ValidationErrors | null {
@@ -61,27 +67,26 @@ export class LocalContestCodeInputComponent {
     const result = this.validateLocalContestCodeValue(value);
     if (result === LocalContestCodeInputComponent.ERROR) {
       // Truncate bad suffix. Keep error. Causes a recursive validation on the fixed-up value.
-      control.setValue(this.removeError(value)); 
+      control.setValue(this.removeError(value));
     } else {
       this.emitStateChangeEvent(value.length);
     }
     return result;
   }
 
-  private emitStateChangeEvent(codeLength: number): void {
-    const newState = 
-      codeLength == 0 
-        ? LocalContestCodeInputState.NONE 
-        : codeLength == 6 
-          ? LocalContestCodeInputState.COMPLETE
-          : LocalContestCodeInputState.PREFIX;
+  private emitStateChangeEvent(codeLength: number | undefined): void {
+    const newState = !codeLength // 0 or undefined
+      ? LocalContestCodeInputState.NONE
+      : codeLength == 6
+        ? LocalContestCodeInputState.COMPLETE
+        : LocalContestCodeInputState.PREFIX;
     if (newState !== this.state) {
       this.state = newState;
-      this.change.emit(newState);
+      this.onChange.emit(newState);
     }
   }
 
-  private validateLocalContestCodeValue(value: string) : ValidationErrors | null {
+  private validateLocalContestCodeValue(value: string): ValidationErrors | null {
     if (value.length === 0 || LocalContestCodeInputComponent.LOCAL_CONTEST_MATCHER.test(value)) {
       return null; // No errors. Valid.
     }

@@ -47,7 +47,7 @@ describe('DesignGridService', () => {
   });
 
   it('with finest grid endpoint should furnish finest grid', () => {
-    expect(draftingGridService.constantFinestGrid.density).toBe(
+    expect(DesignGridService.FINEST_GRID.density).toBe(
       DesignGridDensity.FINE
     );
   });

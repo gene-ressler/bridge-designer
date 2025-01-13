@@ -1,26 +1,31 @@
 <jqxNotification
   #moveJointError
-  [template] = "'error'"
-  [position] = "'top-right'"
-  >
-Oops... Can't move a joint onto another joint.
+  [template]="'error'"
+  [position]="'top-right'"
+>
+  Oops... Can't move a joint onto another joint.
 </jqxNotification>
 <jqxNotification
   #tooManyJointsError
-  [template] = "'error'"
-  [position] = "'top-right'"
-  >
-Oops... That makes too many joints.
+  [template]="'error'"
+  [position]="'top-right'"
+>
+  Oops... That makes too many joints.
 </jqxNotification>
 <jqxNotification
   #tooManyMembersError
-  [template] = "'error'"
-  [position] = "'top-right'"
-  >
-Oops... That makes too many members.
+  [template]="'error'"
+  [position]="'top-right'"
+>
+  Oops... That makes too many members.
 </jqxNotification>
 <div class="wrapper">
-  <canvas #draftingPanel class="view" width="{{ width }}" height="{{ height }}">
+  <canvas
+    #draftingPanel
+    class="view"
+    width="{{ width }}"
+    height="{{ height }}"
+  >
     <tool-selector #toolSelector></tool-selector>
   </canvas>
   <cursor-overlay
@@ -33,4 +38,37 @@ Oops... That makes too many members.
     (deleteRequest)="deleteRequestHandler($event)"
     (moveJointRequest)="moveJointRequestHandler($event)"
   ></cursor-overlay>
+  <div class="title-block">
+    <div class="project-name">
+      <input
+        #projectNameInput
+        type="text"
+        maxlength="40"
+        [(ngModel)]="bridgeService.bridge.projectName"
+      />
+    </div>
+    <div class="designer-name">
+      Designed by:
+      <input
+        #designerNameInput
+        style="width: 200px"
+        type="text"
+        maxlength="40"
+        placeholder="Your name!"
+        [(ngModel)]="bridgeService.bridge.designedBy"
+      />
+    </div>
+    <div class="project-id">
+      Project ID:
+      <span class="scenario-id-text">000{{ bridgeService.bridge.designConditions.tag }}&nbsp;&#8209;&nbsp;</span
+      ><input
+        #projectIdInput
+        style="width: 200px"
+        type="text"
+        maxlength="40"
+        placeholder="Your project ID!"
+        [(ngModel)]="bridgeService.bridge.projectId"
+      />
+    </div>
+  </div>
 </div>

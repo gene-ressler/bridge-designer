@@ -5,17 +5,17 @@ import { HotElementService } from '../services/hot-element.service';
 import { SelectCursorService } from '../services/select-cursor.service';
 import { JointCursorService } from '../services/joint-cursor.service';
 import { Joint } from '../../../shared/classes/joint.model';
-import { DesignBridgeService } from '../../../shared/services/design-bridge.service';
+import { BridgeService } from '../../../shared/services/bridge.service';
 import { SelectedElementsService } from '../services/selected-elements-service';
 import { CoordinateService } from '../services/coordinate.service';
-import { DesignGrid, DesignGridDensity } from '../../../shared/services/design-grid.service';
+import { DesignGrid, DesignGridService } from '../../../shared/services/design-grid.service';
 
 /** Implementation of the select drafting panel mode i/o. Includes moving the selected joint. */
 @Injectable({ providedIn: 'root' })
 export class SelectModeService {
   constructor(
     private readonly coordinateService: CoordinateService,
-    private readonly designBridgeService: DesignBridgeService,
+    private readonly bridgeService: BridgeService,
     private readonly elementSelectorService: ElementSelectorService,
     private readonly hotElementService: HotElementService,
     private readonly jointCursorService: JointCursorService,
@@ -87,7 +87,6 @@ export class SelectModeService {
     this.movingJoint = this.initialHotJoint = undefined;
   }
 
-  private static readonly FINE_GRID = new DesignGrid(DesignGridDensity.FINE);
   private readonly nearbyPoint = new Point2D();
 
   handleDocumentKeyDown(event: KeyboardEvent): void {
@@ -95,12 +94,12 @@ export class SelectModeService {
     if (this.movingJoint || this.selectCursorService.isAnchored) {
       return;
     }
-    const selectedJoint = this.selectedElementsService.getSelectedJoint(this.designBridgeService.bridge);
+    const selectedJoint = this.selectedElementsService.getSelectedJoint(this.bridgeService.bridge);
     if (!selectedJoint) {
       return;
     }
-    var dx: number = 0;
-    var dy: number = 0;
+    let dx: number = 0;
+    let dy: number = 0;
     switch (event.key) {
       case 'ArrowUp':
         dy = DesignGrid.FINE_GRID_SIZE;
@@ -117,7 +116,7 @@ export class SelectModeService {
       default:
         return;
     }
-    this.coordinateService.getNearbyPointOnGrid(this.nearbyPoint, selectedJoint, dx, dy, SelectModeService.FINE_GRID);
+    this.coordinateService.getNearbyPointOnGrid(this.nearbyPoint, selectedJoint, dx, dy, DesignGridService.FINEST_GRID);
     this.moveJointRequest?.emit({ joint: selectedJoint, newLocation: this.nearbyPoint });
   }
 
@@ -135,7 +134,7 @@ export class SelectModeService {
     this.selectCursorService.abort();
     const movingJoint = this.initialHotJoint;
     this.movingJoint = movingJoint;
-    const connectedJoints = this.designBridgeService
+    const connectedJoints = this.bridgeService
       .findMembersWithJoint(movingJoint)
       .map(member => member.getOtherJoint(movingJoint));
     this.elementSelectorService.selectJoint(movingJoint);

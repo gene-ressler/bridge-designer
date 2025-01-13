@@ -26,10 +26,10 @@ export class EditableUtility {
    * if merging at the end of the target.)
    */
   public static merge<T extends Editable>(tgt: T[], src: T[], selected: Set<number>): void {
-    var iTgtSrc: number = tgt.length - 1;
+    let iTgtSrc: number = tgt.length - 1;
     tgt.length += src.length;
-    var iTgtDst: number = tgt.length - 1;
-    for (var iSrc = src.length - 1; iSrc >= 0; --iSrc) {
+    let iTgtDst: number = tgt.length - 1;
+    for (let iSrc = src.length - 1; iSrc >= 0; --iSrc) {
       while (iTgtDst > src[iSrc].index) {
         EditableUtility.adjustSelected(selected, iTgtSrc, iTgtDst);
         tgt[iTgtSrc].index = iTgtDst;
@@ -42,9 +42,9 @@ export class EditableUtility {
 
   /** Removes a given subsequence from a mutable target list of Editables. The target is re-indexed. */
   public static remove<T extends Editable>(tgt: T[], subseq: T[], selected: Set<number>): void {
-    var iTgtSrc: number = 0;
-    var iTgtDst: number = 0;
-    for (var iSubseq = 0; iSubseq < subseq.length; iSubseq++) {
+    let iTgtSrc: number = 0;
+    let iTgtDst: number = 0;
+    for (let iSubseq = 0; iSubseq < subseq.length; iSubseq++) {
       while (iTgtSrc < subseq[iSubseq].index) {
         EditableUtility.adjustSelected(selected, iTgtSrc, iTgtDst);
         tgt[iTgtSrc].index = iTgtDst;

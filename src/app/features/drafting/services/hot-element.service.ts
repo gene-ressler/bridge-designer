@@ -4,7 +4,7 @@ import { Joint } from '../../../shared/classes/joint.model';
 import { Utility } from '../../../shared/classes/utility';
 import { DesignJointRenderingService } from '../../../shared/services/design-joint-rendering.service';
 import { SelectedElementsService } from './selected-elements-service';
-import { DesignBridgeService } from '../../../shared/services/design-bridge.service';
+import { BridgeService } from '../../../shared/services/bridge.service';
 import { DesignMemberRenderingService } from '../../../shared/services/design-member-rendering.service';
 import { ViewportTransform2D } from '../../../shared/services/viewport-transform.service';
 import { Member } from '../../../shared/classes/member.model';
@@ -15,7 +15,7 @@ export type HotElementClass = typeof Joint | typeof Member;
 @Injectable({ providedIn: 'root' })
 export class HotElementService {
   constructor(
-    private readonly designBridgeService: DesignBridgeService,
+    private readonly bridgeService: BridgeService,
     private readonly designJointRenderingService: DesignJointRenderingService,
     private readonly designMemberRenderingService: DesignMemberRenderingService,
     private readonly elementSelectionService: SelectedElementsService,
@@ -44,16 +44,16 @@ export class HotElementService {
   ): void {
     const xWorld = this.viewportTransform.viewportToworldX(x);
     const yWorld = this.viewportTransform.viewportToworldY(y);
-    const bridge = this.designBridgeService.bridge;
-    var hotElement: HotElement = undefined;
+    const bridge = this.bridgeService.bridge;
+    let hotElement: HotElement = undefined;
     const jointRadiusWorld = this.viewportTransform.viewportToWorldDistance(
       DesignJointRenderingService.JOINT_RADIUS_VIEWPORT,
     );
     const jointPickRadiusSquared = Utility.sqr(3 * jointRadiusWorld);
     if (!options.considerOnly || options.considerOnly.includes(Joint)) {
       // Could stop at the first joint, but look for minimum in case the screen is small enough for joints to overlap.
-      var minDistanceSquared: number = Number.MAX_VALUE;
-      var minDistanceJoint: Joint | undefined = undefined;
+      let minDistanceSquared: number = Number.MAX_VALUE;
+      let minDistanceJoint: Joint | undefined = undefined;
       bridge.joints.forEach(joint => {
         if (
           (options.excludeFixedJoints && joint.isFixed) ||

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { CartoonSiteRenderingService } from './cartoon-site-rendering.service';
 import { Colors } from '../classes/graphics';
+import { CartoonSketchRenderingService } from './cartoon-sketch-rendering.service';
 
 export const enum CartoonOptionMask {
   NONE = 0,
@@ -14,7 +15,7 @@ export const enum CartoonOptionMask {
   SKETCH = 0x80,
   TITLE_BLOCK = 0x100,
   ALL = 0x200 - 1,
-  STANDARD_OPTIONS = ABUTMENTS | ARCH_LINE | DECK | EXCAVATED_TERRAIN | IN_SITU_TERRAIN,
+  STANDARD_OPTIONS = ABUTMENTS | ARCH_LINE | DECK | EXCAVATED_TERRAIN | IN_SITU_TERRAIN | SKETCH,
   SITE_ONLY = IN_SITU_TERRAIN | MEASUREMENTS,
 }
 
@@ -22,7 +23,10 @@ export const enum CartoonOptionMask {
 export class CartoonRenderingService {
   public options: number = CartoonOptionMask.ALL;
 
-  constructor(private cartoonSiteRenderingService: CartoonSiteRenderingService) {}
+  constructor(
+    private readonly cartoonSiteRenderingService: CartoonSiteRenderingService,
+    private readonly cartoonSketchRenderingService: CartoonSketchRenderingService,
+  ) {}
 
   public render(ctx: CanvasRenderingContext2D) {
     const savedFillStyle = ctx.fillStyle;
@@ -31,6 +35,10 @@ export class CartoonRenderingService {
     ctx.fillStyle = savedFillStyle;
 
     this.cartoonSiteRenderingService.render(ctx, this.options);
+
+    if (this.options & CartoonOptionMask.SKETCH) {
+      this.cartoonSketchRenderingService.renderSketch(ctx);
+    }
 
     if (this.options & CartoonOptionMask.TITLE_BLOCK) {
       this.renderTitleBlock(ctx);
@@ -44,7 +52,7 @@ export class CartoonRenderingService {
     const savedFillStyle = ctx.fillStyle;
     const savedFont = ctx.font;
 
-    const text = 'Title box';
+    const text = 'Title block';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'bottom';
     ctx.font = 'italic 14px sans-serif';
@@ -60,7 +68,7 @@ export class CartoonRenderingService {
     ctx.fillRect(x0, y0, width, height);
     const gap = 3;
     ctx.strokeStyle = 'gray';
-    ctx.strokeRect(x0 + gap, y0 + gap, width - gap - gap, height - gap - gap)
+    ctx.strokeRect(x0 + gap, y0 + gap, width - gap - gap, height - gap - gap);
     ctx.strokeRect(x0, y0, width, height);
     ctx.fillStyle = 'black';
     ctx.fillText(text, x1 - margin, y1 - margin);

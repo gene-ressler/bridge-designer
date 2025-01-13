@@ -6,12 +6,41 @@ import { Member } from '../classes/member.model';
 import { SiteModel } from '../classes/site-model';
 import { DesignConditions, DesignConditionsService } from './design-conditions.service';
 import { StockId } from './inventory.service';
+import { BridgeSketchModel } from '../classes/bridge-sketch.model';
 
-/** Injectable, mutable container for a bridge model and related site information. */
+/** Injectable, mutable container for a bridge model and related site and sketch information. */
 @Injectable({ providedIn: 'root' })
-export class DesignBridgeService {
-  public bridge: BridgeModel = new BridgeModel(DesignConditionsService.PLACEHOLDER_CONDITIONS);
+export class BridgeService {
+  private _bridge: BridgeModel = new BridgeModel(DesignConditionsService.PLACEHOLDER_CONDITIONS);
+  private _sketch: BridgeSketchModel = BridgeSketchModel.ABSENT;
   private _siteInfo: SiteModel = new SiteModel(this.bridge.designConditions);
+  public id: string[] = [];
+
+  public get bridge(): BridgeModel {
+    return this._bridge;
+  }
+
+  /** Updates the current bridge, cancelling the sketch if it doesnt' match. */
+  public set bridge(value: BridgeModel) {
+    if (value.designConditions.tagGeometryOnly !== this.designConditions.tagGeometryOnly) {
+      this._sketch = BridgeSketchModel.ABSENT;
+    }
+    this._bridge = value;
+  }
+
+  public get sketch(): BridgeSketchModel {
+    return this._sketch;
+  }
+
+  /** Sets or clears the sketch. Does nothing if the given sketch doesn't match the bridge. */
+  public set sketch(value: BridgeSketchModel) {
+    if (
+      value == BridgeSketchModel.ABSENT ||
+      value.designConditions.tagGeometryOnly === this.designConditions.tagGeometryOnly
+    ) {
+      this._sketch = value;
+    }
+  }
 
   public get designConditions(): DesignConditions {
     return this.bridge.designConditions;
@@ -42,13 +71,13 @@ export class DesignBridgeService {
   /** Gets the stock used for the most members in the bridge. */
   public getMostCommonStockId(): StockId | undefined {
     const countsByStock = new Map<string, [StockId, number]>();
-    var mostCommonCount: number = -1;
-    var mostCommonStockId: StockId | undefined = undefined;
+    let mostCommonCount: number = -1;
+    let mostCommonStockId: StockId | undefined = undefined;
     for (let member of this.bridge.members) {
       const memberStockId = member.stockId;
       const memberStockIdKey = memberStockId.key;
       const pair = countsByStock.get(memberStockIdKey);
-      var updatedCount: number;
+      let updatedCount: number;
       if (pair === undefined) {
         countsByStock.set(memberStockIdKey, [memberStockId, 1]);
         updatedCount = 1;

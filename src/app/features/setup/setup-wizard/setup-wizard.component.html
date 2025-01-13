@@ -58,7 +58,10 @@
           Yes!
         </jqxRadioButton>
         <div class="vertical-gap">
-          <local-contest-code-input #localContestCodeInput></local-contest-code-input>
+          <local-contest-code-input
+            #localContestCodeInput
+            (onChange)="localContestInputChangeHandler($event)"
+          ></local-contest-code-input>
         </div>
       </fieldset>
     </div>
@@ -175,7 +178,7 @@
           [width]="200"
           [checked]="true"
           (onUnchecked)="setDesignConditionsFromWidgets()"
-          >
+        >
           Medium-strength concrete<br />(0.23 meters thick)
         </jqxRadioButton>
         <jqxRadioButton
@@ -184,28 +187,28 @@
           [width]="200"
           style="margin-top: 8px"
           (onUnchecked)="setDesignConditionsFromWidgets()"
-          >
+        >
           High-strength concrete<br />(0.15 meters thick)
         </jqxRadioButton>
       </fieldset>
       <fieldset class="grouping vertical-gap fill-row">
         <legend class="grouping-topic">Loading</legend>
         <jqxRadioButton
-          #standardTruckLoad
+          #standardTruckLoadButton
           [groupName]="'truckLoad'"
           [width]="200"
           [checked]="true"
           (onUnchecked)="setDesignConditionsFromWidgets()"
-          >
+        >
           Standard 2.25 kN truck<br />(two lanes)
         </jqxRadioButton>
         <jqxRadioButton
-          #permitTruckLoad
+          #permitTruckLoadButton
           [groupName]="'truckLoad'"
           [width]="200"
           style="margin-top: 8px"
           (onUnchecked)="setDesignConditionsFromWidgets()"
-          >
+        >
           480 kN permit loading<br />(centered)
         </jqxRadioButton>
       </fieldset>
@@ -214,10 +217,11 @@
       <fieldset class="grouping fill-row">
         <legend class="grouping-topic">Select a template</legend>
         <jqxListBox
+          #templateList
           [width]="232"
           [height]="398"
-          [source]="templates"
           [selectedIndex]="0"
+          (onSelect)="templateListSelectHandler($event)"
         ></jqxListBox>
       </fieldset>
     </div>
@@ -229,12 +233,16 @@
             for="projectName"
             class="paragraph"
             >Project name:
-            <input
-              #projectNameInput
-              id="projectName"
-              style="width: 222px"
-              type="text"
-            />
+            <div>
+              <input
+                #projectNameInput
+                id="projectName"
+                style="width: 222px"
+                type="text"
+                maxlength="40"
+                [(ngModel)]="bridgeService.bridge.projectName"
+              />
+            </div>
           </label>
         </div>
         <div class="vertical-gap">
@@ -242,27 +250,34 @@
             for="designerName"
             class="paragraph"
             >Designed by:
-            <input
-              #designerNameInput
-              id="designerName"
-              style="width: 222px"
-              type="text"
-            />
+            <div>
+              <input
+                #designerNameInput
+                id="designerName"
+                style="width: 222px"
+                type="text"
+                maxlength="40"
+                [(ngModel)]="bridgeService.bridge.designedBy"
+              />
+            </div>
           </label>
         </div>
         <div class="vertical-gap">
           <label
             for="projectId"
             class="paragraph"
-            >Project ID:<br />
-            <span>
-              <span class="scenarioIdText">{{ scenarioId }}&nbsp;&#8209;&nbsp;</span
+            >Project ID:
+            <div>
+              <span class="scenario-id-text">{{ scenarioId }}&nbsp;&#8209;&nbsp;</span
               ><input
                 #projectIdInput
                 id="projectId"
-                style="width: 172px"
+                style="width: 162px"
                 type="text"
-            /></span>
+                maxlength="40"
+                [(ngModel)]="bridgeService.bridge.projectId"
+              />
+            </div>
           </label>
         </div>
       </fieldset>
@@ -432,16 +447,22 @@
           #siteCostExpander
           [width]="'100%'"
           [expanded]="false"
+          [disabled]="true"
           (onExpanding)="siteCostExpandingHandler()"
           (onCollapsed)="siteCostCollapsedHandler()"
         >
           <div>
             <div class="cost-summary-line">
-              <div>
-                {{ toDollars(costSummary.totalFixedCost) }} (Includes cost of deck, excavation, and supports; not steel
-                trusses.)
+              <div class="deck-cost">
+                <ng-container *ngIf="siteCostExpander.disabled(); else siteCostEnabled">$0.00</ng-container>
+                <ng-template #siteCostEnabled>{{ toDollars(costSummary.totalFixedCost) }}</ng-template>
               </div>
-              <div class="site-condition">Site condition: {{ costSummary.siteCondition }}</div>
+              <div class="deck-cost-comment">(Includes cost of deck, excavation, and supports; not steel)</div>
+              <div class="site-condition">
+                Site condition:
+                <ng-container *ngIf="siteCostExpander.disabled(); else siteConditionEnabled">-----</ng-container>
+                <ng-template #siteConditionEnabled>{{ costSummary.siteCondition }}</ng-template>
+              </div>
             </div>
           </div>
           <div>

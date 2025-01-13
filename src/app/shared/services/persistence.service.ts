@@ -23,12 +23,11 @@ const YEAR_LENGTH = 4;
 export class PersistenceService {
   constructor(
     private readonly designConditionsService: DesignConditionsService,
-    private readonly inventoryService: InventoryService,
-    private readonly draftingGridService: DesignGridService) { }
+    private readonly inventoryService: InventoryService) { }
 
   getSaveSetAsString(saveSet: SaveSet): string {
     const chunks: string[] = [];
-    const grid: Readonly<DesignGrid> = this.draftingGridService.constantFinestGrid;
+    const grid: Readonly<DesignGrid> = DesignGridService.FINEST_GRID;
     chunks.push(saveSet.bridge.version.toString().padStart(YEAR_LENGTH));
     chunks.push(saveSet.bridge.designConditions.codeLong.toString().padStart(SCENARIO_CODE_LENGTH));
     chunks.push(saveSet.bridge.joints.length.toString().padStart(JOINT_COUNT_LENGTH));
@@ -44,7 +43,7 @@ export class PersistenceService {
       chunks.push(member.shape.section.index.toString().padStart(MEMBER_SECTION_LENGTH));
       chunks.push(member.shape.sizeIndex.toString().padStart(MEMBER_SIZE_LENGTH));
     }
-    for (var i = 0; i < saveSet.bridge.members.length; ++i) {
+    for (let i = 0; i < saveSet.bridge.members.length; ++i) {
       const ratios = saveSet.analysisSummary.forceStrengthRatios[i];
       if (ratios === undefined) {
         chunks.push('--', DELIMITER, '--', DELIMITER);
@@ -65,7 +64,7 @@ export class PersistenceService {
     return new SaveSetParser(
       text,
       this.designConditionsService,
-      this.draftingGridService.constantFinestGrid,
+      DesignGridService.FINEST_GRID,
       this.inventoryService).parse(saveSet);
   }
 }
@@ -86,7 +85,7 @@ export class SaveSet {
   }
 
   clear(): void {
-    this.bridge.clear();
+    this.bridge.clear();  
     this.analysisSummary.clear();
     this.draftingPanelState.clear();
   }
@@ -111,7 +110,6 @@ class SaveSetParser {
 
   /** Parse the input text, mutating the save set to match. If the parse fails, the save set is clear. */
   parse(saveSet: SaveSet): void {
-    saveSet.clear();
     try {
       this.parseOrThrow(saveSet);
     } catch (error) {
@@ -121,6 +119,7 @@ class SaveSetParser {
   }
 
   private parseOrThrow(saveSet: SaveSet) {
+    saveSet.bridge.joints.length = saveSet.bridge.members.length = 0; // We're replacing everything.
     if (this.scanNumber(false, YEAR_LENGTH, 'bridge designer version') !== saveSet.bridge.version) {
       throw new Error('bridge design file version is not ' + saveSet.bridge.version);
     }
@@ -128,21 +127,21 @@ class SaveSetParser {
     saveSet.bridge.designConditions = this.designConditionsService.getConditionsForCodeLong(scenarioCode);
     const jointCount = this.scanNumber(false, JOINT_COUNT_LENGTH, 'number of joints');
     const memberCount = this.scanNumber(false, MEMBER_COUNT_LENGTH, 'number of members');
-    for (var i: number = 0, n: number = 1; i < jointCount; i++, n++) {
+    let joint: Joint | undefined;
+    for (let i: number = 0, n: number = 1; i < jointCount; i++, n++) {
       const x = this.scanNumber(true, JOINT_COORD_LENGTH, `joint ${n} x-coordinate`);
       const y = this.scanNumber(true, JOINT_COORD_LENGTH, `joint ${n} y-coordinate`);
-      var joint;
       if (i < saveSet.bridge.designConditions.prescribedJoints.length) {
         joint = saveSet.bridge.designConditions.prescribedJoints[i];
         if (x != this.grid.xformWorldToGrid(joint.x) || y != this.grid.xformWorldToGrid(joint.y)) {
           throw new Error(`bad prescribed joint ${n}`);
         }
       } else {
-        joint = new Joint(i, this.grid.xformGridToWorld(x), this.grid.xformGridToWorld(y), false);
+         joint = new Joint(i, this.grid.xformGridToWorld(x), this.grid.xformGridToWorld(y), false);
       }
       saveSet.bridge.joints.push(joint);
     }
-    for (var i: number = 0, n: number = 1; i < memberCount; i++) {
+    for (let i: number = 0, n: number = 1; i < memberCount; i++) {
       const jointAnumber = this.scanNumber(false, MEMBER_JOINT_LENGTH, `first joint of member ${n}`);
       const jointA = saveSet.bridge.getJointByNumber(jointAnumber);
       const jointBnumber = this.scanNumber(false, MEMBER_JOINT_LENGTH, `second joint of member ${n}`);
@@ -158,7 +157,7 @@ class SaveSetParser {
         this.inventoryService.getShape(sectionIndex, sizeIndex));
       saveSet.bridge.members.push(member);
     }
-    for (var i: number = 0; i < memberCount; i++) {
+    for (let i: number = 0; i < memberCount; i++) {
       const compressionRatioText = this.scanToDelimiter('compression/strength ratio');
       const compressionRatio = SaveSetParser.extractRatioFromText(compressionRatioText);
       const tensionRatioText = this.scanToDelimiter('compression/strength ratio');
@@ -191,8 +190,8 @@ class SaveSetParser {
   };
 
   scanNumber(allowSign: boolean, width: number, what: string): number {
-    var val: number = 0;
-    var isNegated = false;
+    let val: number = 0;
+    let isNegated = false;
     while (width > 0 && this.text[this.readPtr] === ' ') {
       width--;
       this.readPtr++;

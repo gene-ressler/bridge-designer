@@ -52,8 +52,8 @@ export class SiteRenderingHelper2D {
   ): void {
     // const addPoint(x: number, y: number, list?: number[])
     // Etch-a-sketch coordinates.
-    var x: number = 0;
-    var y: number = 0;
+    let x: number = 0;
+    let y: number = 0;
     // Trace left access from right to left.
     const xBaseLeft =
       siteInfo.xLeftmostDeckJoint - SiteConstants.ABUTMENT_INTERFACE_OFFSET;
@@ -99,7 +99,7 @@ export class SiteRenderingHelper2D {
       earthProfile.lineTo(pt0.x, pt0.y);
       earthProfile.lineTo(pt1.x, pt1.y);
     } else {
-      for (var i = SiteConstants.ACCESS_CURVE.length - 1; i >= 0; --i) {
+      for (let i = SiteConstants.ACCESS_CURVE.length - 1; i >= 0; --i) {
         const curvePt: Point2D = SiteConstants.ACCESS_CURVE[i];
         x = viewportTransform.worldToViewportX(xBaseRight + curvePt.x);
         y = viewportTransform.worldToViewportY(
@@ -119,7 +119,7 @@ export class SiteRenderingHelper2D {
     earthProfile.lineTo(x, y);
     // Now the portion of the elevation terrain between abutments.
     for (
-      var i = siteInfo.rightAbutmentInterfaceTerrainIndex;
+      let i = siteInfo.rightAbutmentInterfaceTerrainIndex;
       i <= siteInfo.leftAbutmentInterfaceTerrainIndex;
       i++
     ) {

@@ -2,7 +2,7 @@ import { BridgeModel } from '../../../shared/classes/bridge.model';
 import { EditableUtility, EditCommand } from '../../../shared/classes/editing';
 import { Joint } from '../../../shared/classes/joint.model';
 import { Member } from '../../../shared/classes/member.model';
-import { DesignBridgeService } from '../../../shared/services/design-bridge.service';
+import { BridgeService } from '../../../shared/services/bridge.service';
 import { SelectedElements } from '../../drafting/services/selected-elements-service';
 
 export class DeleteMembersCommand extends EditCommand {
@@ -29,13 +29,13 @@ export class DeleteMembersCommand extends EditCommand {
 
   public static forSelectedMembers(
     selectedElements: SelectedElements,
-    designBridgeService: DesignBridgeService,
+    bridgeService: BridgeService,
   ): DeleteMembersCommand {
-    const bridge = designBridgeService.bridge;
+    const bridge = bridgeService.bridge;
     const members = Array.from(selectedElements.selectedMembers)
       .sort((a, b) => a - b)
       .map(i => bridge.members[i]);
-    const joints = designBridgeService.getJointsForMembersDeletion(selectedElements.selectedMembers);
+    const joints = bridgeService.getJointsForMembersDeletion(selectedElements.selectedMembers);
     return new DeleteMembersCommand(members, joints, bridge, selectedElements);
   }
 

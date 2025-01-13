@@ -92,6 +92,12 @@
   flex-wrap: nowrap;
 }
 
+.deck-cost {
+  width: 90px;
+  text-align: right;
+  margin-right: 4px;
+}
+
 .site-condition {
   flex-grow: 1;
   text-align: right;
@@ -197,7 +203,7 @@ label:has(.jqx-dropdownlist-content-disabled) {
   margin-bottom: 4px;
 }
 
-.scenarioIdText {
+.scenario-id-text {
   color: gray;
 }
 

@@ -19,7 +19,8 @@ export class BridgeModel {
     return this.joints[n - 1];
   }
 
-  clear() {
-    this.joints.length = this.members.length = 0;
+  public clear(): void {
+    this.joints.length = this.designConditions.prescribedJoints.length;
+    this.members.length = 0;
   }
 }

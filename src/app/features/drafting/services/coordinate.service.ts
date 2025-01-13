@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Geometry, Point2D, Point2DInterface } from '../../../shared/classes/graphics';
-import { DesignBridgeService } from '../../../shared/services/design-bridge.service';
+import { BridgeService } from '../../../shared/services/bridge.service';
 import { DesignGrid, DesignGridService } from '../../../shared/services/design-grid.service';
 
 @Injectable({ providedIn: 'root' })
 export class CoordinateService {
   constructor(
-    private readonly bridgeService: DesignBridgeService,
+    private readonly bridgeService: BridgeService,
     private readonly gridService: DesignGridService,
   ) {}
 
@@ -38,12 +38,12 @@ export class CoordinateService {
     dy: number,
     grid: DesignGrid = this.gridService.grid,
   ): boolean {
-    var tryDx: number = dx;
-    var tryDy: number = dy;
+    let tryDx: number = dx;
+    let tryDy: number = dy;
     const snapMultiple = this.gridService.grid.snapMultiple;
     const nSearchSteps = Math.trunc(CoordinateService.SEARCH_RADIUS_METERS / snapMultiple);
     const dstGrid = new Point2D();
-    for (var i = 0; i < nSearchSteps; i++) {
+    for (let i = 0; i < nSearchSteps; i++) {
       dst.x = src.x + tryDx * snapMultiple * DesignGrid.FINE_GRID_SIZE;
       dst.y = src.y + tryDy * snapMultiple * DesignGrid.FINE_GRID_SIZE;
       this.shiftToNearestValidWorldPoint(dst, dstGrid, dst, grid);
@@ -74,14 +74,14 @@ export class CoordinateService {
     src: Point2DInterface,
     grid: DesignGrid = this.gridService.grid,
   ): void {
-    var x: number = src.x;
-    var y: number = src.y;
+    let x: number = src.x;
+    let y: number = src.y;
 
     const spanExtent = this.bridgeService.siteInfo.spanExtent;
-    var yTop: number = spanExtent.y0 + spanExtent.height;
-    var yBottom: number = spanExtent.y0;
-    var xLeft: number = spanExtent.x0;
-    var xRight: number = spanExtent.x0 + spanExtent.width;
+    let yTop: number = spanExtent.y0 + spanExtent.height;
+    let yBottom: number = spanExtent.y0;
+    let xLeft: number = spanExtent.x0;
+    let xRight: number = spanExtent.x0 + spanExtent.width;
 
     // Be safe about testing which world zone we're in.
     const tol = 0.5 * DesignGrid.FINE_GRID_SIZE;

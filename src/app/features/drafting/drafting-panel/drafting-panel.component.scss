@@ -21,3 +21,45 @@
   top: 0;
   z-index: 1;
 }
+
+.title-block {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-color: white;
+  border-style: double;
+  border-width: 5px;
+  border-color: darkgray;
+  width: 340px;
+  font: normal 14px sans-serif;
+  z-index: 2;
+}
+
+.project-name {
+  padding: 4x;
+}
+
+.project-name input {
+  width: calc(100% - 14px);
+  font: bold 16px sans-serif;
+  color: darkgray;
+  text-align: center;
+  outline: none;
+  border-style: none;
+}
+
+.designer-name, .project-id {
+  padding: 2px;
+  border-top: 1px solid;
+}
+
+.designer-name input, .project-id input {
+  width: 200px;
+  outline: none;
+  border-style: none;
+  font: normal 14px sans-serif;
+}
+
+.scenario-id-text {
+  color: gray;
+}

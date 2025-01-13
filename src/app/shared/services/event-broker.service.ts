@@ -26,6 +26,7 @@ export class EventBrokerService {
   public readonly inventorySelectionChange = new Subject<EventInfo>();
   public readonly legacyGraphicsToggle = new Subject<EventInfo>();
   public readonly loadBridgeRequest = new Subject<EventInfo>();
+  public readonly loadSketchRequest = new Subject<EventInfo>();
   public readonly loadInventorySelectorRequest = new Subject<EventInfo>();
   public readonly loadSampleRequest = new Subject<EventInfo>();
   public readonly memberNumbersToggle = new Subject<EventInfo>();

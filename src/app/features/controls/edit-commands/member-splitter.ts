@@ -45,7 +45,7 @@ export class MemberSplitter {
         connectedMemberJointPairs.add(member.key);
       }
     }
-    var existingMemberCount = this.members.length;
+    let existingMemberCount = this.members.length;
     for (const member of this.members) {
       // If the moving joint on this member and the member isn't
       // connected to the joint (possible only for moves).
@@ -53,7 +53,7 @@ export class MemberSplitter {
         this.removedMembers.push(member);
         existingMemberCount--;
         // Re-use the old member index for the first new one to make re-numbering minimially disruptive.
-        var index = member.index;
+        let index = member.index;
         if (!connectedMemberJointPairs.has(Member.getJointsKey(member.a, this.joint))) {
           this.mergedMembers.push(new Member(index, member.a, this.joint, member.material, member.shape));
           index = -1; // Second insert, if any, is un-indexed.
@@ -65,7 +65,7 @@ export class MemberSplitter {
       }
     }
     // Index un-indexed members at the end, so they're appended.
-    var index = existingMemberCount;
+    let index = existingMemberCount;
     this.mergedMembers.forEach(member => {
       if (member.index < 0) {
         member.index = index++;

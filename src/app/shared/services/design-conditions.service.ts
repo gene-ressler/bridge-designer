@@ -154,7 +154,7 @@ export class DesignConditions {
     this.pierHeight = this.isHiPier ? this.deckElevation : this.isPier ? this.deckElevation - this.underClearance : -1;
 
     // Prescribed joint information.
-    var prescribedJointCount = this.panelCount + 1;
+    let prescribedJointCount = this.panelCount + 1;
     this.archJointIndex = this.leftAnchorageJointIndex = this.rightAnchorageJointIndex = -1;
     // Add one prescribed joint for the intermediate support, if any.
     if (this.isPier && !this.isHiPier) {
@@ -184,9 +184,9 @@ export class DesignConditions {
     this.loadedJointCount = this.panelCount + 1;
     this.prescribedJoints = new Array(prescribedJointCount);
 
-    var x = 0;
-    var y = 0;
-    var i = 0;
+    let x = 0;
+    let y = 0;
+    let i = 0;
     for (; i < this.loadedJointCount; i++) {
       this.prescribedJoints[i] = new Joint(i, x, y, true);
       x += DesignConditions.PANEL_SIZE_WORLD;
@@ -372,6 +372,10 @@ export class DesignConditions {
     return this.code.slice(1).every((value, index) => value === other.code[index]);
   }
 
+  public get tagGeometryOnly(): string {
+    return this.tag.substring(0, 2);
+  }
+  
   /*
    * Character 1 - Load case scenario (1=Case A, 2=Case B, 3=Case C, 4=Case D); entry of any character other than 1, 2, 3, or 4 is illegal.
    * Characters 2,3 - Span length, expressed as the number of 4-meter panels; any integer from 1 to 20 is allowed
@@ -557,7 +561,7 @@ export class DesignConditions {
 
   // Static factory intended to be called only by the service.
   static fromKeyCode(keyCode: string): DesignConditions | CodeError {
-    var codeLong: number = 0;
+    let codeLong: number = 0;
     try {
       codeLong = parseInt(keyCode, 10);
     } catch (error) {
@@ -1070,8 +1074,8 @@ export class DesignConditionsService {
   }
 
   public isTagPrefix(s: string): boolean {
-    var lo = 0;
-    var hi = DesignConditionsService.STANDARD_CONDITIONS.length - 1;
+    let lo = 0;
+    let hi = DesignConditionsService.STANDARD_CONDITIONS.length - 1;
     while (lo < hi) {
       const mid = Math.floor((lo + hi) / 2);
       const midKey = DesignConditionsService.STANDARD_CONDITIONS[mid].tag.substring(0, s.length);

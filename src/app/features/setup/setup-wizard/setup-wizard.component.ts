@@ -1,10 +1,11 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { jqxButtonComponent, jqxButtonModule } from 'jqwidgets-ng/jqxbuttons';
 import { jqxDropDownListComponent, jqxDropDownListModule } from 'jqwidgets-ng/jqxdropdownlist';
 import { jqxExpanderComponent, jqxExpanderModule } from 'jqwidgets-ng/jqxexpander';
 import { jqxInputModule } from 'jqwidgets-ng/jqxinput';
-import { jqxListBoxModule } from 'jqwidgets-ng/jqxlistbox';
+import { jqxListBoxComponent, jqxListBoxModule } from 'jqwidgets-ng/jqxlistbox';
 import { jqxRadioButtonComponent, jqxRadioButtonModule } from 'jqwidgets-ng/jqxradiobutton';
 import { jqxWindowComponent, jqxWindowModule } from 'jqwidgets-ng/jqxwindow';
 import { EventBrokerService, EventOrigin } from '../../../shared/services/event-broker.service';
@@ -18,19 +19,31 @@ import {
 } from '../../../shared/services/design-conditions.service';
 import { CartoonRenderingService } from '../../../shared/services/cartoon-rendering.service';
 import { ViewportTransform2D } from '../../../shared/services/viewport-transform.service';
-import { DesignBridgeService } from '../../../shared/services/design-bridge.service';
+import { BridgeService } from '../../../shared/services/bridge.service';
 import { CartoonSiteRenderingService } from '../../../shared/services/cartoon-site-rendering.service';
 import { Graphics } from '../../../shared/classes/graphics';
 import { HeightListComponent } from '../height-list/height-list.component';
 import { BridgeModel } from '../../../shared/classes/bridge.model';
-import { CardService, DeckCartoonSrc, LegendItemName, SetupWizardCardView } from './card-service';
-import { LocalContestCodeInputComponent } from '../local-contest-code-input/local-contest-code-input.component';
+import { CardService, ControlMask, DeckCartoonSrc, LegendItemName, SetupWizardCardView } from './card-service';
+import {
+  LocalContestCodeInputComponent,
+  LocalContestCodeInputState,
+} from '../local-contest-code-input/local-contest-code-input.component';
+import { BridgeSketchService } from '../../../shared/services/bridge-sketch.service';
+import { CartoonSketchRenderingService } from '../../../shared/services/cartoon-sketch-rendering.service';
+import { CartoonJointRenderingService } from '../../../shared/services/cartoon-joint-rendering.service';
 
+/**
+ * The card-based setup wizard.
+ *
+ * Basic appearance and event-handling happens here. Card-specific logic is delegated to CardService.
+ */
 @Component({
   selector: 'setup-wizard',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     HeightListComponent,
     jqxButtonModule,
     jqxDropDownListModule,
@@ -42,10 +55,13 @@ import { LocalContestCodeInputComponent } from '../local-contest-code-input/loca
     LocalContestCodeInputComponent,
   ],
   providers: [
+    BridgeService,
+    BridgeSketchService,
     CardService,
+    CartoonJointRenderingService,
     CartoonRenderingService,
     CartoonSiteRenderingService,
-    DesignBridgeService,
+    CartoonSketchRenderingService,
     ViewportTransform2D,
   ],
   templateUrl: './setup-wizard.component.html',
@@ -76,10 +92,6 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
   readonly deckElevations = SetupWizardComponent.ALL_DECK_ELEVATIONS;
   readonly edition = 'Cloud edition';
   readonly pierHeights: string[] = SetupWizardComponent.ALL_DECK_ELEVATIONS;
-  /** Local contest code or 4's followed by scenario tag. */
-  scenarioId: string = '00001A';
-  // TODO: Load from template library.
-  readonly templates = ['&lt;none&gt;', 'Through truss - Howe'];
 
   /** Current dialog height. Varies with site cost expander state. */
   dialogHeight: number = 594;
@@ -103,32 +115,35 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
   @ViewChild('noAnchoragesButton') noAnchoragesButton!: jqxRadioButtonComponent;
   @ViewChild('noPierButton') noPierButton!: jqxRadioButtonComponent;
   @ViewChild('oneAnchorageButton') oneAnchorageButton!: jqxRadioButtonComponent;
-  @ViewChild('permitTruckLoad') permitTruckLoad!: jqxRadioButtonComponent;
+  @ViewChild('permitTruckLoadButton') permitTruckLoadButton!: jqxRadioButtonComponent;
   @ViewChild('pierHeightList') pierHeightList!: HeightListComponent;
   @ViewChild('projectIdSiteConditionsCode') projectIdSiteConditionsCode!: ElementRef<HTMLSpanElement>;
   @ViewChild('siteCostExpander') siteCostExpander!: jqxExpanderComponent;
   @ViewChild('standardAbutmentsButton') standardAbutmentsButton!: jqxRadioButtonComponent;
-  @ViewChild('standardTruckLoad') standardTruckLoad!: jqxRadioButtonComponent;
+  @ViewChild('standardTruckLoadButton') standardTruckLoadButton!: jqxRadioButtonComponent;
+  @ViewChild('templateList') templateList!: jqxListBoxComponent;
   @ViewChild('twoAnchoragesButton') twoAnchoragesButton!: jqxRadioButtonComponent;
 
   constructor(
+    readonly bridgeService: BridgeService,
+    private readonly bridgeSketchService: BridgeSketchService,
     private readonly cartoonRenderingService: CartoonRenderingService,
-    private readonly designBridgeService: DesignBridgeService,
     private readonly designConditionsService: DesignConditionsService,
     private readonly eventBrokerService: EventBrokerService,
     private readonly cardService: CardService,
     private readonly viewportTransform: ViewportTransform2D,
   ) {
-    this.designConditions = designBridgeService.designConditions;
+    this.designConditions = bridgeService.designConditions;
     cardService.initialize(this);
+    bridgeService.id.push('setupWizard');
   }
 
   get designConditions(): DesignConditions {
-    return this.designBridgeService.designConditions;
+    return this.bridgeService.designConditions;
   }
 
-  private set designConditions(value: DesignConditions) {
-    this.designBridgeService.bridge = new BridgeModel(value);
+  set designConditions(value: DesignConditions) {
+    this.bridgeService.bridge = new BridgeModel(value);
   }
 
   /** Sets up widgets directly associated with bridge service design conditions. */
@@ -175,9 +190,9 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
 
     // Load type
     if (conditions.loadType === LoadType.STANDARD_TRUCK) {
-      this.standardTruckLoad.check();
+      this.standardTruckLoadButton.check();
     } else {
-      this.permitTruckLoad.check();
+      this.permitTruckLoadButton.check();
     }
 
     // Widgets that depend on ones already initialized.
@@ -190,7 +205,7 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
       this.archAbutmentsButton.checked() ? 24 - 4 * this.archHeightList.selectedIndex : -1,
       this.isPierButton.checked() ? 24 - 4 * this.pierHeightList.selectedIndex : -1,
       this.oneAnchorageButton.checked() ? 1 : this.twoAnchoragesButton.checked() ? 2 : 0,
-      this.standardTruckLoad.checked() ? LoadType.STANDARD_TRUCK : LoadType.HEAVY_TRUCK,
+      this.standardTruckLoadButton.checked() ? LoadType.STANDARD_TRUCK : LoadType.HEAVY_TRUCK,
       this.highStrengthConcreteButton.checked() ? DeckType.HIGH_STRENGTH : DeckType.MEDIUM_STRENGTH,
     );
     this.designConditions = this.designConditionsService.getConditionsForSetupKey(key);
@@ -204,6 +219,7 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
     card.renderDeckCartoon();
     card.renderElevationCartoon();
     card.renderLegendItemsForCartoon();
+    card.enableControls();
   }
 
   private setCardVisibility(index: number, isVisible: boolean = true): void {
@@ -214,12 +230,21 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
     if (newCardIndex === undefined || newCardIndex < 0 || newCardIndex >= CardService.CARD_COUNT) {
       return;
     }
+    // Make the old card invisible and new one visible.
     this.setCardVisibility(this.cardService.card.index, false);
     this.setCardVisibility(newCardIndex);
-    this.backButton.disabled(newCardIndex == 0);
-    this.nextButton.disabled(newCardIndex == CardService.CARD_COUNT - 1);
+    // Install the view and navigation logic for the new card.
     this.cardService.goToCard(newCardIndex);
+    // Adjust appearance to incorporate the card change (e.g. navigation buttons).
     this.updateDependentWidgets();
+  }
+
+  get scenarioId() : string {
+    if (!this.localContestCodeInput) {
+      return '0001A';
+    }
+    const localContestCode =  this.localContestCodeInput.code;
+    return localContestCode?.length === 6 ? localContestCode : `000${this.designConditions.tag}`;
   }
 
   get costSummary(): FixedCostSummary {
@@ -236,8 +261,8 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
       this.oneAnchorageButton.disable();
       this.twoAnchoragesButton.disable();
     } else {
+      this.archHeightList.disabled = true;
       this.isPierButton.enable();
-      this.pierHeightList.disabled = false;
       this.oneAnchorageButton.enable();
       this.twoAnchoragesButton.enable();
     }
@@ -264,8 +289,12 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
   finishButtonOnClickHandler(): void {
     this.eventBrokerService.loadBridgeRequest.next({
       source: EventOrigin.SETUP_DIALOG,
-      data: this.designBridgeService.bridge,
+      data: this.bridgeService.bridge,
     });
+    this.eventBrokerService.loadSketchRequest.next({
+      source: EventOrigin.SETUP_DIALOG,
+      data: this.bridgeService.sketch,
+    })
     this.dialog.close();
   }
 
@@ -275,17 +304,29 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
     // window.open('https://google.com', '_blank', 'location=yes,height=570,width=520,scrollbars=yes,status=yes');
   }
 
+  localContestInputChangeHandler(_state: LocalContestCodeInputState) {
+    this.cardService.card.enableControls(); // Next button.
+  }
+
   localContestYesRadioChangeHandler(event: any) {
     if (event.args.checked) {
       this.localContestCodeInput.disabled = false;
       this.localContestCodeInput.focus();
+      this.cardService.card.enableControls(); // Next button
     } else {
       this.localContestCodeInput.disabled = true;
     }
   }
 
   nextButtonOnClickHandler(): void {
-    this.goToCard(this.cardService.card.nextCardIndex);
+    // If user has entered valid local contest code, set associated design conditions.
+    const card = this.cardService.card;
+    const conditions = this.localContestCodeInput.designConditions;
+    if (card.index === 1 && conditions) {
+      this.designConditions = conditions;
+      this.setWidgetsFromDesignConditions();
+    }
+    this.goToCard(card.nextCardIndex);
   }
 
   isPierRadioChangeHandler(event: any): void {
@@ -310,19 +351,19 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
     this.dialogHeight -= SetupWizardComponent.SITE_COST_DROPDOWN_HEIGHT;
   }
 
+  templateListSelectHandler(event: any) {
+    this.bridgeService.sketch = this.templateList.source()[event.args.index];
+    this.cardService.card.renderElevationCartoon();
+  }
+
   private get elevationCtx(): CanvasRenderingContext2D {
     return Graphics.getContext(this.elevationCanvas);
   }
 
   renderElevationCartoon(options: number): void {
-    this.viewportTransform.setWindow(this.designBridgeService.siteInfo.drawingWindow);
+    this.viewportTransform.setWindow(this.bridgeService.siteInfo.drawingWindow);
     this.cartoonRenderingService.options = options;
     this.cartoonRenderingService.render(this.elevationCtx);
-  }
-
-  /** Returns the current, validated content of the local contest code input. */
-  get localContestCode(): string | undefined {
-    return this.localContestCodeInput.code;
   }
 
   /** Opens the dialog, setting up widgets with given design conditions. */
@@ -332,22 +373,46 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
     this.dialog.open();
   }
 
-  enableSiteCostExpander(isEnabled: boolean): void {
-    if (isEnabled) {
-    this.siteCostExpander.enable();
+  // Start SetupWizardCardView methods.
+
+  /** Enables or disabled various navigation and view controls based on a mask. See enum ControlMask. */
+  enableControls(enabledMask: number): void {
+    this.backButton.disabled(!(enabledMask & ControlMask.BACK_BUTTON));
+    this.nextButton.disabled(!(enabledMask & ControlMask.NEXT_BUTTON));
+    this.finishButton.disabled(!(enabledMask & ControlMask.FINISH_BUTTON));
+    if (enabledMask & ControlMask.SITE_COST) {
+      this.siteCostExpander.enable();
     } else {
       this.siteCostExpander.collapse();
       this.siteCostExpander.disable();
     }
   }
 
+  loadDesignTemplates(): void {
+    const templateList = this.bridgeSketchService.getSketchList(this.designConditions);
+    if (this.templateList.source() === templateList) {
+      return;
+    }
+    this.templateList.displayMember('name');
+    this.templateList.source(templateList);
+    this.templateList.selectIndex(0);
+    this.templateList.focus();
+  }
+
+  /** Returns the current, validated content of the local contest code input. Null means none. Undefined means incomplete. */
+  get localContestCode(): string | null | undefined {
+    return this.localContestCodeInput.code;
+  }
+
   setLegendItemVisibility(item: LegendItemName, isVisible: boolean = true) {
     this.legendItemsByName.get(item)!.style.display = isVisible ? '' : 'none';
   }
 
+  // Start SetupWizardCardView methods.
+
   ngAfterViewInit(): void {
     // Find all the elements associated with cards and hide all but 'card-1'.
-    for (var i: number = 0; i < CardService.CARD_COUNT; ++i) {
+    for (let i: number = 0; i < CardService.CARD_COUNT; ++i) {
       this.cardElements[i] = this.content.nativeElement.querySelectorAll(`.card-${i + 1}`);
       if (i !== 0) {
         this.setCardVisibility(i, false);

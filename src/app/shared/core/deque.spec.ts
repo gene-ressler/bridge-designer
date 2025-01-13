@@ -56,12 +56,12 @@ describe('Deque', () => {
   });
 
   it('should do a rotary from left to right', () => {
-    for (var i = 50; i >= 1; --i) deque.pushLeft(i);
-    for (var i = 51; i <= 100; ++i) deque.pushRight(i);
+    for (let i = 50; i >= 1; --i) deque.pushLeft(i);
+    for (let i = 51; i <= 100; ++i) deque.pushRight(i);
     expect(deque.length).toBe(100);
     expect(deque.fullness).toBe(1);
-    var expected = 1;
-    for (var i = 0; i < 300; ++i) {
+    let expected = 1;
+    for (let i = 0; i < 300; ++i) {
       const value = deque.popLeft();
       expect(value).toBe(expected);
       if (++expected > 100) expected = 1;
@@ -71,11 +71,11 @@ describe('Deque', () => {
   });
 
   it('should do a rotary from right to left', () => {
-    for (var i = 50; i >= 1; --i) deque.pushLeft(i);
-    for (var i = 51; i <= 100; ++i) deque.pushRight(i);
+    for (let i = 50; i >= 1; --i) deque.pushLeft(i);
+    for (let i = 51; i <= 100; ++i) deque.pushRight(i);
     expect(deque.length).toBe(100);
-    var expected = 100;
-    for (var i = 0; i < 300; ++i) {
+    let expected = 100;
+    for (let i = 0; i < 300; ++i) {
       const value = deque.popRight();
       expect(value).toBe(expected);
       if (--expected < 1) expected = 100;

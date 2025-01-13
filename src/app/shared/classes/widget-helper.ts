@@ -16,7 +16,7 @@ export class WidgetHelper {
     tool.on('click', () =>
       subject.next({
         source: EventOrigin.TOOLBAR,
-        data,
+        data: typeof data === 'function' ? data() : data,
       }),
     );
   }

@@ -2,14 +2,14 @@ import { Injectable } from '@angular/core';
 import { Colors, Point2D } from '../classes/graphics';
 import { SiteConstants } from '../classes/site-model';
 import { AbutmentSide, SiteDetailRenderers, SiteRenderingHelper2D } from '../classes/site-rendering-helper-2d';
-import { DesignBridgeService } from './design-bridge.service';
+import { BridgeService } from './bridge.service';
 import { FillPatternsService as FillPatternService } from './fill-pattern.service';
 import { ViewportTransform2D } from './viewport-transform.service';
 
 @Injectable({ providedIn: 'root' })
 export class DesignSiteRenderingService implements SiteDetailRenderers {
   constructor(
-    private readonly designBridgeService: DesignBridgeService,
+    private readonly bridgeService: BridgeService,
     private readonly fillPatternService: FillPatternService,
     private readonly viewportTransform: ViewportTransform2D,
   ) {}
@@ -20,7 +20,7 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     this.renderInSituCrossSection(ctx);
     SiteRenderingHelper2D.renderAbutmentsAndPier(
       ctx,
-      this.designBridgeService.designConditions,
+      this.bridgeService.designConditions,
       this,
       this.viewportTransform,
     );
@@ -36,7 +36,7 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     const savedFillStyle = ctx.fillStyle;
     const savedLineWidth = ctx.lineWidth;
 
-    const conditions = this.designBridgeService.designConditions;
+    const conditions = this.bridgeService.designConditions;
 
     // Calculate deck beam dimensions in viewport pixel coordinates.
     const halfBeamFlangeWidth = this.viewportTransform.worldToViewportDistance(0.18);
@@ -68,7 +68,7 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     ctx.stroke();
 
     // Draw the deck beams and also the deck slab joints.
-    for (var i = 0; i < conditions.loadedJointCount; i++) {
+    for (let i = 0; i < conditions.loadedJointCount; i++) {
       const x = this.viewportTransform.worldToViewportX(conditions.prescribedJoints[i].x);
       ctx.lineWidth = 3;
       ctx.strokeStyle = Colors.STEEL;
@@ -100,7 +100,7 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     const savedStrokeStyle = ctx.strokeStyle;
     const savedLineWidth = ctx.lineWidth;
     
-    const siteInfo = this.designBridgeService.siteInfo;
+    const siteInfo = this.bridgeService.siteInfo;
 
     // Set up return values for earth profile.
     const earthProfile: Path2D = new Path2D();
@@ -113,7 +113,7 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     // Now stroke the edge of the portion of the elevation terrain between abutments.
     ctx.strokeStyle = Colors.EARTH;
     ctx.beginPath();
-    for (var i = siteInfo.rightAbutmentInterfaceTerrainIndex; i <= siteInfo.leftAbutmentInterfaceTerrainIndex; i++) {
+    for (let i = siteInfo.rightAbutmentInterfaceTerrainIndex; i <= siteInfo.leftAbutmentInterfaceTerrainIndex; i++) {
       const x = this.viewportTransform.worldToViewportX(
         SiteConstants.ELEVATION_TERRAIN_POINTS[i].x + siteInfo.halfCutGapWidth,
       );
@@ -130,7 +130,7 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     for (const pt of rightAccess) {
       ctx.lineTo(pt.x, pt.y);
     }
-    for (var i = rightAccess.length - 1; i >= 0; --i) {
+    for (let i = rightAccess.length - 1; i >= 0; --i) {
       const pt: Point2D = rightAccess[i];
       ctx.lineTo(pt.x, pt.y + subgradeHeight);
     }
@@ -152,7 +152,7 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     for (const pt of leftAccess) {
       ctx.lineTo(pt.x, pt.y);
     }
-    for (var i = leftAccess.length - 1; i >= 0; --i) {
+    for (let i = leftAccess.length - 1; i >= 0; --i) {
       const pt: Point2D = leftAccess[i];
       ctx.lineTo(pt.x, pt.y + subgradeHeight);
     }
@@ -178,18 +178,18 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
   private renderInSituCrossSection(ctx: CanvasRenderingContext2D) {
     const savedStrokeStyle = ctx.strokeStyle;
     const savedLineDash = ctx.getLineDash();
-    const siteInfo = this.designBridgeService.siteInfo;
+    const siteInfo = this.bridgeService.siteInfo;
 
     // Draw the high water mark.
     ctx.strokeStyle = Colors.WATER;
     const leftShore: Point2D = SiteConstants.ELEVATION_TERRAIN_POINTS[SiteConstants.LEFT_SHORE_INDEX];
     const rightShore: Point2D = SiteConstants.ELEVATION_TERRAIN_POINTS[SiteConstants.RIGHT_SHORE_INDEX];
-    var x0 = this.viewportTransform.worldToViewportX(leftShore.x + siteInfo.halfCutGapWidth);
-    var y0 = this.viewportTransform.worldToViewportY(leftShore.y + siteInfo.yGradeLevel);
-    var x1 = this.viewportTransform.worldToViewportX(rightShore.x + siteInfo.halfCutGapWidth);
-    var y1 = this.viewportTransform.worldToViewportY(rightShore.y + siteInfo.yGradeLevel);
+    let x0 = this.viewportTransform.worldToViewportX(leftShore.x + siteInfo.halfCutGapWidth);
+    let y0 = this.viewportTransform.worldToViewportY(leftShore.y + siteInfo.yGradeLevel);
+    let x1 = this.viewportTransform.worldToViewportX(rightShore.x + siteInfo.halfCutGapWidth);
+    let y1 = this.viewportTransform.worldToViewportY(rightShore.y + siteInfo.yGradeLevel);
     ctx.beginPath();
-    for (var i = 0; i < 3; i++) {
+    for (let i = 0; i < 3; i++) {
       ctx.moveTo(x0, y0);
       ctx.lineTo(x1, y1);
       x0 += 30;
@@ -206,7 +206,7 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     // Draw right bank profile up to right abutment. Skip [0] and [length-1] because they're
     // the lower left and lower right polygon points, which we don't need here.
     ctx.beginPath();
-    for (var i = 1; i <= siteInfo.rightAbutmentInterfaceTerrainIndex; i++) {
+    for (let i = 1; i <= siteInfo.rightAbutmentInterfaceTerrainIndex; i++) {
       const pi = SiteConstants.ELEVATION_TERRAIN_POINTS[i];
       const x = this.viewportTransform.worldToViewportX(pi.x + siteInfo.halfCutGapWidth);
       const y = this.viewportTransform.worldToViewportY(pi.y + siteInfo.yGradeLevel);
@@ -217,7 +217,7 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     // Draw left bank profile starting with left abutment.
     ctx.beginPath();
     for (
-      var i = siteInfo.leftAbutmentInterfaceTerrainIndex;
+      let i = siteInfo.leftAbutmentInterfaceTerrainIndex;
       i < SiteConstants.ELEVATION_TERRAIN_POINTS.length - 1;
       i++
     ) {

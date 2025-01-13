@@ -12,7 +12,7 @@ export class FillPatternsService {
   private subgrade: Map<CanvasRenderingContext2D, FillPattern> = new Map<CanvasRenderingContext2D, FillPattern>();
 
   public createConcrete(ctx: CanvasRenderingContext2D): FillPattern {
-    var concrete = this.concrete.get(ctx);
+    let concrete = this.concrete.get(ctx);
     if (!concrete) {
       concrete = this.createConcreteImpl(ctx);
       this.concrete.set(ctx, concrete);
@@ -21,7 +21,7 @@ export class FillPatternsService {
   }
 
   public createEarth(ctx: CanvasRenderingContext2D): FillPattern {
-    var earth = this.earth.get(ctx);
+    let earth = this.earth.get(ctx);
     if (!earth) {
       earth = this.createEarthImpl(ctx);
       this.earth.set(ctx, earth);
@@ -30,7 +30,7 @@ export class FillPatternsService {
   }
   
   public createExcavation(ctx: CanvasRenderingContext2D): FillPattern {
-    var excavation = this.excavation.get(ctx);
+    let excavation = this.excavation.get(ctx);
     if (!excavation) {
       excavation = this.createExcavationImpl(ctx);
       this.excavation.set(ctx, excavation);
@@ -39,7 +39,7 @@ export class FillPatternsService {
   }
 
   public createSubgrade(ctx: CanvasRenderingContext2D): FillPattern {
-    var subgrade = this.subgrade.get(ctx);
+    let subgrade = this.subgrade.get(ctx);
     if (!subgrade) {
       subgrade = this.createSubgradeImpl(ctx);
       this.subgrade.set(ctx, subgrade);
@@ -55,7 +55,7 @@ export class FillPatternsService {
     patternCtx.fillStyle = Colors.CONCRETE;
     patternCtx.beginPath();
     const dotCount = patternCtx.canvas.width * patternCtx.canvas.height * 0.25;
-    for (var i = 0; i < dotCount; ++i) {
+    for (let i = 0; i < dotCount; ++i) {
       const x = Math.floor(Math.random() * patternCtx.canvas.width);
       const y = Math.floor(Math.random() * patternCtx.canvas.height);
       patternCtx.fillRect(x, y, 1, 1);
@@ -72,8 +72,8 @@ export class FillPatternsService {
     }
     patternCtx.strokeStyle = Colors.EARTH;
     patternCtx.beginPath();
-    var x0y1 = -32;
-    var y0x1 = 0;
+    let x0y1 = -32;
+    let y0x1 = 0;
     while (x0y1 <= 32) {
       patternCtx.moveTo(x0y1, y0x1);
       patternCtx.lineTo(y0x1, x0y1);

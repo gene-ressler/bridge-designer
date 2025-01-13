@@ -4,7 +4,7 @@ import { SelectedElementsService } from './selected-elements-service';
 import { ViewportTransform2D } from '../../../shared/services/viewport-transform.service';
 import { Joint } from '../../../shared/classes/joint.model';
 import { HotElementService } from './hot-element.service';
-import { DesignBridgeService } from '../../../shared/services/design-bridge.service';
+import { BridgeService } from '../../../shared/services/bridge.service';
 import { EventBrokerService, EventOrigin } from '../../../shared/services/event-broker.service';
 import { Utility } from '../../../shared/classes/utility';
 
@@ -13,7 +13,7 @@ import { Utility } from '../../../shared/classes/utility';
 export class ElementSelectorService {
   constructor(
     private readonly selectedElementsService: SelectedElementsService,
-    private readonly designBridgeService: DesignBridgeService,
+    private readonly bridgeService: BridgeService,
     private readonly hotElementService: HotElementService,
     private readonly eventBrokerService: EventBrokerService,
     private readonly viewportTransform: ViewportTransform2D,
@@ -44,12 +44,12 @@ export class ElementSelectorService {
   }
 
   public selectAllMembers(): void {
-    const memberCount = this.designBridgeService.bridge.members.length;
+    const memberCount = this.bridgeService.bridge.members.length;
     const selectedMembers = this.selectedElementsService.selectedElements.selectedMembers;
     if (selectedMembers.size == memberCount) {
       return;
     }
-    for (var i = 0; i < memberCount; ++i) {
+    for (let i = 0; i < memberCount; ++i) {
       selectedMembers.add(i);
     }
     this.sendSelectedElementsChange();
@@ -102,8 +102,8 @@ export class ElementSelectorService {
     this.viewportTransform.viewportToWorldRectangle2D(this.worldCursor, cursor);
     const membersToSelect =
       cursor.width >= 0
-        ? this.designBridgeService.getMembersInsideRectangle(this.worldCursor)
-        : this.designBridgeService.getMembersTouchingRectangle(this.worldCursor);
+        ? this.bridgeService.getMembersInsideRectangle(this.worldCursor)
+        : this.bridgeService.getMembersTouchingRectangle(this.worldCursor);
     const selectedMembers = this.selectedElementsService.selectedElements.selectedMembers;
     membersToSelect.forEach(member => selectedMembers.add(member.index));
   }

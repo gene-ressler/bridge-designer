@@ -2,17 +2,19 @@ import { Injectable } from '@angular/core';
 import { CartoonOptionMask } from './cartoon-rendering.service';
 import { AbutmentSide, SiteRenderingHelper2D } from '../classes/site-rendering-helper-2d';
 import { ViewportTransform2D } from './viewport-transform.service';
-import { DesignBridgeService } from './design-bridge.service';
+import { BridgeService } from './bridge.service';
 import { Colors, Graphics, Point2D, Rectangle2D } from '../classes/graphics';
 import { SiteConstants } from '../classes/site-model';
 import { FillPatternsService } from './fill-pattern.service';
 import { DesignConditions } from './design-conditions.service';
-import { Joint } from '../classes/joint.model';
+import { CartoonJointRenderingService } from './cartoon-joint-rendering.service';
+import { BridgeSketchModel } from '../classes/bridge-sketch.model';
 
 @Injectable({ providedIn: 'root' })
 export class CartoonSiteRenderingService {
   constructor(
-    private readonly designBridgeService: DesignBridgeService,
+    private readonly cartoonJointRenderingService: CartoonJointRenderingService,
+    private readonly bridgeService: BridgeService,
     private readonly viewportTransform: ViewportTransform2D,
     private readonly fillPatternService: FillPatternsService,
   ) {}
@@ -24,13 +26,13 @@ export class CartoonSiteRenderingService {
     if (options & CartoonOptionMask.EXCAVATED_TERRAIN) {
       this.renderExavatedCrossSection(ctx);
     }
-    if (options & CartoonOptionMask.ARCH_LINE) {
+    if (options & CartoonOptionMask.ARCH_LINE && this.bridgeService.sketch === BridgeSketchModel.ABSENT) {
       this.renderArchLine(ctx);
     }
     if (options & CartoonOptionMask.ABUTMENTS) {
       SiteRenderingHelper2D.renderAbutmentsAndPier(
         ctx,
-        this.designBridgeService.designConditions,
+        this.bridgeService.designConditions,
         this,
         this.viewportTransform,
       );
@@ -50,7 +52,7 @@ export class CartoonSiteRenderingService {
     const savedFillStyle = ctx.fillStyle;
     const savedLineWidth = ctx.lineWidth;
 
-    const conditions = this.designBridgeService.designConditions;
+    const conditions = this.bridgeService.designConditions;
     const viewportTransform = this.viewportTransform;
     const ySlabTop = viewportTransform.worldToViewportY(SiteConstants.WEAR_SURFACE_HEIGHT);
     const ySlabBottom = ySlabTop + 2;
@@ -77,7 +79,7 @@ export class CartoonSiteRenderingService {
     ctx.strokeStyle = savedStrokeStyle;
 
     // Deck beams and associated joints.
-    for (var i = 0; i < conditions.loadedJointCount; i++) {
+    for (let i = 0; i < conditions.loadedJointCount; i++) {
       const joint = conditions.prescribedJoints[i];
       const x = viewportTransform.worldToViewportX(joint.x);
       ctx.beginPath();
@@ -85,41 +87,24 @@ export class CartoonSiteRenderingService {
       ctx.lineTo(x, yBeamBottom);
       ctx.stroke();
       if (options & CartoonOptionMask.JOINTS) {
-        renderJoint(ctx, joint);
+        this.cartoonJointRenderingService.renderJoint(ctx, joint);
       }
     }
 
     // Draw the prescribed joints other than those on the deck.
     if (options & CartoonOptionMask.JOINTS) {
       // Render all (arch and anchorage joints)
-      for (var i = conditions.loadedJointCount; i < conditions.prescribedJoints.length; i++) {
-        renderJoint(ctx, conditions.prescribedJoints[i]);
+      for (let i = conditions.loadedJointCount; i < conditions.prescribedJoints.length; i++) {
+        this.cartoonJointRenderingService.renderJoint(ctx, conditions.prescribedJoints[i]);
       }
     } else {
       // Just the anchorages.
       if (conditions.isLeftAnchorage) {
-        renderJoint(ctx, conditions.prescribedJoints[conditions.leftAnchorageJointIndex]);
+        this.cartoonJointRenderingService.renderJoint(ctx, conditions.prescribedJoints[conditions.leftAnchorageJointIndex]);
       }
       if (conditions.isRightAnchorage) {
-        renderJoint(ctx, conditions.prescribedJoints[conditions.rightAnchorageJointIndex]);
+        this.cartoonJointRenderingService.renderJoint(ctx, conditions.prescribedJoints[conditions.rightAnchorageJointIndex]);
       }
-    }
-
-    function renderJoint(ctx: CanvasRenderingContext2D, joint: Joint): void {
-      const savedStrokeStyle = ctx.strokeStyle;
-      const savedFillStyle = ctx.fillStyle;
-
-      const x = viewportTransform.worldToViewportX(joint.x);
-      const y = viewportTransform.worldToViewportY(joint.y);
-      ctx.beginPath();
-      ctx.arc(x, y, 2, 0, 2 * Math.PI);
-      ctx.fillStyle = 'white';
-      ctx.fill();
-      ctx.strokeStyle = 'black';
-      ctx.stroke();
-
-      ctx.fillStyle = savedFillStyle;
-      ctx.strokeStyle = savedStrokeStyle;
     }
   }
 
@@ -136,7 +121,7 @@ export class CartoonSiteRenderingService {
       earthProfile,
       leftAccess,
       rightAccess,
-      this.designBridgeService.siteInfo,
+      this.bridgeService.siteInfo,
       this.viewportTransform,
     );
     ctx.fillStyle = Colors.CARTOON_EARTH;
@@ -164,10 +149,10 @@ export class CartoonSiteRenderingService {
     const savedFillStyle = ctx.fillStyle;
     const savedStrokeStyle = ctx.strokeStyle;
 
-    const siteInfo = this.designBridgeService.siteInfo;
+    const siteInfo = this.bridgeService.siteInfo;
     const elevation = SiteConstants.ELEVATION_TERRAIN_POINTS;
     ctx.beginPath();
-    for (var i = SiteConstants.RIGHT_SHORE_INDEX; i <= SiteConstants.LEFT_SHORE_INDEX; ++i) {
+    for (let i = SiteConstants.RIGHT_SHORE_INDEX; i <= SiteConstants.LEFT_SHORE_INDEX; ++i) {
       const x = this.viewportTransform.worldToViewportX(elevation[i].x + siteInfo.halfCutGapWidth);
       const y = this.viewportTransform.worldToViewportY(elevation[i].y + siteInfo.yGradeLevel);
       ctx.lineTo(x, y);
@@ -198,29 +183,29 @@ export class CartoonSiteRenderingService {
    * parameter for the proper catenary doesn't have a closed form.
    */
   private renderArchLine(ctx: CanvasRenderingContext2D): void {
-    const conditions = this.designBridgeService.designConditions;
-    // TODO: ... || sketch
+    const conditions = this.bridgeService.designConditions;
     if (!conditions.isArch) {
       return;
     }
 
     const savedStrokeStyle = ctx.strokeStyle;
 
-    const iArchJoints = conditions.archJointIndex;
-    const p1 = conditions.prescribedJoints[iArchJoints];
+    const abutmentArchJointsIndex = conditions.archJointIndex;
+    const p1 = conditions.prescribedJoints[abutmentArchJointsIndex];
     const p2 = conditions.prescribedJoints[Math.trunc(conditions.panelCount / 2)];
-    const p3 = conditions.prescribedJoints[iArchJoints + 1];
+    const p3 = conditions.prescribedJoints[abutmentArchJointsIndex + 1];
+
     const xMid = 0.5 * (p1.x + p3.x);
     const x1 = p1.x - xMid;
     const y1 = p1.y;
     const x2 = p2.x - xMid;
-    const y2 = p2.y - 0.1 * (p2.y - p1.y);
+    const y2 = p2.y - 0.25 * (p2.y - p1.y);
     const a = (y2 - y1) / (x2 * x2 - x1 * x1);
     const b = y1 - a * x1 * x1;
     ctx.strokeStyle = 'lightgray';
     ctx.beginPath();
-    var xp: number = p1.x;
-    var yp: number = p1.y;
+    let xp: number = p1.x;
+    let yp: number = p1.y;
     while (true) {
       const vpx = this.viewportTransform.worldToViewportX(xp);
       const vpy = this.viewportTransform.worldToViewportY(yp);
@@ -245,7 +230,7 @@ export class CartoonSiteRenderingService {
 
     ctx.strokeStyle = ctx.fillStyle = 'gray';
     // Grade line height.
-    const siteInfo = this.designBridgeService.siteInfo;
+    const siteInfo = this.bridgeService.siteInfo;
     const yGrade = this.viewportTransform.worldToViewportY(siteInfo.yGradeLevel);
     // Design height of water.
     const yWater = this.viewportTransform.worldToViewportY(siteInfo.yGradeLevel - 24.0);

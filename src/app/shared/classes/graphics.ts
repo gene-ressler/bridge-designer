@@ -117,7 +117,7 @@ export class Rectangle2D implements Rectangle2DInterface {
 
   /** Returns Cohen-Sutherland clipping code for given point. */
   private getOutCode(p: Point2DInterface) {
-    var code: number = 0;
+    let code: number = 0;
     if (p.x < this.x0) {
       code |= OutCode.LEFT;
     }
@@ -308,10 +308,10 @@ export class Geometry {
       return dst;
     }
     const p0 = pointList[0];
-    var x0 = p0.x;
-    var y0 = p0.y;
-    var x1 = p0.x;
-    var y1 = p0.y;
+    let x0 = p0.x;
+    let y0 = p0.y;
+    let x1 = p0.x;
+    let y1 = p0.y;
     for (const p of pointList) {
       if (p.x < x0) {
         x0 = p.x;
@@ -330,10 +330,10 @@ export class Geometry {
   }
 
   public static addToExtent2D(dst: Rectangle2D, p: Point2DInterface): Rectangle2D {
-    var x0 = dst.x0;
-    var y0 = dst.y0;
-    var x1 = dst.x1;
-    var y1 = dst.y1;
+    let x0 = dst.x0;
+    let y0 = dst.y0;
+    let x1 = dst.x1;
+    let y1 = dst.y1;
     if (p.x < x0) {
       x0 = p.x;
     }
@@ -364,6 +364,14 @@ export class Geometry {
 export class Graphics {
   private static readonly ARROW_HALF_WIDTH = 3;
   private static readonly ARROW_LENGTH = 8;
+
+  /** Clears canvas: rgbg => 0. */
+  public static clearCanvas(ctx: CanvasRenderingContext2D) {
+    const savedTransform = ctx.getTransform();
+    ctx.resetTransform();
+    ctx.clearRect(0, 0, ctx.canvas.width - 1, ctx.canvas.height - 1);
+    ctx.setTransform(savedTransform);
+  }
 
   /** Compute a color with options to modify intensity and blueness of the result. */
   public static computeColor(

@@ -23,7 +23,7 @@ export class AddMemberCommand extends EditCommand {
       return;
     }
     this.description = `Add ${transecting.length + 1} members, joint ${member.a.number} to ${member.b.number}`;
-    var a: Joint = member.a;
+    let a: Joint = member.a;
     transecting.forEach(b => {
       if (!bridge.members.some(member => member.hasJoints(a, b))) {
         this.members.push(new Member(-1, a, b, member.material, member.shape));

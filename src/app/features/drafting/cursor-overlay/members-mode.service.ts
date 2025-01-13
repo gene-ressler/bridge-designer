@@ -1,7 +1,7 @@
 import { EventEmitter, Injectable } from '@angular/core';
 import { Joint } from '../../../shared/classes/joint.model';
 import { Member } from '../../../shared/classes/member.model';
-import { DesignBridgeService } from '../../../shared/services/design-bridge.service';
+import { BridgeService } from '../../../shared/services/bridge.service';
 import { InventorySelectionService } from '../../../shared/services/inventory-selection.service';
 import { HotElementService } from '../services/hot-element.service';
 import { MemberCursorService } from '../services/member-cursor.service';
@@ -16,7 +16,7 @@ export class MembersModeService {
     private readonly hotElementService: HotElementService,
     private readonly memberCursorService: MemberCursorService,
     private readonly inventorySelectionService: InventorySelectionService,
-    private readonly designBridgeService: DesignBridgeService,
+    private readonly bridgeService: BridgeService,
   ) {}
 
   public initialize(ctx: CanvasRenderingContext2D, addMemberRequest: EventEmitter<Member>): MembersModeService {
@@ -31,7 +31,7 @@ export class MembersModeService {
       const hotElement = this.hotElementService.hotElement;
       if (hotElement instanceof Joint) {
         this.existingMemberJointIndices.clear();
-        this.designBridgeService
+        this.bridgeService
           .findMembersWithJoint(hotElement)
           .map(member => member.getOtherJoint(hotElement).index)
           .forEach(i => this.existingMemberJointIndices.add(i));

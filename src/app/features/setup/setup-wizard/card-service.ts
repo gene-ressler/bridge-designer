@@ -34,18 +34,29 @@ export const enum DeckCartoonSrc {
   HIGH_DECK_PERMIT_LOAD = 'img/hghdeckpmtload.png',
 }
 
+/** A view back into the supported wizard that houses the cards. */
 export interface SetupWizardCardView {
-  /** Attribute mutated to set deck cartoon. */
+  /** Property mutated to set deck cartoon. */
   deckCartoonSrc: DeckCartoonSrc;
+
+  /** Current design conditions the cards represent. */
+  // TODO: Consider injecting in CardService instead.
   get designConditions(): DesignConditions;
-  /** Renders a cartoon of current design conditions with given options. */
-  renderElevationCartoon(optionsMask: number): void;
+
+  /** Enables or disables various navigation and view controls. See enum ControlMask. */
+  enableControls(enabledMask: number): void;
+
+  /** Loads design templates for current design conditions. */
+  loadDesignTemplates(): void;
+
   /** Current value of the local contest code input widget. */
-  get localContestCode(): string | undefined;
+  get localContestCode(): string | null| undefined;
+
+  /** Renders am elevation cartoon of current design conditions with given options. See enum CartoonOptionsMask. */
+  renderElevationCartoon(optionsMask: number): void;
+
   /** Sets the visiblity of one legend item. */
   setLegendItemVisibility(item: LegendItemName, isVisible?: boolean): void;
-  /** Enables or disables the expander containing the site cost summary table. */
-  enableSiteCostExpander(isEnabled: boolean): void;
 }
 
 /**
@@ -57,6 +68,10 @@ export abstract class Card {
 
   abstract index: number;
 
+  get wizardView(): SetupWizardCardView {
+    return this.cardService.wizardView;
+  }
+
   get nextCardIndex(): number | undefined {
     return this.index + 1;
   }
@@ -66,7 +81,7 @@ export abstract class Card {
   }
 
   get elevationCartoonOptions(): number {
-    return this.cardService.hasCardBeenVisited(2) || this.cardService.wizardView.localContestCode?.length == 6
+    return this.cardService.hasCardBeenVisited(2) || this.wizardView.localContestCode?.length === 6
       ? CartoonOptionMask.STANDARD_OPTIONS
       : CartoonOptionMask.SITE_ONLY;
   }
@@ -76,28 +91,35 @@ export abstract class Card {
   }
 
   renderDeckCartoon(): void {
-    this.cardService.wizardView.deckCartoonSrc = this.deckCartoonSrcForConditions;
+    this.wizardView.deckCartoonSrc = this.deckCartoonSrcForConditions;
   }
 
   renderElevationCartoon(): void {
-    this.cardService.wizardView.renderElevationCartoon(this.elevationCartoonOptions);
+    this.wizardView.renderElevationCartoon(this.elevationCartoonOptions);
   }
 
   renderLegendItemsForCartoon(): void {
     const options = this.elevationCartoonOptions;
-    this.cardService.wizardView.setLegendItemVisibility('abutment', (options & CartoonOptionMask.ABUTMENTS) !== 0);
-    this.cardService.wizardView.setLegendItemVisibility('bank', (options & CartoonOptionMask.IN_SITU_TERRAIN) !== 0);
-    this.cardService.wizardView.setLegendItemVisibility('deck', (options & CartoonOptionMask.DECK) !== 0);
+    this.wizardView.setLegendItemVisibility('abutment', (options & CartoonOptionMask.ABUTMENTS) !== 0);
+    this.wizardView.setLegendItemVisibility('bank', (options & CartoonOptionMask.IN_SITU_TERRAIN) !== 0);
+    this.wizardView.setLegendItemVisibility('deck', (options & CartoonOptionMask.DECK) !== 0);
     const showExcavation = (options & CartoonOptionMask.EXCAVATED_TERRAIN) !== 0;
-    this.cardService.wizardView.setLegendItemVisibility('excavation', showExcavation);
+    this.wizardView.setLegendItemVisibility('excavation', showExcavation);
     const showAbutments = (options & CartoonOptionMask.ABUTMENTS) !== 0;
-    const isPier = this.cardService.wizardView.designConditions.isPier;
-    this.cardService.wizardView.setLegendItemVisibility('pier', showAbutments && isPier);
-    this.cardService.wizardView.setLegendItemVisibility('river', (options & CartoonOptionMask.IN_SITU_TERRAIN) !== 0);
+    const isPier = this.wizardView.designConditions.isPier;
+    this.wizardView.setLegendItemVisibility('pier', showAbutments && isPier);
+    this.wizardView.setLegendItemVisibility('river', (options & CartoonOptionMask.IN_SITU_TERRAIN) !== 0);
   }
 
+  enableControls(): void {
+    this.wizardView.enableControls(this.enabledControlMask);
+  }
+
+  /** Performs card-specific initialization for the goToCard() target. */
+  initializeOnGoTo(): void {}
+
   protected get deckCartoonSrcForConditions(): DeckCartoonSrc {
-    const conditions = this.cardService.wizardView.designConditions;
+    const conditions = this.wizardView.designConditions;
     switch (conditions.deckType) {
       case DeckType.MEDIUM_STRENGTH:
         switch (conditions.loadType) {
@@ -128,24 +150,40 @@ class Card1 extends Card {
   }
 
   override renderDeckCartoon(): void {
-    this.cardService.wizardView.deckCartoonSrc = DeckCartoonSrc.NONE;
+    this.wizardView.deckCartoonSrc = DeckCartoonSrc.NONE;
   }
 
-  override get backCardIndex(): number | undefined {
-    return undefined;
+  override get enabledControlMask(): number {
+    return ControlMask.NEXT_BUTTON;
   }
 }
 
 class Card2 extends Card {
   override index: number = 1;
 
+  override get enabledControlMask(): number {
+    let mask = ControlMask.BACK_BUTTON;
+    const code = this.wizardView.localContestCode;
+    if (code === undefined || code?.length) {
+      mask |= ControlMask.NEXT_BUTTON;
+    }
+    if (this.cardService.hasCardBeenVisited(2)) {
+      mask |= ControlMask.SITE_COST;
+    }
+    return mask;
+  }
+
   override get nextCardIndex(): number | undefined {
-    return this.cardService.wizardView.localContestCode?.length === 6 ? 4 : 2;
+    return this.wizardView.localContestCode?.length ? 4 : this.index + 1;
   }
 }
 
 class Card3 extends Card {
   override index: number = 2;
+
+  override get enabledControlMask(): number {
+    return ControlMask.BACK_BUTTON | ControlMask.NEXT_BUTTON | ControlMask.SITE_COST;
+  }
 }
 
 class Card4 extends Card {
@@ -154,6 +192,14 @@ class Card4 extends Card {
 
 class Card5 extends Card {
   override index: number = 4;
+
+  override get backCardIndex(): number | undefined {
+    return this.wizardView.localContestCode?.length ? 1 : this.index - 1;
+  }
+
+  override initializeOnGoTo(): void {
+    this.wizardView.loadDesignTemplates();
+  }
 }
 
 class Card6 extends Card {
@@ -171,8 +217,8 @@ class Card7 extends Card {
     return CartoonOptionMask.STANDARD_OPTIONS | CartoonOptionMask.TITLE_BLOCK | CartoonOptionMask.JOINTS;
   }
 
-  override get nextCardIndex(): number | undefined {
-    return undefined;
+  override get enabledControlMask(): number {
+    return ControlMask.BACK_BUTTON | ControlMask.FINISH_BUTTON | ControlMask.SITE_COST;
   }
 }
 
@@ -210,6 +256,7 @@ export class CardService {
     }
     this.visitedMask |= 1 << index;
     this.cardIndex = index;
+    this.card.initializeOnGoTo();
   }
 
   /** Returns whether card with given index has been visited by the user. Index 0 always is. */

@@ -35,11 +35,11 @@ export class DesignMemberRenderingService {
   ) {
     const shapeCount = inventoryService.getShapeCount(0);
     this.lineWidths = new Array(shapeCount);
-    for (var i = 0; i < shapeCount; ++i) {
+    for (let i = 0; i < shapeCount; ++i) {
       // Using section 0 depends on widths being same for all. Else tables would need to be 2d.
       const outerWidth = DesignMemberRenderingService.getShapeStrokeWidth(inventoryService.getShape(0, i));
       // Make sure of some outer color for thin tubes.
-      var innerWidth = 0.6 * outerWidth;
+      let innerWidth = 0.6 * outerWidth;
       if (outerWidth - innerWidth < 2) {
         innerWidth = Math.max(1, outerWidth - 2);
       }
@@ -124,7 +124,7 @@ export class DesignMemberRenderingService {
   }
 
   public getMemberWidthWorld(member: Member, minWidthViewport?: number): number {
-    var widthViewport: number = this.lineWidths[member.shape.sizeIndex].outer;
+    let widthViewport: number = this.lineWidths[member.shape.sizeIndex].outer;
     if (minWidthViewport && widthViewport < minWidthViewport) {
       widthViewport = minWidthViewport;
     }

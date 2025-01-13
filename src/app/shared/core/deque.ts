@@ -77,7 +77,7 @@ export class Deque<T> {
     const left = this.left;
     const right = this.right;
     // Negative i points to left[-1-i]. Non-negative points to right[i]; 
-    var i: number = this.left.data.length > this.left.base ? -this.left.data.length : this.right.base;
+    let i: number = this.left.data.length > this.left.base ? -this.left.data.length : this.right.base;
     return {
       next(): { value: T, done: boolean } {
         if (i < 0) {
