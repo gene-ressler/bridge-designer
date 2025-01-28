@@ -8,7 +8,7 @@ import { ViewportTransform2D } from '../../../shared/services/viewport-transform
 import { jqxButtonComponent, jqxButtonModule } from 'jqwidgets-ng/jqxbuttons';
 import { BridgeSketchService } from '../../../shared/services/bridge-sketch.service';
 import { CartoonJointRenderingService } from '../../../shared/services/cartoon-joint-rendering.service';
-import { CartoonRenderingService } from '../../../shared/services/cartoon-rendering.service';
+import { CartoonOptionMask, CartoonRenderingService } from '../../../shared/services/cartoon-rendering.service';
 import { CartoonSiteRenderingService } from '../../../shared/services/cartoon-site-rendering.service';
 import { CartoonSketchRenderingService } from '../../../shared/services/cartoon-sketch-rendering.service';
 import { BridgeSketchModel } from '../../../shared/classes/bridge-sketch.model';
@@ -45,7 +45,9 @@ export class TemplateSelectionDialogComponent implements AfterViewInit {
     private readonly eventBrokerService: EventBrokerService,
     private readonly rootBridgeService: RootBridgeService,
     private readonly viewportTransform: ViewportTransform2D,
-  ) {}
+  ) {
+    cartoonRenderingService.options = CartoonOptionMask.STANDARD_OPTIONS;
+  }
 
   renderPreview(): void {
     const selectedIndex = this.templateList.getSelectedIndex();

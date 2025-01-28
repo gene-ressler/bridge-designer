@@ -132,6 +132,7 @@ export class DraftingPanelComponent implements AfterViewInit {
     this.undoManagerService.do(command);
   }
 
+  /** Handles reports from cursor overlay at start and end of guides cursor movement. */
   guidesCursorActiveHandler(isActive: boolean) {
     this.render(!isActive);
   }

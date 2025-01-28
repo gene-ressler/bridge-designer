@@ -45,7 +45,7 @@ export class SelectModeService {
     return Utility.assertNotUndefined(this._ctx);
   }
 
-  handleMouseDown(event: MouseEvent): void {
+  handlePointerDown(event: PointerEvent): void {
     // Left button down alone to start.
     if (event.buttons !== 1 << 0 || this.hotElementDragService.isDragging()) {
       return;
@@ -56,7 +56,7 @@ export class SelectModeService {
     this.selectCursorService.start(this.ctx, event.offsetX, event.offsetY);
   }
 
-  handleMouseMove(event: MouseEvent): void {
+  handlePointerMove(event: PointerEvent): void {
     if (this.hotElementDragService.isDragging()) {
       return;
     }
@@ -76,7 +76,7 @@ export class SelectModeService {
 
   private readonly cursor: Rectangle2D = Rectangle2D.createEmpty();
 
-  handleMouseUp(event: MouseEvent): void {
+  handlePointerUp(event: PointerEvent): void {
     if (event.button !== 0 || this.hotElementDragService.isDragging(event)) {
       return;
     }
@@ -150,13 +150,13 @@ export class SelectModeService {
   }
 
   /** Changes from select to joint move if user is dragging the hot joint. */
-  private maybeSwitchToJointMove(event: MouseEvent): void {
+  private maybeSwitchToJointMove(event: PointerEvent): void {
     if (
       (event.buttons & (1 << 0)) === 0 || // dragging
       this.movingJoint || // haven't already switched
-      !this.initialHotJoint || // hot joint at mouse down
+      !this.initialHotJoint || // hot joint at pointer down
       !this.selectCursorService.isAnchored || // select rectangle valid
-      this.selectCursorService.diagonalSqr <= 9 // significant mouse movement
+      this.selectCursorService.diagonalSqr <= 9 // significant pointer movement
     ) {
       return;
     }

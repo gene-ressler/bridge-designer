@@ -71,7 +71,7 @@ export class CursorOverlayComponent implements AfterViewInit {
 
   public setJointsMode(): void {
     this.hotElementService.clearRenderedHotElement(this.ctx);
-    WidgetHelper.setMouseCursor(this.ctx, StandardCursor.CROSSHAIR);
+    WidgetHelper.setPointerCursor(this.ctx, StandardCursor.CROSSHAIR);
     this.modalInputEventDelegator.handlerSet = this.jointsModeService.initialize(
       this.ctx,
       this.addJointRequest,
@@ -80,7 +80,7 @@ export class CursorOverlayComponent implements AfterViewInit {
 
   public setMembersMode(): void {
     this.jointCursorService.clear(this.ctx);
-    WidgetHelper.setMouseCursor(this.ctx, 'img/pencil.svg', 0, 31);
+    WidgetHelper.setPointerCursor(this.ctx, 'img/pencil.svg', 0, 31);
     this.modalInputEventDelegator.handlerSet = this.membersModeService.initialize(
       this.ctx,
       this.addMemberRequest,
@@ -89,7 +89,7 @@ export class CursorOverlayComponent implements AfterViewInit {
 
   public setSelectMode(): void {
     this.jointCursorService.clear(this.ctx);
-    WidgetHelper.setMouseCursor(this.ctx, StandardCursor.ARROW);
+    WidgetHelper.setPointerCursor(this.ctx, StandardCursor.ARROW);
     this.modalInputEventDelegator.handlerSet = this.selectModeService.initialize(
       this.ctx,
       this.moveJointRequest,
@@ -98,14 +98,14 @@ export class CursorOverlayComponent implements AfterViewInit {
 
   public setEraseMode(): void {
     this.jointCursorService.clear(this.ctx);
-    WidgetHelper.setMouseCursor(this.ctx, 'img/pencilud.png', 2, 29);
+    WidgetHelper.setPointerCursor(this.ctx, 'img/pencilud.svg', 2, 33);
     this.modalInputEventDelegator.handlerSet = this.eraseModeService.initialize(
       this.ctx,
       this.deleteRequest,
     );
   }
 
-  private setCursorModeByControlSelectedIndex(i: number) {
+  private setCursorModeByControlSelectedIndex(i: number | undefined) {
     switch (i) {
       case 0:
         this.setJointsMode();
@@ -129,7 +129,7 @@ export class CursorOverlayComponent implements AfterViewInit {
     this.dragInputEventDelegator.handlerSet = this.hotElementDragService.initialize(this.ctx, this.guidesCursorActive);
     this.setJointsMode();
     this.eventBrokerService.editModeSelection.subscribe((eventInfo: EventInfo) =>
-      this.setCursorModeByControlSelectedIndex(eventInfo.data as number),
+      this.setCursorModeByControlSelectedIndex(eventInfo.data),
     );
   }
 }

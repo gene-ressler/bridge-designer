@@ -9,8 +9,8 @@ export class Material {
     readonly e: number,
     readonly fy: number,
     readonly density: number,
-    readonly cost: number[]
-  ) { }
+    readonly cost: number[],
+  ) {}
 
   public getCost(crossSection: CrossSection): number {
     return this.cost[crossSection.index];
@@ -31,8 +31,8 @@ export abstract class CrossSection {
   constructor(
     readonly index: number,
     readonly name: string,
-    readonly shortName: SectionShortName
-  ) { }
+    readonly shortName: SectionShortName,
+  ) {}
 
   public abstract createShapes(): Shape[];
 
@@ -51,22 +51,12 @@ class BarCrossSection extends CrossSection {
   }
 
   public override createShapes(): Shape[] {
-    return Array.from(
-      { length: CrossSection.WIDTHS.length },
-      (_, sizeIndex) => {
-        const width = CrossSection.WIDTHS[sizeIndex];
-        const area = Utility.sqr(width) * 1e-6;
-        const moment = (Utility.p4(width) / 12) * 1e-12;
-        return Shape.createSolidBar(
-          this,
-          sizeIndex,
-          `${width}x${width}`,
-          width,
-          area,
-          moment
-        );
-      }
-    );
+    return Array.from({ length: CrossSection.WIDTHS.length }, (_, sizeIndex) => {
+      const width = CrossSection.WIDTHS[sizeIndex];
+      const area = Utility.sqr(width) * 1e-6;
+      const moment = (Utility.p4(width) / 12) * 1e-12;
+      return Shape.createSolidBar(this, sizeIndex, `${width}x${width}`, width, area, moment);
+    });
   }
 }
 
@@ -76,27 +66,13 @@ class TubeCrossSection extends CrossSection {
   }
 
   public override createShapes(): Shape[] {
-    return Array.from(
-      { length: CrossSection.WIDTHS.length },
-      (_, sizeIndex) => {
-        const width = CrossSection.WIDTHS[sizeIndex];
-        const thickness = Math.max(width / 20, 2);
-        const area =
-          (Utility.sqr(width) - Utility.sqr(width - 2 * thickness)) * 1e-6;
-        const moment =
-          ((Utility.p4(width) - Utility.p4(width - 2 * thickness)) / 12) *
-          1e-12;
-        return Shape.createHollowTube(
-          this,
-          sizeIndex,
-          `${width}x${width}x${thickness}`,
-          width,
-          area,
-          moment,
-          thickness
-        );
-      }
-    );
+    return Array.from({ length: CrossSection.WIDTHS.length }, (_, sizeIndex) => {
+      const width = CrossSection.WIDTHS[sizeIndex];
+      const thickness = Math.max(Math.trunc(width / 20), 2);
+      const area = (Utility.sqr(width) - Utility.sqr(width - 2 * thickness)) * 1e-6;
+      const moment = ((Utility.p4(width) - Utility.p4(width - 2 * thickness)) / 12) * 1e-12;
+      return Shape.createHollowTube(this, sizeIndex, `${width}x${width}x${thickness}`, width, area, moment, thickness);
+    });
   }
 }
 
@@ -110,7 +86,7 @@ export class Shape {
     readonly width: number,
     readonly area: number,
     readonly moment: number,
-    readonly thickness: number
+    readonly thickness: number,
   ) {
     this.inverseRadiusOfGyration = Math.sqrt(area / moment);
   }
@@ -121,7 +97,7 @@ export class Shape {
     name: string,
     width: number,
     area: number,
-    moment: number
+    moment: number,
   ): Shape {
     return new Shape(section, sizeIndex, name, width, area, moment, width);
   }
@@ -133,7 +109,7 @@ export class Shape {
     width: number,
     area: number,
     moment: number,
-    thickness: number
+    thickness: number,
   ): Shape {
     return new Shape(section, sizeIndex, name, width, area, moment, thickness);
   }
@@ -144,41 +120,24 @@ export class Shape {
 }
 
 class Inventory {
-  static readonly CROSS_SECTIONS: CrossSection[] = [
-    new BarCrossSection(),
-    new TubeCrossSection(),
-  ];
+  static readonly CROSS_SECTIONS: CrossSection[] = [new BarCrossSection(), new TubeCrossSection()];
 
   static readonly MATERIALS: Material[] = [
     new Material(0, 'Carbon Steel', 'CS', 200000000, 250000, 7850, [4.3, 6.3]),
-    new Material(
-      1,
-      'High-Strength Low-Alloy Steel',
-      'HSS',
-      200000000,
-      345000,
-      7850,
-      [5.6, 7.0]
-    ),
-    new Material(
-      2,
-      'Quenched & Tempered Steel',
-      'QTS',
-      200000000,
-      485000,
-      7850,
-      [6.0, 7.7]
-    ),
+    new Material(1, 'High-Strength Low-Alloy Steel', 'HSS', 200000000, 345000, 7850, [5.6, 7.0]),
+    new Material(2, 'Quenched & Tempered Steel', 'QTS', 200000000, 485000, 7850, [6.0, 7.7]),
   ];
 
-  static readonly SHAPES: Shape[][] = Inventory.CROSS_SECTIONS.map((cs) =>
-    cs.createShapes()
-  );
+  static readonly SHAPES: Shape[][] = Inventory.CROSS_SECTIONS.map(cs => cs.createShapes());
 }
 
 /** An identifier for a Material/Size/Section triple */
 export class StockId {
-  constructor(public materialIndex: number, public sectionIndex: number, public sizeIndex: number) { }
+  constructor(
+    public materialIndex: number,
+    public sectionIndex: number,
+    public sizeIndex: number,
+  ) {}
 
   public get key() {
     return `StockId:${this.materialIndex}-${this.sectionIndex}-${this.sizeIndex}`;
@@ -220,35 +179,28 @@ export class InventoryService {
     return Inventory.SHAPES[sectionIndex][sizeIndex];
   }
 
-  public getShapeWithSizeIncrement(shape: Shape, increment: number) {
+  public static getShapeWithSizeIncrement(shape: Shape, increment: number) {
     const sectionIndex = shape.section.index;
-    const newSizeIndex = Math.min(
-      Inventory.SHAPES[sectionIndex].length - 1,
-      Math.max(0, shape.sizeIndex + increment)
-    );
+    const newSizeIndex = Math.min(Inventory.SHAPES[sectionIndex].length - 1, Math.max(0, shape.sizeIndex + increment));
     return Inventory.SHAPES[sectionIndex][newSizeIndex];
   }
 
-  public compressiveStrength(
-    material: Material,
-    shape: Shape,
-    length: number
-  ): number {
+  public static compressiveStrength(material: Material, shape: Shape, length: number): number {
     const fy = material.fy;
     const area = shape.area;
     const e = material.e;
     const moment = shape.moment;
     const lambda = (length * length * fy * area) / (9.8696044 * e * moment);
     return lambda <= 2.25
-      ? InventoryService.COMPRESSION_RESISTANCE_FACTOR *
-      Math.pow(0.66, lambda) *
-      fy *
-      area
-      : (InventoryService.COMPRESSION_RESISTANCE_FACTOR * 0.88 * fy * area) /
-      lambda;
+      ? InventoryService.COMPRESSION_RESISTANCE_FACTOR * Math.pow(0.66, lambda) * fy * area
+      : (InventoryService.COMPRESSION_RESISTANCE_FACTOR * 0.88 * fy * area) / lambda;
   }
 
-  public getAllowedShapeSizeChanges(shape: Shape): Set<AllowedShapeChange> {
+  public static tensileStrength(material: Material, shape: Shape): number {
+    return InventoryService.TENSION_RESISTANCE_FACTOR * material.fy * shape.area;
+  }
+
+  public static getAllowedShapeSizeChanges(shape: Shape): Set<AllowedShapeChange> {
     const result = new Set<AllowedShapeChange>();
     if (shape.sizeIndex > 0) {
       result.add(AllowedShapeChange.DECREASE_SIZE);

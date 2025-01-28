@@ -141,12 +141,12 @@ export class GuidesService {
   }
 
   public setKnobMoveCursor(ctx: CanvasRenderingContext2D, knob: GuideKnob): void {
-    this.savedKnobMoveCursor = WidgetHelper.getMouseCursor(ctx);
-    WidgetHelper.setMouseCursor(ctx, GuidesService.CURSORS_BY_GUIDE_ORIENTATION[knob.which]);
+    this.savedKnobMoveCursor = WidgetHelper.getPointerCursor(ctx);
+    WidgetHelper.setPointerCursor(ctx, GuidesService.CURSORS_BY_GUIDE_ORIENTATION[knob.which]);
   }
 
   public resetKnobMoveCursor(ctx: CanvasRenderingContext2D): void {
-    WidgetHelper.setMouseCursor(ctx, this.savedKnobMoveCursor);
+    WidgetHelper.setPointerCursor(ctx, this.savedKnobMoveCursor);
   }
 
   private locate(guideKnob: GuideKnob, x: number, y: number): GuidesService {

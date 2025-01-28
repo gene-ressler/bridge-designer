@@ -129,14 +129,14 @@ export class MemberTableComponent implements AfterViewInit {
     this.display = value ? 'block' : 'none';
   }
 
-  private updateGridFromBridge(): void {
+  private updateGridContent(): void {
     this.source.localdata = this.bridgeService.bridge.members;
     this.grid.source(this.dataAdapter);
     this.grid.updatebounddata('cells');
   }
 
   /** Adjust the grid row selection to match selected members (i.e. those selected graphically). */
-  private updateGridFromSelection(): void {
+  private updateGridSelection(): void {
     const selectedMembers = this.selectedElementsService.selectedElements.selectedMembers;
     const selectedRows = new Set(this.grid.getselectedrowindexes());
     Utility.applyToSetDifference(index => this.grid.selectrow(index), selectedMembers, selectedRows);
@@ -150,14 +150,15 @@ export class MemberTableComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     this.eventBrokerService.selectedElementsChange.subscribe(eventInfo => {
       if (eventInfo.source !== EventOrigin.MEMBER_TABLE) {
-        this.updateGridFromSelection();
+        this.updateGridSelection();
       }
     });
     this.eventBrokerService.editCommandCompletion.subscribe(eventInfo => {
       if (eventInfo.data.effectsMask & EditEffect.MEMBERS) {
-        this.updateGridFromBridge();
+        this.updateGridContent();
       }
     });
-    this.eventBrokerService.loadBridgeCompletion.subscribe(_eventInfo => this.updateGridFromBridge());
+    this.eventBrokerService.loadBridgeCompletion.subscribe(_eventInfo => this.updateGridContent());
+    this.eventBrokerService.analysisCompletion.subscribe(_eventInfo => this.updateGridContent());
   }
 }

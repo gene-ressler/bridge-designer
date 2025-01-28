@@ -15,7 +15,7 @@ export class JointCursorService {
   private readonly locationGrid: Point2D = new Point2D();
   private readonly locationViewport: Point2D = new Point2D();
   private readonly anchorJointsExtent: Rectangle2D = Rectangle2D.createEmpty();
-  /** Precomputed anchor joint info for joint move cursor. Too expensive to compute per mouse move event. */
+  /** Precomputed anchor joint info for joint move cursor. Too expensive to compute per pointer move event. */
   private anchorJointsData: { joint: Joint; x: number; y: number }[] = [];
   private grid: DesignGrid | undefined;
   public visible: boolean = false;

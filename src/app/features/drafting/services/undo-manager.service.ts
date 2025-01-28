@@ -26,6 +26,11 @@ export class UndoManagerService {
     this.emitCommandCompletion(editCommand.effectsMask);
   }
 
+  /** Returns the command most recently done. Usable as a state token. */
+  public get mostRecentlyDone(): EditCommand | undefined {
+    return this.done.peekLeft();
+  }
+
   private undo(count: number = 1): void {
     while (count-- > 0) {
       const editCommand = this.done.popLeft();

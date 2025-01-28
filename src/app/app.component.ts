@@ -18,6 +18,7 @@ import { RulerComponent } from './features/drafting/ruler/ruler.component';
 import { EventBrokerService } from './shared/services/event-broker.service';
 import { MemberTableComponent } from './features/drafting/member-table/member-table.component';
 import { TemplateSelectionDialogComponent } from './features/template/template-selection-dialog/template-selection-dialog.component';
+import { WorkflowManagementService } from './features/controls/management/workflow-management.service';
 
 // ¯\_(ツ)_/¯
 
@@ -51,12 +52,19 @@ import { TemplateSelectionDialogComponent } from './features/template/template-s
 export class AppComponent implements AfterViewInit {
   @ViewChild('leftRuler') leftRuler!: RulerComponent;
   @ViewChild('bottomRuler') bottomRuler!: RulerComponent;
-  @ViewChild('memberTable') memberTable!:MemberTableComponent;
+  @ViewChild('memberTable') memberTable!: MemberTableComponent;
 
-  constructor(private readonly eventBrokerService: EventBrokerService) {}
+  constructor(
+    private readonly eventBrokerService: EventBrokerService,
+    _workflowManagementService: WorkflowManagementService, // Instantiate only.
+  ) {}
 
   ngAfterViewInit(): void {
-    this.eventBrokerService.rulersToggle.subscribe(info => this.leftRuler.visible = this.bottomRuler.visible = info.data);
-    this.eventBrokerService.memberTableToggle.subscribe(info => this.memberTable.visible = info.data);
+    this.eventBrokerService.rulersToggle.subscribe(info => {
+      this.leftRuler.visible = this.bottomRuler.visible = info.data;
+    });
+    this.eventBrokerService.memberTableToggle.subscribe(info => {
+      this.memberTable.visible = info.data;
+    });
   }
 }

@@ -17,6 +17,7 @@ export type EventInfo = { source: EventOrigin; data?: any };
 
 @Injectable({ providedIn: 'root' })
 export class EventBrokerService {
+  public readonly analysisCompletion = new Subject<EventInfo>();
   public readonly animationControlsToggle = new Subject<EventInfo>();
   public readonly animationToggle = new Subject<EventInfo>();
   public readonly autoCorrectToggle = new Subject<EventInfo>();

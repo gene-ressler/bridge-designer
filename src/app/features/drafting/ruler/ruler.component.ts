@@ -117,7 +117,7 @@ export class RulerComponent implements AfterViewInit {
     this.render(this.ctx);
     this.eventBrokerService.draftingPanelInvalidation.subscribe(info => {
       if (info.data === 'viewport') {
-        // SKip graphic-only invalidations.
+        // Skip graphic-only invalidations.
         this.render(this.ctx);
       }
     });

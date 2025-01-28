@@ -4,6 +4,9 @@ import { Geometry } from './graphics';
 import { Joint } from './joint.model';
 
 export class Member implements Editable {
+  private _compressionStrengthForceStrengthRatio: number | undefined;
+  private _tensionForceStrengthRatio: number | undefined;
+
   constructor(
     public index: number,
     public a: Joint,
@@ -14,6 +17,14 @@ export class Member implements Editable {
     if (a === b) {
       throw new Error(`Single joint member: ${a.number}`);
     }
+  }
+
+  public set compressionStrengthForceStrengthRatio(value: number | undefined) {
+    this._compressionStrengthForceStrengthRatio = value;
+  }
+
+  public set tensionForceStrengthRatio(value: number) {
+    this._tensionForceStrengthRatio = value;
   }
 
   public get number(): number {
@@ -68,15 +79,15 @@ export class Member implements Editable {
   }
 
   public get materialSize(): number {
-    return 100;
+    return this.shape.width;
   }
 
   public get compression(): string {
-    return '---';
+    return this._compressionStrengthForceStrengthRatio === undefined ? '---' : this._compressionStrengthForceStrengthRatio.toFixed(2);
   }
 
   public get tension(): string {
-    return '---';
+    return this._tensionForceStrengthRatio === undefined ? '---' : this._tensionForceStrengthRatio.toFixed(2);
   }
 
   swapContents(other: Member): void {

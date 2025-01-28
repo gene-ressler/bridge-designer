@@ -34,7 +34,7 @@ export class MembersModeService {
     return Utility.assertNotUndefined(this._ctx);
   }
 
-  handleMouseDown(event: MouseEvent): void {
+  handlePointerDown(event: PointerEvent): void {
     if (event.buttons !== 1 << 0 || this.hotElementDragService.isDragging()) {
       return;
     }
@@ -49,7 +49,7 @@ export class MembersModeService {
     }
   }
 
-  handleMouseMove(event: MouseEvent): void {
+  handlePointerMove(event: PointerEvent): void {
     if (this.hotElementDragService.isDragging()) {
       return;
     }
@@ -60,7 +60,7 @@ export class MembersModeService {
     this.memberCursorService.update(event.offsetX, event.offsetY, this.hotElementService.hotElement);
   }
 
-  handleMouseUp(event: MouseEvent): void {
+  handlePointerUp(event: PointerEvent): void {
     if (event.button !== 0 || this.hotElementDragService.isDragging(event)) {
       return;
     }

@@ -1,3 +1,5 @@
+import { BitVector } from '../core/bitvector';
+
 export const DOLLARS_FORMATTER = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
@@ -19,6 +21,11 @@ export class Utility {
 
   public static p4(x: number): number {
     return Utility.sqr(Utility.sqr(x));
+  }
+
+  /** Like Math.hypot(), but doesn't cover edge cases and runs much faster on some browsers.  */
+  public static hypot(x: number, y: number): number {
+    return Math.sqrt(x * x + y * y);
   }
 
   /**
@@ -68,7 +75,6 @@ export class Utility {
     let timeout: any;
     return () => {
       if (timeout) {
-        console.log('!');
         return; // Already scheduled. Ignore.
       }
       timeout = setTimeout(() => {
@@ -78,12 +84,23 @@ export class Utility {
     };
   }
 
+  /** Applies a given function to the set difference a - b. */
   public static applyToSetDifference<T>(f: (item: T) => void, a: Set<T>, b: Set<T>): void {
     a.forEach(item => {
       if (!b.has(item)) {
         f(item);
       }
     });
+  }
+
+  /** Returns an array of Float64Arrays. */
+  public static create2dFloat64Array(arrayCount: number, arrayLength: number) {
+    return Array.from({ length: arrayCount }, () => new Float64Array(arrayLength));
+  }
+
+  /** Returns an array of BitVectors. */
+  public static create2dBitArray(vectorCount: number, vectorLength: number) {
+    return Array.from({ length: vectorCount }, () => new BitVector(vectorLength));
   }
 
   /* TODO: Not currently used. Remove?

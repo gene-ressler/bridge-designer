@@ -31,15 +31,15 @@ export class JointsModeService {
     return Utility.assertNotUndefined(this._ctx);
   }
 
-  handleMouseEnter(event: MouseEvent): void {
+  handlePointerEnter(event: PointerEvent): void {
     this.jointCursorService.start(event.offsetX, event.offsetY).show(this.ctx);
   }
 
-  handleMouseLeave(_event: MouseEvent): void {
+  handlePointerLeave(_event: PointerEvent): void {
     this.jointCursorService.clear(this.ctx);
   }
 
-  handleMouseDown(event: MouseEvent): void {
+  handlePointerDown(event: PointerEvent): void {
     if (event.buttons !== 1 << 0 || this.hotElementDragService.isDragging()) {
       return;
     }
@@ -51,7 +51,7 @@ export class JointsModeService {
     this.addJointRequest?.emit(new Joint(-1, locationWorld.x, locationWorld.y, false));
   }
 
-  handleMouseMove(event: MouseEvent): void {
+  handlePointerMove(event: PointerEvent): void {
     if (this.hotElementDragService.isDragging()) {
       return;
     }

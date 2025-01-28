@@ -9,8 +9,8 @@ import { StockId } from './inventory.service';
 import { BridgeSketchModel } from '../classes/bridge-sketch.model';
 
 /**
- * Injectable accessor of the root bridge service. Useful in components that provied their own
- * BridgeService, but also need access to the root instance.
+ * Injectable accessor of the bridge service in the root injector. Useful in components that
+ * provide their own BridgeService, but also need access to the root instance.
  */
 @Injectable({ providedIn: 'root' })
 export class RootBridgeService {

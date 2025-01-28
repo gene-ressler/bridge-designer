@@ -28,7 +28,7 @@ export class EraseModeService {
     return Utility.assertNotUndefined(this._ctx);
   }
 
-  handleMouseDown(event: MouseEvent): void {
+  handlePointerDown(event: PointerEvent): void {
     if (event.buttons !== 1 << 0 || this.hotElementDragService.isDragging()) {
       return;
     }
@@ -39,7 +39,7 @@ export class EraseModeService {
     }
   }
 
-  handleMouseMove(event: MouseEvent): void {
+  handlePointerMove(event: PointerEvent): void {
     this.hotElementService.updateRenderedHotElement(this.ctx, event.offsetX, event.offsetY, {
       excludeFixedJoints: true,
     });

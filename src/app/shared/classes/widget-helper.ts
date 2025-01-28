@@ -24,7 +24,7 @@ export class WidgetHelper {
     tool.jqxToggleButton({ height: 28, ...options });
   }
 
-  public static setMouseCursor(
+  public static setPointerCursor(
     ctx: CanvasRenderingContext2D,
     cursor?: string | StandardCursor,
     orgX: number = 0,
@@ -37,7 +37,7 @@ export class WidgetHelper {
     ctx.canvas.style.cursor = cursor.startsWith('img/') ? `url(${cursor}) ${orgX} ${orgY}, auto` : cursor;
   }
 
-  public static getMouseCursor(ctx: CanvasRenderingContext2D): string {
+  public static getPointerCursor(ctx: CanvasRenderingContext2D): string {
     return ctx.canvas.style.cursor;
   }
 

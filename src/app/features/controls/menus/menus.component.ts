@@ -27,17 +27,24 @@ export class MenusComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     // this.mainMenu.disable('print', true); // TODO: Example/test. Remove.
-    this.uiStateService.registerPlainMenuEntry('new', this.eventBrokerService.newDesignRequest);
-    this.uiStateService.registerPlainMenuEntry('loadSample', this.eventBrokerService.loadSampleRequest);
-    this.uiStateService.registerPlainMenuEntry('loadTemplate', this.eventBrokerService.loadTemplateRequest);
+
     const gridGroup = ['coarseGrid', 'mediumGrid', 'fineGrid'];
     this.uiStateService.registerSelectMenuItems(gridGroup, this.eventBrokerService.gridDensitySelection);
+
     const draftingGroup = ['drawingBoard', 'loadTest'];
     this.uiStateService.registerSelectMenuItems(draftingGroup, this.eventBrokerService.designModeSelection);
+
     const toolsGroup = ['joints', 'members', 'select', 'erase'];
+    this.uiStateService.registerSelectMenuItems(toolsGroup, this.eventBrokerService.editModeSelection);
+
+    this.uiStateService.registerPlainMenuEntry('loadSample', this.eventBrokerService.loadSampleRequest);
     this.uiStateService.registerPlainMenuEntry('loadSample', this.eventBrokerService.loadSampleRequest);
     this.uiStateService.registerPlainMenuEntry('loadTemplate', this.eventBrokerService.loadTemplateRequest);
-    this.uiStateService.registerSelectMenuItems(toolsGroup, this.eventBrokerService.editModeSelection);
+    this.uiStateService.registerPlainMenuEntry('loadTemplate', this.eventBrokerService.loadTemplateRequest);
+    this.uiStateService.registerPlainMenuEntry('new', this.eventBrokerService.newDesignRequest);
+    this.uiStateService.registerPlainMenuEntry('redo', this.eventBrokerService.redoRequest);
+    this.uiStateService.registerPlainMenuEntry('undo', this.eventBrokerService.undoRequest);
+
     this.uiStateService.registerToggleMenuItem('animation', this.eventBrokerService.animationToggle);
     this.uiStateService.registerToggleMenuItem('animationControls', this.eventBrokerService.animationControlsToggle);
     this.uiStateService.registerToggleMenuItem('autoCorrect', this.eventBrokerService.autoCorrectToggle);

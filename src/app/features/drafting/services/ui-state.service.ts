@@ -48,25 +48,17 @@ export class UiStateService {
     buttonItems = indices.map(i => buttonItems[i]);
     buttonItems.forEach((buttonItem, buttonItemIndex) =>
       buttonItem.tool.on('mousedown', () => {
-        // See below.
         subject.next({ source: EventOrigin.TOOLBAR, data: buttonItemIndex });
       }),
     );
     subject.subscribe((eventInfo: EventInfo) => {
-      // This is a hacky workaround for jqxToggleButton bug: Documented click() event is
-      // never sent if mouse is released outside button, but the button remains toggled.
-      if (eventInfo.source === EventOrigin.TOOLBAR) {
-        // Don't inadvertently override the widget's mousedown logic.
-        buttonItems.forEach((buttonItem, buttonItemIndex) => {
-          if (eventInfo.data !== buttonItemIndex) {
-            buttonItem.tool.jqxToggleButton('toggled', false);
-          }
-        });
-      } else {
-        buttonItems.forEach((buttonItem, buttonItemIndex) =>
-          buttonItem.tool.jqxToggleButton('toggled', eventInfo.data === buttonItemIndex),
-        );
-      }
+      buttonItems.forEach((buttonItem, buttonItemIndex) =>
+        buttonItem.tool.jqxToggleButton(
+          'toggled',
+          // EventOrigin test needed for jqwidgets toggle logic: clicked button can't be already toggled.
+          eventInfo.source !== EventOrigin.TOOLBAR && eventInfo.data === buttonItemIndex,
+        ),
+      );
     });
   }
 
@@ -77,15 +69,9 @@ export class UiStateService {
       ),
     );
     subject.subscribe((eventInfo: EventInfo) => {
-      if (eventInfo.source === EventOrigin.TOOLBAR) {
-        buttons.forEach((button, buttonIndex) => {
-          if (eventInfo.data !== buttonIndex) {
-            button.toggled(false);
-          }
-        });
-      } else {
-        buttons.forEach((button, buttonIndex) => button.toggled(eventInfo.data === buttonIndex));
-      }
+      buttons.forEach((button, buttonIndex) =>
+        button.toggled(eventInfo.source !== EventOrigin.TOOLBAR && eventInfo.data === buttonIndex),
+      );
     });
   }
 
