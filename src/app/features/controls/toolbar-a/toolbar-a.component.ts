@@ -175,6 +175,8 @@ export class ToolbarAComponent implements AfterViewInit {
       this.eventBrokerService.designModeSelection,
     );
     this.uiStateService.registerPlainToolbarButton(tools[Tools.DELETE], this.eventBrokerService.deleteSelectionRequest);
+    // TODO: Make this show the load test report for real.
+    this.uiStateService.registerPlainToolbarButton(tools[Tools.LOAD_TEST_REPORT], this.eventBrokerService.unstableBridgeDialogOpenRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.NEW], this.eventBrokerService.newDesignRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.REDO], this.eventBrokerService.redoRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.SELECT_ALL], this.eventBrokerService.selectAllRequest);

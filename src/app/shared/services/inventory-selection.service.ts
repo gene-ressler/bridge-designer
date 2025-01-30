@@ -5,36 +5,46 @@ import { CrossSection, InventoryService, Material, Shape, StockId } from './inve
 /** Injectable mirror of the state of the toolbar material selector. */
 @Injectable({ providedIn: 'root' })
 export class InventorySelectionService {
-  private _material: Material;
-  private _crossSection: CrossSection;
-  private _shape: Shape;
+  private _material: Material | undefined;
+  private _crossSection: CrossSection | undefined;
+  private _shape: Shape | undefined;
 
   constructor(inventoryService: InventoryService, eventBrokerService: EventBrokerService) {
     this._material = inventoryService.materials[0];
     this._crossSection = inventoryService.crossSections[0];
-    this._shape = inventoryService.getShape(0, 0);
+    this._shape = inventoryService.getShape(0, 22);
     const that = this;
     const updateState = (eventInfo: EventInfo) => {
-      if (eventInfo.source === EventOrigin.TOOLBAR) {
+      if (eventInfo.origin === EventOrigin.TOOLBAR) {
         const stockId = eventInfo.data as StockId;
-        that._material = inventoryService.materials[stockId.materialIndex];
-        that._crossSection = inventoryService.crossSections[stockId.sectionIndex];
-        that._shape = inventoryService.getShape(stockId.sectionIndex, stockId.sizeIndex);
-      };
-    }
+        // Array references return undefined for indices oob.
+        const material = inventoryService.materials[stockId.materialIndex];
+        const crossSection = inventoryService.crossSections[stockId.sectionIndex];
+        const shape = inventoryService.getShape(stockId.sectionIndex, stockId.sizeIndex);
+        if (material !== that._material || crossSection !== that._crossSection || shape !== that._shape) {
+          that._material = material;
+          that._crossSection = crossSection;
+          that._shape = shape;
+          eventBrokerService.inventorySelectionComplete.next({
+            origin: EventOrigin.SERVICE,
+            data: { material, crossSection, shape },
+          });
+        }
+      }
+    };
     eventBrokerService.inventorySelectionChange.subscribe(updateState);
     eventBrokerService.loadInventorySelectorRequest.subscribe(updateState);
   }
 
-  public get material(): Material {
+  public get material(): Material | undefined {
     return this._material;
   }
 
-  public get crossSection(): CrossSection {
+  public get crossSection(): CrossSection | undefined {
     return this._crossSection;
   }
 
-  public get shape(): Shape {
+  public get shape(): Shape | undefined {
     return this._shape;
   }
 }

@@ -2,6 +2,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, Input, ViewChild } f
 import { jqxDropDownListComponent, jqxDropDownListModule } from 'jqwidgets-ng/jqxdropdownlist';
 import { EventBrokerService, EventOrigin } from '../../services/event-broker.service';
 import { InventoryService, StockId } from '../../services/inventory.service';
+import { WidgetHelper } from '../../classes/widget-helper';
 
 @Component({
   selector: 'inventory-selector',
@@ -28,9 +29,9 @@ export class InventorySelectorComponent implements AfterViewInit {
   ) {}
 
   public load(stockId: StockId) {
-    this.materialSelector.selectedIndex(stockId.materialIndex);
-    this.crossSectionSelector.selectedIndex(stockId.sectionIndex);
-    this.sizeSelector.selectedIndex(stockId.sizeIndex);
+    WidgetHelper.setDropdownListSelection(this.materialSelector, stockId.materialIndex);
+    WidgetHelper.setDropdownListSelection(this.crossSectionSelector, stockId.sectionIndex);
+    WidgetHelper.setDropdownListSelection(this.sizeSelector, stockId.sizeIndex);
   }
 
   get crossSectionSelectorWidth(): number {
@@ -65,7 +66,7 @@ export class InventorySelectorComponent implements AfterViewInit {
 
   private sendStockId(): void {
     this.eventBrokerService.inventorySelectionChange.next({
-      source: this.eventOrigin,
+      origin: this.eventOrigin,
       data: new StockId(
         this.materialSelector.selectedIndex(),
         this.crossSectionSelector.selectedIndex(),

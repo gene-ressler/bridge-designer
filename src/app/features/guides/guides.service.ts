@@ -64,7 +64,7 @@ export class GuidesService {
     });
     this.eventBrokerService.guidesToggle.subscribe(eventInfo => {
       this.isVisible = eventInfo.data;
-      this.eventBrokerService.draftingPanelInvalidation.next({ source: EventOrigin.SERVICE, data: 'graphic' });
+      this.eventBrokerService.draftingPanelInvalidation.next({ origin: EventOrigin.SERVICE, data: 'graphic' });
     });
   }
 

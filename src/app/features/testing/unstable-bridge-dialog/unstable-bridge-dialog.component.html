@@ -1,0 +1,116 @@
+<jqxWindow
+  #dialog
+  [isModal]="true"
+  [autoOpen]="false"
+  [width]="640"
+  [height]="480"
+>
+  <div class="header">Bridge design analysis</div>
+  <div class="content">
+    <div class="heading">🙁 Your structural model is unstable. Let's fix it! 🙂</div>
+    <div class="text">
+      <p>
+        Your bridge cannot be load tested because it's unstable. To make it stable, you should change your truss so
+        that it's composed entirely of interconnected triangles. Often this means adding more members.
+      </p>
+      <p>For an explanation of instability and how to correct it, see the examples below.</p>
+      <p>Click the Close button to return to the Drawing Board.</p>
+    </div>
+    <jqxTabs
+      #exampleTabs
+      [width]="'100%'"
+      [height]="160"
+      [position]="'top'"
+      [selectionTracker]="false"
+      [theme]="'material'"
+    >
+      <ul>
+        <li>Example 1</li>
+        <li>Example 2</li>
+        <li>Example 3</li>
+        <li>Example 4</li>
+      </ul>
+      <div>
+        <unstable-bridge-example [exampleNumber]="1">
+          <div>
+            (1) This truss is unstable, because the <span class="highlighted">highlighted</span> panel is rectangular,
+            rather than triangular.
+          </div>
+          <div>
+            (2) The rectangular panel is not rigid, so it cannot carry any load. There is nothing to prevent the entire
+            truss from rotating about its supports, as shown here. It is unstable.
+          </div>
+          <div>
+            (3) To fix the problem, add a diagonal member to divide the rectangular panel into triangles. Now the truss
+            is rigid and can carry load. It is stable.
+          </div>
+        </unstable-bridge-example>
+      </div>
+      <div>
+        <unstable-bridge-example [exampleNumber]="2">
+          <div>
+            (1) This truss is also unstable. When only two members are connected to a joint and those two members lie
+            along a straight line...
+          </div>
+          <div>
+            (2) There is nothing to prevent the center joint from moving perpendicular to the two members, as shown
+            here. The center joint can carry no load. It is unstable.
+          </div>
+          <div>(3) To fix the problem, add a third member to the unstable joint, or...</div>
+          <div>(4) Delete the unstable joint and the two attached members...</div>
+          <div>
+            (5) Then replace them with a single member. Now the truss is rigid and can carry load. It is stable.
+          </div>
+        </unstable-bridge-example>
+      </div>
+      <div>
+        <unstable-bridge-example [exampleNumber]="3">
+          <div>(1) This truss is unstable, even though it is made up entirely of triangles.</div>
+          <div>
+            (2) Because of its configuration, there is nothing to prevent the entire truss from rotating about its
+            supports. It is unstable.
+          </div>
+          <div>
+            (3) To fix the problem, add a horizontal member connecting the two halves of the truss together. Now the
+            truss is rigid and can carry load. It is stable.
+          </div>
+        </unstable-bridge-example>
+      </div>
+      <div>
+        <unstable-bridge-example [exampleNumber]="4">
+          <div>
+            (1) This truss is also unstable, because the center panel is four-sided. This example shows that any
+            four-sided panel--not just a rectangular one--can make a truss unstable.
+          </div>
+          <div>
+            (2) The four-sided panel is not rigid, so it cannot carry any load. There is nothing to prevent the entire
+            truss from rotating about its supports. It is unstable.
+          </div>
+          <div>
+            (3) To fix the problem, add a vertical member to divide the four-sided panel into two triangles. Now the
+            truss is rigid and can carry load. It is stable.
+          </div>
+        </unstable-bridge-example>
+      </div>
+    </jqxTabs>
+    <fieldset class="design-tip">
+      <legend>Design tip:</legend>
+      <div>
+        <img
+          class="tip-icon"
+          src="img/tipicon.png"
+        />
+        If you're having trouble creating a stable truss, try using a template. On the main menu, click
+        &quot;File&quot;, then &quot;Load template&quot;. The template will show you where to place joints and members
+        to ensure that your truss is stable.
+      </div>
+    </fieldset>
+    <div class="buttons">
+    <jqxButton
+      (onClick)="dialog.close()"
+      [width]="'110px'"
+      >Close</jqxButton
+    >
+  </div>
+  </div>
+</jqxWindow>

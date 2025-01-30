@@ -288,11 +288,11 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
 
   finishButtonOnClickHandler(): void {
     this.eventBrokerService.loadBridgeRequest.next({
-      source: EventOrigin.SETUP_DIALOG,
+      origin: EventOrigin.SETUP_DIALOG,
       data: this.bridgeService.bridge,
     });
     this.eventBrokerService.loadSketchRequest.next({
-      source: EventOrigin.SETUP_DIALOG,
+      origin: EventOrigin.SETUP_DIALOG,
       data: this.bridgeService.sketch,
     });
     this.dialog.close();

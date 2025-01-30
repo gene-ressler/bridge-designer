@@ -131,8 +131,10 @@ class Inventory {
   static readonly SHAPES: Shape[][] = Inventory.CROSS_SECTIONS.map(cs => cs.createShapes());
 }
 
-/** An identifier for a Material/Size/Section triple */
+/** An identifier for a Material/Size/Section triple. Indices are -1 for nothing selected. */
 export class StockId {
+  public static readonly EMPTY = new StockId(-1, -1, -1);
+  
   constructor(
     public materialIndex: number,
     public sectionIndex: number,
@@ -140,7 +142,7 @@ export class StockId {
   ) {}
 
   public get key() {
-    return `StockId:${this.materialIndex}-${this.sectionIndex}-${this.sizeIndex}`;
+    return `StockId:${this.materialIndex}.${this.sectionIndex}.${this.sizeIndex}`;
   }
 }
 
@@ -175,14 +177,15 @@ export class InventoryService {
     return Inventory.SHAPES[sectionIndex].length;
   }
 
-  public getShape(sectionIndex: number, sizeIndex: number) {
-    return Inventory.SHAPES[sectionIndex][sizeIndex];
+  /** Returns shape for given indices or undefined if either is out of bounds. */
+  public getShape(sectionIndex: number, sizeIndex: number): Shape {
+    return Inventory.SHAPES[sectionIndex]?.[sizeIndex];
   }
 
-  public static getShapeWithSizeIncrement(shape: Shape, increment: number) {
-    const sectionIndex = shape.section.index;
-    const newSizeIndex = Math.min(Inventory.SHAPES[sectionIndex].length - 1, Math.max(0, shape.sizeIndex + increment));
-    return Inventory.SHAPES[sectionIndex][newSizeIndex];
+  /** Returns a shape incremented in size wrt a given one, if available. */
+  public static getShapeWithSizeIncrement(shape: Shape, increment: number): Shape {
+    const shapes = Inventory.SHAPES[shape.section.index];
+    return shapes[Utility.clamp(shape.sizeIndex + increment, 0, shapes.length - 1)];
   }
 
   public static compressiveStrength(material: Material, shape: Shape, length: number): number {

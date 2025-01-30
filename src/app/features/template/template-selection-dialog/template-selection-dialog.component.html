@@ -6,8 +6,16 @@
   [height]="590"
   (onOpen)="dialogOpenHandler($event)"
 >
-  <div #header class="header">Load a bridge template</div>
-  <div #content class="content">
+  <div
+    #header
+    class="header"
+  >
+    Load a bridge template
+  </div>
+  <div
+    #content
+    class="content"
+  >
     <div class="top-row">
       <div class="select-label">Select a template:</div>
     </div>
@@ -22,15 +30,23 @@
       >
       </jqxListBox>
       <div class="dialog-topic">Preview:</div>
-      <canvas #preview class="preview" width="498" height="298"> </canvas>
+      <canvas
+        #preview
+        class="preview"
+        width="498"
+        height="298"
+      >
+      </canvas>
     </div>
     <div class="right-column">
       <fieldset class="design-tip">
         <legend class="dialog-topic">Design tip:</legend>
         <div>
-          <img class="tip-icon" src="img/tipicon.png" /> You can use the up and
-          down arrow keys to scroll through the list while previewing each 
-          template below.
+          <img
+            class="tip-icon"
+            src="img/tipicon.png"
+          />
+          You can use the up and down arrow keys to scroll through the list while previewing each template below.
         </div>
       </fieldset>
       <div>

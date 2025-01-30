@@ -32,32 +32,36 @@ export class UndoManagerService {
   }
 
   private undo(count: number = 1): void {
+    let effectsMask: number = 0;
     while (count-- > 0) {
       const editCommand = this.done.popLeft();
       if (!editCommand) {
         return;
       }
       editCommand.undo();
+      effectsMask |= editCommand.effectsMask;
       this.undone.pushLeft(editCommand);
-      this.emitCommandCompletion(editCommand.effectsMask);
     }
+    this.emitCommandCompletion(effectsMask);
   }
 
   private redo(count: number = 1): void {
+    let effectsMask: number = 0;
     while (count-- > 0) {
       const editCommand = this.undone.popLeft();
       if (!editCommand) {
         return;
       }
       editCommand.do();
+      effectsMask |= editCommand.effectsMask;
       this.done.pushLeft(editCommand);
-      this.emitCommandCompletion(editCommand.effectsMask);
     }
+    this.emitCommandCompletion(effectsMask);
   }
 
   private emitCommandCompletion(effectsMask: number): void {
     this.eventBrokerService.editCommandCompletion.next({
-      source: EventOrigin.SERVICE,
+      origin: EventOrigin.SERVICE,
       data: {
         effectsMask: effectsMask,
         doneCount: this.done.length,

@@ -10,13 +10,13 @@ export class UiStateService {
   // global itemclicked() handler. So can't hang this info on the DOM, which would be simpler.
   private readonly selectMenuItemInfosById: { [id: string]: [number, Subject<EventInfo>] } = {};
   private readonly toggleMenuItemInfosById: { [id: string]: [HTMLSpanElement, Subject<EventInfo>] } = {};
-  private readonly plainMenuItemSubjectsById: { [id: string]: Subject<EventInfo> } = {};
+  private readonly plainMenuItemInfosById: { [id: string]: [Subject<EventInfo>, any] } = {};
 
   public handleMenuItemClicked(id: string): void {
     const selectMenuItemInfo = this.selectMenuItemInfosById[id];
     if (selectMenuItemInfo) {
       const [index, subject] = selectMenuItemInfo;
-      subject.next({ source: EventOrigin.MENU, data: index });
+      subject.next({ origin: EventOrigin.MENU, data: index });
       return;
     }
     const toggleMenuItemInfo = this.toggleMenuItemInfosById[id];
@@ -24,10 +24,14 @@ export class UiStateService {
       const [item, subject] = toggleMenuItemInfo;
       const newIsCheckedValue = !UiStateService.isMenuItemChecked(item);
       UiStateService.setMenuItemCheck(item, newIsCheckedValue);
-      subject.next({ source: EventOrigin.MENU, data: newIsCheckedValue });
+      subject.next({ origin: EventOrigin.MENU, data: newIsCheckedValue });
       return;
     }
-    this.plainMenuItemSubjectsById[id]?.next({ source: EventOrigin.MENU });
+    const plainMenuItemInfo = this.plainMenuItemInfosById[id];
+    if (plainMenuItemInfo) {
+      plainMenuItemInfo[0].next({ origin: EventOrigin.MENU, data: plainMenuItemInfo[1] });
+      return;
+    }
   }
 
   public registerSelectMenuItems(itemIds: string[], subject: Subject<EventInfo>): void {
@@ -48,7 +52,7 @@ export class UiStateService {
     buttonItems = indices.map(i => buttonItems[i]);
     buttonItems.forEach((buttonItem, buttonItemIndex) =>
       buttonItem.tool.on('mousedown', () => {
-        subject.next({ source: EventOrigin.TOOLBAR, data: buttonItemIndex });
+        subject.next({ origin: EventOrigin.TOOLBAR, data: buttonItemIndex });
       }),
     );
     subject.subscribe((eventInfo: EventInfo) => {
@@ -56,7 +60,7 @@ export class UiStateService {
         buttonItem.tool.jqxToggleButton(
           'toggled',
           // EventOrigin test needed for jqwidgets toggle logic: clicked button can't be already toggled.
-          eventInfo.source !== EventOrigin.TOOLBAR && eventInfo.data === buttonItemIndex,
+          eventInfo.origin !== EventOrigin.TOOLBAR && eventInfo.data === buttonItemIndex,
         ),
       );
     });
@@ -65,12 +69,12 @@ export class UiStateService {
   public registerSelectButtons(buttons: jqxToggleButtonComponent[], subject: Subject<EventInfo>): void {
     buttons.forEach((button, buttonIndex) =>
       button.elementRef.nativeElement.addEventListener('mousedown', () =>
-        subject.next({ source: EventOrigin.TOOLBAR, data: buttonIndex }),
+        subject.next({ origin: EventOrigin.TOOLBAR, data: buttonIndex }),
       ),
     );
     subject.subscribe((eventInfo: EventInfo) => {
       buttons.forEach((button, buttonIndex) =>
-        button.toggled(eventInfo.source !== EventOrigin.TOOLBAR && eventInfo.data === buttonIndex),
+        button.toggled(eventInfo.origin !== EventOrigin.TOOLBAR && eventInfo.data === buttonIndex),
       );
     });
   }
@@ -79,7 +83,7 @@ export class UiStateService {
     const menuItem = UiStateService.queryMenuItem(itemId);
     this.toggleMenuItemInfosById[itemId] = [menuItem, subject];
     subject.subscribe((eventInfo: EventInfo) => {
-      if (eventInfo.source != EventOrigin.MENU) {
+      if (eventInfo.origin != EventOrigin.MENU) {
         UiStateService.setMenuItemCheck(menuItem, eventInfo.data);
       }
     });
@@ -87,22 +91,22 @@ export class UiStateService {
 
   public registerToggleToolbarButton(buttonItem: jqwidgets.ToolBarToolItem, subject: Subject<EventInfo>) {
     buttonItem.tool.on('click', () => {
-      subject.next({ source: EventOrigin.TOOLBAR, data: buttonItem.tool.jqxToggleButton('toggled') });
+      subject.next({ origin: EventOrigin.TOOLBAR, data: buttonItem.tool.jqxToggleButton('toggled') });
     });
     subject.subscribe((eventInfo: EventInfo) => {
-      if (eventInfo.source !== EventOrigin.TOOLBAR) {
+      if (eventInfo.origin !== EventOrigin.TOOLBAR) {
         buttonItem.tool.jqxToggleButton('toggled', eventInfo.data);
       }
     });
   }
 
-  public registerPlainMenuEntry(itemId: string, subject: Subject<EventInfo>) {
-    this.plainMenuItemSubjectsById[itemId] = subject;
+  public registerPlainMenuEntry(itemId: string, subject: Subject<EventInfo>, data?: any) {
+    this.plainMenuItemInfosById[itemId] = [subject, data];
   }
 
-  public registerPlainToolbarButton(buttonItem: jqwidgets.ToolBarToolItem, subject: Subject<EventInfo>) {
+  public registerPlainToolbarButton(buttonItem: jqwidgets.ToolBarToolItem, subject: Subject<EventInfo>, data?: any) {
     buttonItem.tool.on('click', () => {
-      subject.next({ source: EventOrigin.TOOLBAR });
+      subject.next({ origin: EventOrigin.TOOLBAR, data });
     });
   }
 

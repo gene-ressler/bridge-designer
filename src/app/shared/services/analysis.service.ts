@@ -195,7 +195,6 @@ export class AnalysisService {
     for (let im = 0; im < nMembers; im++) {
       const deadLoad =
         AnalysisService.deadLoadFactor * members[im].shape.area * length[im] * members[im].material.density * 9.8066 / 2.0 / 1000.0;
-      console.log(`i=${im} dl=${deadLoad} a=${members[im].shape.area} d=${members[im].material.density}`);
       const dof1 = 2 * members[im].a.index + 1;
       const dof2 = 2 * members[im].b.index + 1;
       for (let ilc = 0; ilc < nLoadInstances; ilc++) {
@@ -409,7 +408,7 @@ export class AnalysisService {
       this._status = AnalysisStatus.FAILS_SLENDERNESS;
     }
     if (options?.populateBridgeMembers) {
-      this.eventBrokerService.analysisCompletion.next({source: EventOrigin.SERVICE, data: this._status})
+      this.eventBrokerService.analysisCompletion.next({origin: EventOrigin.SERVICE, data: this._status})
     }
   }
 }

@@ -19,6 +19,7 @@ import { EventBrokerService } from './shared/services/event-broker.service';
 import { MemberTableComponent } from './features/drafting/member-table/member-table.component';
 import { TemplateSelectionDialogComponent } from './features/template/template-selection-dialog/template-selection-dialog.component';
 import { WorkflowManagementService } from './features/controls/management/workflow-management.service';
+import { UnstableBridgeDialogComponent } from './features/testing/unstable-bridge-dialog/unstable-bridge-dialog.component';
 
 // ¯\_(ツ)_/¯
 
@@ -35,6 +36,7 @@ import { WorkflowManagementService } from './features/controls/management/workfl
     TemplateSelectionDialogComponent,
     ToolbarAComponent,
     ToolbarBComponent,
+    UnstableBridgeDialogComponent,
     jqxDropDownButtonModule,
     jqxDropDownListModule,
     jqxGridModule,

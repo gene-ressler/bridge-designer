@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, HostBinding, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, HostBinding, Input, ViewChild } from '@angular/core';
 import { jqxGridComponent, jqxGridModule } from 'jqwidgets-ng/jqxgrid';
 import { BridgeService } from '../../../shared/services/bridge.service';
 import { EventBrokerService, EventOrigin } from '../../../shared/services/event-broker.service';
@@ -23,67 +23,70 @@ export class MemberTableComponent implements AfterViewInit {
     { name: 'materialSize', type: 'number' },
     { name: 'length', type: 'number' },
     { name: 'slenderness', type: 'number' },
-    { name: 'compression', type: 'string' },
-    { name: 'tension', type: 'string' },
+    { name: 'compression', type: 'number' },
+    { name: 'tension', type: 'number' },
   ];
 
   // prettier-ignore
-  private static readonly GRID_COLUMNS = 
+  readonly columns = 
    [
     { text: '#', 
       datafield: 'number', 
       cellsalign: 'center', 
       width: 30,
-      renderer: MemberTableComponent.headerRenderer,
+      renderer: MemberTableComponent.renderHeader,
     }, {
       text: 'Material type',
       datafield: 'materialShortName',
       cellsalign: 'center', 
       width: 60,
-      renderer: MemberTableComponent.headerRenderer,
+      renderer: MemberTableComponent.renderHeader,
     }, {
       text: 'Cross section',
       datafield: 'crossSectionShortName',
       cellsalign: 'center', 
       width: 60,
-      renderer: MemberTableComponent.headerRenderer,
+      renderer: MemberTableComponent.renderHeader,
     }, { 
       text: 'Size (mm)', 
       datafield: 'materialSize', 
       cellsalign: 'right', 
       cellsformat: 'f0',
       width: 44, 
-      renderer: MemberTableComponent.headerRenderer
+      renderer: MemberTableComponent.renderHeader
     }, { 
       text: 'Length (m)', 
       datafield: 'length', 
       cellsalign: 'right', 
       cellsformat: 'f2',
       width: 48, 
-      renderer: MemberTableComponent.headerRenderer
+      renderer: MemberTableComponent.renderHeader
     }, {
       text: 'Slender- ness', 
       datafield: 'slenderness',
       cellsalign: 'right', 
-      cellsformat: 'f1',
+      cellsformat: 'f2',
       width: 66, 
-      renderer: MemberTableComponent.headerRenderer
+      renderer: MemberTableComponent.renderHeader
     }, { 
       text: 'Compression force/strength', 
       datafield: 'compression',
       cellsalign: 'center', 
+      cellsformat: 'f2',
       width: 90, 
-      renderer: MemberTableComponent.headerRenderer
+      renderer: MemberTableComponent.renderHeader,
+      cellsrenderer: this.renderCompression.bind(this),
     }, { 
       text: 'Tension force/strength', 
       datafield: 'tension',
       cellsalign: 'center', 
+      cellsformat: 'f2',
       width: 90, 
-      renderer: MemberTableComponent.headerRenderer
+      renderer: MemberTableComponent.renderHeader,
+      cellsrenderer: this.renderTension.bind(this),
     },
   ];
 
-  readonly columns = MemberTableComponent.GRID_COLUMNS;
   readonly source: any = {
     localdata: [],
     datatype: 'array',
@@ -92,6 +95,7 @@ export class MemberTableComponent implements AfterViewInit {
   readonly dataAdapter: any;
   readonly throttledSelectionUpdater: any;
 
+  @Input() isAnalysisDataValid: boolean = true;
   @ViewChild('grid') grid!: jqxGridComponent;
   @HostBinding('style.display') display: string = 'block';
 
@@ -110,7 +114,7 @@ export class MemberTableComponent implements AfterViewInit {
   }
 
   /** Renders multi-line, wrapped, and centered headers. Padding allows room for sort icons. */
-  private static headerRenderer(header?: string, _alignment?: string, _height?: number): string {
+  private static renderHeader(header?: string, _alignment?: string, _height?: number): string {
     return `<div style="
       height: 100%; 
       width: 100%;
@@ -123,6 +127,34 @@ export class MemberTableComponent implements AfterViewInit {
         vertical-align: middle; 
         text-align: center;">${header}</div>
     </div>`;
+  }
+
+  private renderCompression(_row?: number, _columnField?: string, value?: any, defaultHtml?: string): string {
+    return this.renderAnalysisCell(value, defaultHtml!, 'rgb(255,150,150)');
+  }
+
+  private renderTension(_row?: number, _columnField?: string, value?: any, defaultHtml?: string): string {
+    return this.renderAnalysisCell(value, defaultHtml!, 'rgb(150,150,255)');
+  }
+
+  private static readonly STYLE_MATCH = /style=".*"/;
+
+  private renderAnalysisCell(value: any, defaultHtml: string, backgroundColor: string) {
+    const withDashes =  defaultHtml.replace('></div>', '>---</div>');
+    if (value <= 1 && this.isAnalysisDataValid) {
+      return withDashes;
+    }
+    const stylePrefix = 'style="padding-top: 4.5px;padding-bottom: 3px;margin-bottom: -1px;';
+    let styles: string[] = [stylePrefix];
+    if (value !== undefined && value > 1) {
+      styles.push('background-color: ', backgroundColor, ';')
+    }
+    if (!this.isAnalysisDataValid) {
+      styles.push('color: gray;');
+    }
+    styles.push('"');
+    const result = withDashes.replace(MemberTableComponent.STYLE_MATCH, styles.join(''));
+    return result;
   }
 
   public set visible(value: boolean) {
@@ -149,7 +181,7 @@ export class MemberTableComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.eventBrokerService.selectedElementsChange.subscribe(eventInfo => {
-      if (eventInfo.source !== EventOrigin.MEMBER_TABLE) {
+      if (eventInfo.origin !== EventOrigin.MEMBER_TABLE) {
         this.updateGridSelection();
       }
     });

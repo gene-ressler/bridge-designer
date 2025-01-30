@@ -1,3 +1,5 @@
+import { jqxDropDownListComponent } from 'jqwidgets-ng/jqxdropdownlist';
+
 export const enum StandardCursor {
   ARROW = 'default',
   AUTO = 'auto',
@@ -39,6 +41,18 @@ export class WidgetHelper {
 
   public static getPointerCursor(ctx: CanvasRenderingContext2D): string {
     return ctx.canvas.style.cursor;
+  }
+
+  /** 
+   * Mitigates a quirk in dropdown list API: if nothing selected, it returns index -1, 
+   * but selecting index -1 does not clear the list.
+   */
+  public static setDropdownListSelection(list: jqxDropDownListComponent, index: number): void {
+    if (index < 0) {
+      list.clearSelection();
+      return;
+    }
+    list.selectedIndex(index);
   }
 
   /* Replaced by uistate service.

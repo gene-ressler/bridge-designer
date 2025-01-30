@@ -16,7 +16,7 @@ export class DesignSketchRenderingService {
   ) {
     this.eventBrokerService.templateToggle.subscribe(info => {
       this.isVisible = info.data;
-      this.eventBrokerService.draftingPanelInvalidation.next({ source: EventOrigin.SERVICE, data: 'graphic' });
+      this.eventBrokerService.draftingPanelInvalidation.next({ origin: EventOrigin.SERVICE, data: 'graphic' });
     });
   }
 

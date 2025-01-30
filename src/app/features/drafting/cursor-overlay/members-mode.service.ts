@@ -73,8 +73,13 @@ export class MembersModeService {
     if (anchor === hotElement || !(hotElement instanceof Joint)) {
       return;
     }
+    const material =  this.inventorySelectionService.material;
+    const shape = this.inventorySelectionService.shape;
+    if (!material || !shape) {
+      throw new Error('No material selected for new member');
+    }
     this.addMemberRequest?.emit(
-      new Member(-1, anchor, hotElement, this.inventorySelectionService.material, this.inventorySelectionService.shape),
+      new Member(-1, anchor, hotElement, material, shape),
     );
     this.hotElementService.invalidate(this.ctx);
   }

@@ -1,0 +1,26 @@
+<div class="part">
+  <img
+    class="cartoon"
+    [src]="exampleImgSrc"
+  />
+  <div
+    #textBox
+    class="textbox"
+  >
+    <ng-content />
+  </div>
+</div>
+<div class="buttons">
+  <jqxButton
+    [width]="'110px'"
+    [disabled]="partIndex === 0"
+    (onClick)="bumpPart(-1)"
+    >&lt;&lt; Back</jqxButton
+  >
+  <jqxButton
+    [width]="'110px'"
+    style="margin-left: 4px"
+    (onClick)="bumpPart(1)"
+    >Next &gt;&gt;</jqxButton
+  >
+</div>

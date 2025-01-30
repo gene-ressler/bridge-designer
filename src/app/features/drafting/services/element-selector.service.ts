@@ -20,7 +20,7 @@ export class ElementSelectorService {
     private readonly viewportTransform: ViewportTransform2D,
   ) {
     eventBrokerService.selectAllRequest.subscribe(_eventInfo => this.selectAllMembers(_eventInfo.data));
-    eventBrokerService.loadBridgeRequest.subscribe(eventInfo => this.clear(eventInfo.source));
+    eventBrokerService.loadBridgeRequest.subscribe(eventInfo => this.clear(eventInfo.origin));
   }
 
   private readonly worldCursor = Rectangle2D.createEmpty();
@@ -93,7 +93,7 @@ export class ElementSelectorService {
 
   private sendSelectedElementsChange(origin: EventOrigin): void {
     this.eventBrokerService.selectedElementsChange.next({
-      source: origin,
+      origin: origin,
       data: this.selectedElementsService.selectedElements,
     });
   }

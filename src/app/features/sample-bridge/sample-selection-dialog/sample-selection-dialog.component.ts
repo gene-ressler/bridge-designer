@@ -65,7 +65,7 @@ export class SampleSelectionDialogComponent implements AfterViewInit {
   okClickHandler(): void {
     this.dialog.close();
     this.eventBrokerService.loadBridgeRequest.next({
-      source: EventOrigin.SAMPLE_DIALOG,
+      origin: EventOrigin.SAMPLE_DIALOG,
       data: this.bridgeService.bridge,
     });
   }

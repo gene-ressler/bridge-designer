@@ -101,7 +101,7 @@ export class UndoRedoDropdownComponent implements AfterViewInit {
       if (actionCount < this.commandList.length) {
         // Exclude "cancel" item.
         this.actionEmitter.next({
-          source: EventOrigin.TOOLBAR,
+          origin: EventOrigin.TOOLBAR,
           data: actionCount,
         });
       }

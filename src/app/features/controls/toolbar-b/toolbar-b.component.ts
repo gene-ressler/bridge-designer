@@ -87,6 +87,9 @@ export class ToolbarBComponent implements AfterViewInit {
     const tools = this.toolbar.getTools();
     const gridTools = [Tools.COARSE_GRID, Tools.MEDIUM_GRID, Tools.FINE_GRID];
     this.uiStateService.registerSelectToolbarButtons(tools, gridTools, this.eventBrokerService.gridDensitySelection);
+    const registerPlainButton = this.uiStateService.registerPlainToolbarButton;
+    registerPlainButton(tools[Tools.SIZE_DOWN], this.eventBrokerService.memberSizeChangeRequest, -1);
+    registerPlainButton(tools[Tools.SIZE_UP], this.eventBrokerService.memberSizeChangeRequest, +1);
     const registerToggleButton = this.uiStateService.registerToggleToolbarButton;
     registerToggleButton(tools[Tools.MEMBER_TABLE], this.eventBrokerService.memberTableToggle);
     registerToggleButton(tools[Tools.MEMBER_NUMBERS], this.eventBrokerService.memberNumbersToggle);

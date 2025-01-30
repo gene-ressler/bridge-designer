@@ -77,12 +77,14 @@ export class BridgeService {
     return this.bridge.members.filter(member => member.hasJoint(joint));
   }
 
-  /** Gets the stock used for the most members in the bridge. */
-  public getMostCommonStockId(): StockId | undefined {
+  /** Gets one of the stocks used for the most members in the bridge or EMPTY if none. */
+  public getMostCommonStockId(indices?: Iterable<number>): StockId {
+    const members = this.bridge.members;
     const countsByStock = new Map<string, [StockId, number]>();
     let mostCommonCount: number = -1;
-    let mostCommonStockId: StockId | undefined = undefined;
-    for (let member of this.bridge.members) {
+    let mostCommonStockId: StockId = StockId.EMPTY;
+
+    function processMember(member: Member) {
       const memberStockId = member.stockId;
       const memberStockIdKey = memberStockId.key;
       const pair = countsByStock.get(memberStockIdKey);
@@ -97,6 +99,12 @@ export class BridgeService {
         mostCommonCount = updatedCount;
         mostCommonStockId = memberStockId;
       }
+    }
+
+    if (indices) {
+      for (const index of indices) processMember(members[index]);
+    } else {
+      members.forEach(processMember);
     }
     return mostCommonStockId;
   }

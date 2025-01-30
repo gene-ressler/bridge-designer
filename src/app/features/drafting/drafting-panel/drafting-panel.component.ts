@@ -72,7 +72,7 @@ export class DraftingPanelComponent implements AfterViewInit {
     const h = parent.clientHeight;
     this.viewportTransform.setViewport(0, h - 1, w - 1, 1 - h);
     this.viewportTransform.setWindow(this.bridgeService.siteInfo.drawingWindow);
-    this.eventBrokerService.draftingPanelInvalidation.next({ source: EventOrigin.DRAFTING_PANEL, data: 'viewport' });
+    this.eventBrokerService.draftingPanelInvalidation.next({ origin: EventOrigin.DRAFTING_PANEL, data: 'viewport' });
   }
 
   render(showGuides: boolean = true): void {
@@ -88,7 +88,7 @@ export class DraftingPanelComponent implements AfterViewInit {
     this.bridgeService.bridge = bridge;
     this.handleResize();
     this.changeDetector.detectChanges(); // Updates title block.
-    this.eventBrokerService.loadBridgeCompletion.next({ source: EventOrigin.DRAFTING_PANEL });
+    this.eventBrokerService.loadBridgeCompletion.next({ origin: EventOrigin.DRAFTING_PANEL });
   }
 
   loadSketch(sketch: BridgeSketchModel) {
@@ -157,14 +157,14 @@ export class DraftingPanelComponent implements AfterViewInit {
   selectGridDensityHandler(selectorIndex: number) {
     if (DesignGridDensity.COARSE <= selectorIndex && selectorIndex <= DesignGridDensity.FINE && selectorIndex != this.designGridService.grid.density) {
       this.designGridService.grid.density = selectorIndex;
-      this.eventBrokerService.gridDensityChange.next({source: EventOrigin.DRAFTING_PANEL});
+      this.eventBrokerService.gridDensityChange.next({origin: EventOrigin.DRAFTING_PANEL});
     }
   }
 
   /** Sets all grid density selection widgets using given value. */
   selectGridDensity(density: DesignGridDensity): void {
     if (density !== DesignGridDensity.ERROR) {
-      this.eventBrokerService.gridDensitySelection.next({ source: EventOrigin.DRAFTING_PANEL, data: density });
+      this.eventBrokerService.gridDensitySelection.next({ origin: EventOrigin.DRAFTING_PANEL, data: density });
     }
   }
 

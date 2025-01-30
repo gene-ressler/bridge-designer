@@ -82,12 +82,12 @@ export class Member implements Editable {
     return this.shape.width;
   }
 
-  public get compression(): string {
-    return this._compressionStrengthForceStrengthRatio === undefined ? '---' : this._compressionStrengthForceStrengthRatio.toFixed(2);
+  public get compression(): number {
+    return this._compressionStrengthForceStrengthRatio === undefined ? NaN : this._compressionStrengthForceStrengthRatio;
   }
 
-  public get tension(): string {
-    return this._tensionForceStrengthRatio === undefined ? '---' : this._tensionForceStrengthRatio.toFixed(2);
+  public get tension(): number {
+    return this._tensionForceStrengthRatio === undefined ? NaN : this._tensionForceStrengthRatio;
   }
 
   swapContents(other: Member): void {

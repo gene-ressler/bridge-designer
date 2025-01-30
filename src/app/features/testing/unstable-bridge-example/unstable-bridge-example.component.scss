@@ -1,0 +1,37 @@
+:host {
+  display: block;
+}
+
+.cartoon {
+  border-width: 2px;
+  border-style: inset;
+}
+
+.textbox {
+  margin-left: 8px;
+  padding: 4px;
+  border-width: 2px;
+  border-style: inset;
+  height: 72px;
+}
+
+.part {
+  padding: 8px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.part:last-child {
+  flex-grow: 1;
+}
+
+.buttons {
+  padding-right: 8px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+}
