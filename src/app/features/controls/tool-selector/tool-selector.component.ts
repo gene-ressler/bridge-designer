@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { jqxToggleButtonComponent, jqxToggleButtonModule } from 'jqwidgets-ng/jqxtogglebutton';
 import { jqxWindowComponent, jqxWindowModule } from 'jqwidgets-ng/jqxwindow';
-import { UiStateService } from '../../drafting/services/ui-state.service';
+import { UiStateService } from '../management/ui-state.service';
 import { EventBrokerService } from '../../../shared/services/event-broker.service';
 @Component({
   selector: 'tool-selector',

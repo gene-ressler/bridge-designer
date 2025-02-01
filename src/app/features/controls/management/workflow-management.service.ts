@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { EventBrokerService, EventOrigin } from '../../../shared/services/event-broker.service';
-import { AnalysisService } from '../../../shared/services/analysis.service';
+import { AnalysisService, AnalysisStatus } from '../../../shared/services/analysis.service';
 import { BridgeService } from '../../../shared/services/bridge.service';
 import { SelectedElements, SelectedElementsService } from '../../drafting/services/selected-elements-service';
 import { ChangeMembersCommand } from '../edit-command/change-members.command';
@@ -19,19 +19,18 @@ export class WorkflowManagementService {
     selectedElementsService: SelectedElementsService,
     undoManagerService: UndoManagerService,
   ) {
-    eventBrokerService.designModeSelection.subscribe(eventInfo => {
-      if (eventInfo.data === 1) {
-        // Analysis mode/animation
-        analysisService.analyze({ populateBridgeMembers: true });
+    // Alpha order by subject.
+    eventBrokerService.analysisCompletion.subscribe(eventInfo => {
+      const status = eventInfo.data as AnalysisStatus;
+      if (status === AnalysisStatus.UNSTABLE) {
+        eventBrokerService.unstableBridgeDialogOpenRequest.next({origin: EventOrigin.SERVICE});
       }
     });
-    eventBrokerService.selectedElementsChange.subscribe(eventInfo => {
-      const selectedIndices = (eventInfo.data as SelectedElements).selectedMembers;
-      const memberIndices = selectedIndices.size === 0 ? undefined : selectedIndices;
-      eventBrokerService.loadInventorySelectorRequest.next({
-        origin: EventOrigin.SERVICE,
-        data: bridgeService.getMostCommonStockId(memberIndices),
-      });
+    // TODO: If animation is disabled, set selector back to design immediately.
+    eventBrokerService.designModeSelection.subscribe(eventInfo => {
+      if (eventInfo.data === 1) { // Test mode.
+        analysisService.analyze({ populateBridgeMembers: true });
+      }
     });
     eventBrokerService.inventorySelectionComplete.subscribe(eventInfo => {
       const selectedMembers = selectedElementsService.selectedElements.selectedMembers;
@@ -57,6 +56,14 @@ export class WorkflowManagementService {
         eventInfo.data
       );
       undoManagerService.do(changeMembersCommand);
+    });
+    eventBrokerService.selectedElementsChange.subscribe(eventInfo => {
+      const selectedIndices = (eventInfo.data as SelectedElements).selectedMembers;
+      const memberIndices = selectedIndices.size === 0 ? undefined : selectedIndices;
+      eventBrokerService.loadInventorySelectorRequest.next({
+        origin: EventOrigin.SERVICE,
+        data: bridgeService.getMostCommonStockId(memberIndices),
+      });
     });
   }
 }

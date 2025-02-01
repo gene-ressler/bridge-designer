@@ -180,6 +180,7 @@ export class DraftingPanelComponent implements AfterViewInit {
       info => (this.titleBlock.nativeElement.style.display = info.data ? '' : 'none'),
     );
     this.eventBrokerService.editCommandCompletion.subscribe(_info => this.render());
+    
     this.handleResize();
   }
 }

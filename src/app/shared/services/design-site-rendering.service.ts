@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Colors, Point2D } from '../classes/graphics';
-import { SiteConstants } from '../classes/site-model';
+import { SiteConstants } from '../classes/site.model';
 import { AbutmentSide, SiteDetailRenderers, SiteRenderingHelper2D } from '../classes/site-rendering-helper-2d';
 import { BridgeService } from './bridge.service';
 import { FillPatternsService as FillPatternService } from './fill-pattern.service';

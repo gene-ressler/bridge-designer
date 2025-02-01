@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, HostBinding, Input, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, HostBinding, ViewChild } from '@angular/core';
 import { jqxGridComponent, jqxGridModule } from 'jqwidgets-ng/jqxgrid';
 import { BridgeService } from '../../../shared/services/bridge.service';
 import { EventBrokerService, EventOrigin } from '../../../shared/services/event-broker.service';
@@ -6,6 +6,7 @@ import { EditEffect } from '../../../shared/classes/editing';
 import { SelectedElementsService } from '../services/selected-elements-service';
 import { Utility } from '../../../shared/classes/utility';
 import { ElementSelectorService } from '../services/element-selector.service';
+import { AnalysisValidityService } from '../../controls/management/analysis-validity.service';
 
 @Component({
   selector: 'member-table',
@@ -23,8 +24,8 @@ export class MemberTableComponent implements AfterViewInit {
     { name: 'materialSize', type: 'number' },
     { name: 'length', type: 'number' },
     { name: 'slenderness', type: 'number' },
-    { name: 'compression', type: 'number' },
-    { name: 'tension', type: 'number' },
+    { name: 'compressionForceStrengthRatio', type: 'number' },
+    { name: 'tensionForceStrengthRatio', type: 'number' },
   ];
 
   // prettier-ignore
@@ -70,20 +71,20 @@ export class MemberTableComponent implements AfterViewInit {
       renderer: MemberTableComponent.renderHeader
     }, { 
       text: 'Compression force/strength', 
-      datafield: 'compression',
+      datafield: 'compressionForceStrengthRatio',
       cellsalign: 'center', 
       cellsformat: 'f2',
       width: 90, 
       renderer: MemberTableComponent.renderHeader,
-      cellsrenderer: this.renderCompression.bind(this),
+      cellsrenderer: this.renderCompressionForceStrengthRatio.bind(this),
     }, { 
       text: 'Tension force/strength', 
-      datafield: 'tension',
+      datafield: 'tensionForceStrengthRatio',
       cellsalign: 'center', 
       cellsformat: 'f2',
       width: 90, 
       renderer: MemberTableComponent.renderHeader,
-      cellsrenderer: this.renderTension.bind(this),
+      cellsrenderer: this.renderTensionForceStrengthRatio.bind(this),
     },
   ];
 
@@ -93,23 +94,29 @@ export class MemberTableComponent implements AfterViewInit {
     datafields: MemberTableComponent.MEMBER_DATA_FIELDS,
   };
   readonly dataAdapter: any;
-  readonly throttledSelectionUpdater: any;
+  /**
+   * Throttled updater coalesces per-item change events for block selections.
+   * Prevents redundant drafting panel invalidations.
+   */
+  private readonly updateSelectedMembersFromGridThrottled: any;
+  private static readonly STYLE_MATCH = /style="[^"]*/;
+  private isLastAnalysisValid: boolean | undefined;
 
-  @Input() isAnalysisDataValid: boolean = true;
   @ViewChild('grid') grid!: jqxGridComponent;
   @HostBinding('style.display') display: string = 'block';
 
   constructor(
+    private readonly analysisValidityService: AnalysisValidityService,
     private readonly bridgeService: BridgeService,
     elementSelectorService: ElementSelectorService,
-    private readonly selectedElementsService: SelectedElementsService,
     private readonly eventBrokerService: EventBrokerService,
+    private readonly selectedElementsService: SelectedElementsService,
   ) {
     this.source.localdata = bridgeService.bridge.members;
     this.dataAdapter = new jqx.dataAdapter(this.source);
-    this.throttledSelectionUpdater = Utility.throttle(
+    this.updateSelectedMembersFromGridThrottled = Utility.throttle(
       () => elementSelectorService.setSelectedMembers(this.grid.getselectedrowindexes(), EventOrigin.MEMBER_TABLE),
-      100,
+      60,
     );
   }
 
@@ -129,32 +136,27 @@ export class MemberTableComponent implements AfterViewInit {
     </div>`;
   }
 
-  private renderCompression(_row?: number, _columnField?: string, value?: any, defaultHtml?: string): string {
+  private renderCompressionForceStrengthRatio(_row?: number, _columnField?: string, value?: any, defaultHtml?: string): string {
     return this.renderAnalysisCell(value, defaultHtml!, 'rgb(255,150,150)');
   }
 
-  private renderTension(_row?: number, _columnField?: string, value?: any, defaultHtml?: string): string {
+  private renderTensionForceStrengthRatio(_row?: number, _columnField?: string, value?: any, defaultHtml?: string): string {
     return this.renderAnalysisCell(value, defaultHtml!, 'rgb(150,150,255)');
   }
 
-  private static readonly STYLE_MATCH = /style=".*"/;
-
   private renderAnalysisCell(value: any, defaultHtml: string, backgroundColor: string) {
-    const withDashes =  defaultHtml.replace('></div>', '>---</div>');
-    if (value <= 1 && this.isAnalysisDataValid) {
-      return withDashes;
+    const html = defaultHtml.replace('></div>', '>—</div>');
+    if (value <= 1 && this.analysisValidityService.isLastAnalysisValid) {
+      return html;
     }
-    const stylePrefix = 'style="padding-top: 4.5px;padding-bottom: 3px;margin-bottom: -1px;';
-    let styles: string[] = [stylePrefix];
+    let styles: string[] = ['style="padding-top: 4.5px;padding-bottom: 3px;margin-bottom: -1px;'];
     if (value !== undefined && value > 1) {
-      styles.push('background-color: ', backgroundColor, ';')
+      styles.push('background-color: ', backgroundColor, ';');
     }
-    if (!this.isAnalysisDataValid) {
+    if (!this.isLastAnalysisValid) {
       styles.push('color: gray;');
     }
-    styles.push('"');
-    const result = withDashes.replace(MemberTableComponent.STYLE_MATCH, styles.join(''));
-    return result;
+    return html.replace(MemberTableComponent.STYLE_MATCH, styles.join(''));
   }
 
   public set visible(value: boolean) {
@@ -162,6 +164,7 @@ export class MemberTableComponent implements AfterViewInit {
   }
 
   private updateGridContent(): void {
+    this.isLastAnalysisValid = this.analysisValidityService.isLastAnalysisValid;
     this.source.localdata = this.bridgeService.bridge.members;
     this.grid.source(this.dataAdapter);
     this.grid.updatebounddata('cells');
@@ -176,21 +179,28 @@ export class MemberTableComponent implements AfterViewInit {
   }
 
   updateSelectionFromGrid(): void {
-    this.throttledSelectionUpdater();
+    this.updateSelectedMembersFromGridThrottled();
   }
 
   ngAfterViewInit(): void {
+    // The throttler merges some cases where both following events have the same origin.
+    this.eventBrokerService.analysisCompletion.subscribe(_eventInfo => {
+      this.updateGridContent();
+    });
+    this.eventBrokerService.editCommandCompletion.subscribe(eventInfo => {
+      if (
+        eventInfo.data.effectsMask & EditEffect.MEMBERS ||
+        // Analysis validity right now doesn't match last rendered.
+        this.analysisValidityService.isLastAnalysisValid !== this.isLastAnalysisValid
+      ) {
+        this.updateGridContent();
+      }
+    });
+    this.eventBrokerService.loadBridgeCompletion.subscribe(_eventInfo => this.updateGridContent());
     this.eventBrokerService.selectedElementsChange.subscribe(eventInfo => {
       if (eventInfo.origin !== EventOrigin.MEMBER_TABLE) {
         this.updateGridSelection();
       }
     });
-    this.eventBrokerService.editCommandCompletion.subscribe(eventInfo => {
-      if (eventInfo.data.effectsMask & EditEffect.MEMBERS) {
-        this.updateGridContent();
-      }
-    });
-    this.eventBrokerService.loadBridgeCompletion.subscribe(_eventInfo => this.updateGridContent());
-    this.eventBrokerService.analysisCompletion.subscribe(_eventInfo => this.updateGridContent());
   }
 }

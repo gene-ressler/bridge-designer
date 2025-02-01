@@ -1,0 +1,11 @@
+.header {
+  font-weight: 700;
+}
+
+.buttons {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+}

@@ -4,7 +4,7 @@ import { AbutmentSide, SiteRenderingHelper2D } from '../classes/site-rendering-h
 import { ViewportTransform2D } from './viewport-transform.service';
 import { BridgeService } from './bridge.service';
 import { Colors, Graphics, Point2D, Rectangle2D } from '../classes/graphics';
-import { SiteConstants } from '../classes/site-model';
+import { SiteConstants } from '../classes/site.model';
 import { FillPatternsService } from './fill-pattern.service';
 import { DesignConditions } from './design-conditions.service';
 import { CartoonJointRenderingService } from './cartoon-joint-rendering.service';

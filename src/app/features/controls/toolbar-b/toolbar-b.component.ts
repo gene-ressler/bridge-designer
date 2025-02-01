@@ -5,7 +5,7 @@ import { WidgetHelper } from '../../../shared/classes/widget-helper';
 import { InventorySelectorComponent } from '../../../shared/components/inventory-selector/inventory-selector.component';
 import { ComponentService } from '../../../shared/core/component.service';
 import { EventBrokerService } from '../../../shared/services/event-broker.service';
-import { UiStateService } from '../../drafting/services/ui-state.service';
+import { UiStateService } from '../management/ui-state.service';
 
 const enum Tools {
   INVENTORY_SELECTOR,
@@ -86,14 +86,13 @@ export class ToolbarBComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     const tools = this.toolbar.getTools();
     const gridTools = [Tools.COARSE_GRID, Tools.MEDIUM_GRID, Tools.FINE_GRID];
-    this.uiStateService.registerSelectToolbarButtons(tools, gridTools, this.eventBrokerService.gridDensitySelection);
-    const registerPlainButton = this.uiStateService.registerPlainToolbarButton;
-    registerPlainButton(tools[Tools.SIZE_DOWN], this.eventBrokerService.memberSizeChangeRequest, -1);
-    registerPlainButton(tools[Tools.SIZE_UP], this.eventBrokerService.memberSizeChangeRequest, +1);
-    const registerToggleButton = this.uiStateService.registerToggleToolbarButton;
-    registerToggleButton(tools[Tools.MEMBER_TABLE], this.eventBrokerService.memberTableToggle);
-    registerToggleButton(tools[Tools.MEMBER_NUMBERS], this.eventBrokerService.memberNumbersToggle);
-    registerToggleButton(tools[Tools.GUIDES], this.eventBrokerService.guidesToggle);
-    registerToggleButton(tools[Tools.TEMPLATE], this.eventBrokerService.templateToggle);
+    const uiState = this.uiStateService;
+    uiState.registerSelectToolbarButtons(tools, gridTools, this.eventBrokerService.gridDensitySelection);
+    uiState.registerPlainToolbarButton(tools[Tools.SIZE_DOWN], this.eventBrokerService.memberSizeChangeRequest, -1);
+    uiState.registerPlainToolbarButton(tools[Tools.SIZE_UP], this.eventBrokerService.memberSizeChangeRequest, +1);
+    uiState.registerToggleToolbarButton(tools[Tools.MEMBER_TABLE], this.eventBrokerService.memberTableToggle);
+    uiState.registerToggleToolbarButton(tools[Tools.MEMBER_NUMBERS], this.eventBrokerService.memberNumbersToggle);
+    uiState.registerToggleToolbarButton(tools[Tools.GUIDES], this.eventBrokerService.guidesToggle);
+    uiState.registerToggleToolbarButton(tools[Tools.TEMPLATE], this.eventBrokerService.templateToggle);
   }
 }

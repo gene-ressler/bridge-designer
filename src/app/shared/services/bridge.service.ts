@@ -3,7 +3,7 @@ import { BridgeModel } from '../classes/bridge.model';
 import { Point2DInterface, Rectangle2D } from '../classes/graphics';
 import { Joint } from '../classes/joint.model';
 import { Member } from '../classes/member.model';
-import { SiteModel } from '../classes/site-model';
+import { SiteModel } from '../classes/site.model';
 import { DesignConditions, DesignConditionsService } from './design-conditions.service';
 import { StockId } from './inventory.service';
 import { BridgeSketchModel } from '../classes/bridge-sketch.model';
@@ -20,7 +20,8 @@ export class RootBridgeService {
 /** Injectable, mutable container for a bridge model and related site and sketch information. */
 @Injectable({ providedIn: 'root' })
 export class BridgeService {
-  private _bridge: BridgeModel = new BridgeModel(DesignConditionsService.PLACEHOLDER_CONDITIONS);
+  /** Current bridge. Initialized with reasonable default conditions for design drafting. */
+  private _bridge: BridgeModel = new BridgeModel(DesignConditionsService.STANDARD_CONDITIONS[0]);
   private _sketch: BridgeSketchModel = BridgeSketchModel.ABSENT;
   private _siteInfo: SiteModel = new SiteModel(this.bridge.designConditions);
 

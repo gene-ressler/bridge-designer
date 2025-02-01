@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { jqxMenuComponent, jqxMenuModule } from 'jqwidgets-ng/jqxmenu';
 import { EventBrokerService } from '../../../shared/services/event-broker.service';
-import { UiStateService } from '../../drafting/services/ui-state.service';
+import { UiStateService } from '../management/ui-state.service';
 
 @Component({
   selector: 'menus',
@@ -13,12 +13,12 @@ import { UiStateService } from '../../drafting/services/ui-state.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MenusComponent implements AfterViewInit {
+  @ViewChild('mainMenu') mainMenu!: jqxMenuComponent;
+
   constructor(
     private readonly uiStateService: UiStateService,
     private readonly eventBrokerService: EventBrokerService,
-  ) {}
-
-  @ViewChild('mainMenu', { static: false }) mainMenu!: jqxMenuComponent;
+  ) { }
 
   handleItemClick(event: any): void {
     const liElement = event.args as HTMLElement;
@@ -27,6 +27,7 @@ export class MenusComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     // this.mainMenu.disable('print', true); // TODO: Example/test. Remove.
+    this.uiStateService.registerForDisablement(this.mainMenu);
 
     const gridGroup = ['coarseGrid', 'mediumGrid', 'fineGrid'];
     this.uiStateService.registerSelectMenuItems(gridGroup, this.eventBrokerService.gridDensitySelection);
@@ -52,6 +53,7 @@ export class MenusComponent implements AfterViewInit {
     this.uiStateService.registerToggleMenuItem('autoCorrect', this.eventBrokerService.autoCorrectToggle);
     this.uiStateService.registerToggleMenuItem('guides', this.eventBrokerService.guidesToggle);
     this.uiStateService.registerToggleMenuItem('legacyGraphics', this.eventBrokerService.legacyGraphicsToggle);
+    this.uiStateService.registerToggleMenuItem('loadTestResults', this.eventBrokerService.analysisReportRequest);
     this.uiStateService.registerToggleMenuItem('memberList', this.eventBrokerService.memberTableToggle);
     this.uiStateService.registerToggleMenuItem('memberNumbers', this.eventBrokerService.memberNumbersToggle);
     this.uiStateService.registerToggleMenuItem('rulers', this.eventBrokerService.rulersToggle);

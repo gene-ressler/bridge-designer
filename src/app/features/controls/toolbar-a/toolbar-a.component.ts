@@ -3,9 +3,10 @@ import { jqxToolBarComponent, jqxToolBarModule } from 'jqwidgets-ng/jqxtoolbar';
 import { WidgetHelper } from '../../../shared/classes/widget-helper';
 import { ComponentService } from '../../../shared/core/component.service';
 import { EventBrokerService } from '../../../shared/services/event-broker.service';
-import { UiStateService } from '../../drafting/services/ui-state.service';
+import { UiStateService } from '../management/ui-state.service';
 import { UndoManagerService } from '../../drafting/services/undo-manager.service';
 import { UndoRedoDropdownComponent } from '../undo-redo-dropdown/undo-redo-dropdown.component';
+import { StatusIndicatorComponent } from '../status-indicator/status-indicator.component';
 
 const enum Tools {
   NEW,
@@ -78,7 +79,7 @@ export class ToolbarAComponent implements AfterViewInit {
         WidgetHelper.initToolbarImgToggleButton('Design bridge', 'img/design.png', tool, { toggled: true });
         break;
       case Tools.LOAD_TEST:
-        WidgetHelper.initToolbarImgToggleButton('Load test bridge', 'img/loadtest.png', tool);
+        WidgetHelper.initToolbarImgToggleButton('Run a load test', 'img/loadtest.png', tool);
         break;
       case Tools.SELECT_ALL:
         WidgetHelper.initToolbarImgButton('Select all', 'img/selectall.png', tool);
@@ -137,16 +138,7 @@ export class ToolbarAComponent implements AfterViewInit {
         WidgetHelper.initToolbarImgButton('Show cost details', 'img/calculator.png', tool);
         break;
       case Tools.STATUS:
-        const imgSrc = 'img/working.png';
-        const imgTitle = 'Work in progress';
-        tool.append(
-          '<div style="display:flex; align-items:center; margin:4px 8px">' +
-            '<span style="margin-right:2px;">Status:</span><img style="vertical-align:middle" src="' +
-            imgSrc +
-            '" title="' +
-            imgTitle +
-            '"/></div>',
-        );
+         this.componentService.load(StatusIndicatorComponent, tool[0]);
         break;
       case Tools.LOAD_TEST_REPORT:
         WidgetHelper.initToolbarImgButton('Show load test details', 'img/loadtestreport.png', tool);
@@ -156,14 +148,14 @@ export class ToolbarAComponent implements AfterViewInit {
   }
 
   private disableUndo(value: boolean = true) {
+    this.uiStateService.disable(this.eventBrokerService.undoRequest, value);
     const tools = this.toolbar.getTools();
-    tools[Tools.UNDO].tool.jqxButton({ disabled: value });
     tools[Tools.UNDO_MULTIPLE].tool.jqxToggleButton({ disabled: value });
   }
 
   private disableRedo(value: boolean = true) {
     const tools = this.toolbar.getTools();
-    tools[Tools.REDO].tool.jqxButton({ disabled: value });
+    this.uiStateService.disable(this.eventBrokerService.redoRequest, value);
     tools[Tools.REDO_MULTIPLE].tool.jqxToggleButton({ disabled: value });
   }
 
@@ -175,8 +167,7 @@ export class ToolbarAComponent implements AfterViewInit {
       this.eventBrokerService.designModeSelection,
     );
     this.uiStateService.registerPlainToolbarButton(tools[Tools.DELETE], this.eventBrokerService.deleteSelectionRequest);
-    // TODO: Make this show the load test report for real.
-    this.uiStateService.registerPlainToolbarButton(tools[Tools.LOAD_TEST_REPORT], this.eventBrokerService.unstableBridgeDialogOpenRequest);
+    this.uiStateService.registerPlainToolbarButton(tools[Tools.LOAD_TEST_REPORT], this.eventBrokerService.analysisReportRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.NEW], this.eventBrokerService.newDesignRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.REDO], this.eventBrokerService.redoRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.SELECT_ALL], this.eventBrokerService.selectAllRequest);

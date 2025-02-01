@@ -1,0 +1,31 @@
+<jqxWindow
+  #dialog
+  [isModal]="true"
+  [autoOpen]="false"
+  [width]="810"
+  [height]="730"
+  (onOpen)="dialogOpenHandler()"
+>
+  <div class="header">Bridge design analysis</div>
+  <div>
+    <jqxGrid
+      #grid
+      [width]="'calc(100% - 4px)'"
+      [height]="660"
+      [columns]="columns"
+      [columnsheight]="40"
+      [rowsheight]="24"
+      [selectionmode]="'none'"
+      [sortable]="false"
+      [source]="dataAdapter"
+    ></jqxGrid>
+    <div class="buttons">
+      <jqxButton
+        (onClick)="dialog.close()"
+        [width]="'110px'"
+        style="margin-right: 8px;"
+        >Close</jqxButton
+      >
+    </div>
+  </div>
+</jqxWindow>

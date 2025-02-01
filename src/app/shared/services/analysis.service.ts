@@ -35,12 +35,6 @@ export const enum AnalysisStatus {
   PASSES,
 }
 
-export const enum MemberStatus {
-  NOT_FAILED,
-  FAILED,
-  FAILED_LENGTH,
-}
-
 @Injectable({ providedIn: 'root' })
 export class AnalysisService {
   constructor(
@@ -61,8 +55,8 @@ export class AnalysisService {
   private memberForce: Float64Array[] = [];
   private jointDisplacement: Float64Array[] = [];
   private memberFails: BitVector[] = [];
-  private memberCompressiveStrength: Float64Array = new Float64Array();
-  private memberTensileStrength: Float64Array = new Float64Array();
+  private memberCompressionStrength: Float64Array = new Float64Array();
+  private memberTensionStrength: Float64Array = new Float64Array();
   private maxMemberCompressiveForces: Float64Array = new Float64Array();
   private maxMemberTensileForces: Float64Array = new Float64Array();
   private _status: AnalysisStatus = AnalysisStatus.NONE;
@@ -149,7 +143,7 @@ export class AnalysisService {
    * @return compressive strength
    */
   public getMemberCompressiveStrength(i: number): number {
-    return this.memberCompressiveStrength[i];
+    return this.memberCompressionStrength[i];
   }
 
   /**
@@ -159,18 +153,25 @@ export class AnalysisService {
    * @return tensile strength
    */
   public getMemberTensileStrength(i: number): number {
-    return this.memberTensileStrength[i];
+    return this.memberTensionStrength[i];
   }
 
   /**
    * Analyzes the bridge provided by BridgeService, and stores results internally for future queries.
    *
-   * Options support artificially decreasing the strength of failed members to support the failure animation.
+   * Options support artificially decreasing the strength of failed members for the failure animation.
    *
    * @param bridge bridge to analyze
    * @param failureStatus status of failed members: FAILED, NOT_FAILED, base member getLength, which implies FAILED.
    */
   public analyze(options?: { degradeMembersMask?: BitVector; populateBridgeMembers?: boolean }): void {
+    this.analyzeImpl(options || {});
+    if (options?.populateBridgeMembers) {
+      this.eventBrokerService.analysisCompletion.next({origin: EventOrigin.SERVICE, data: this._status})
+    }
+  }
+
+  private analyzeImpl(options: { degradeMembersMask?: BitVector; populateBridgeMembers?: boolean }): void {
     const bridge = this.bridgeService.bridge;
     const conditions = this.bridgeService.designConditions;
     this._status = AnalysisStatus.NONE;
@@ -359,16 +360,16 @@ export class AnalysisService {
       }
     }
 
-    this.memberCompressiveStrength = new Float64Array(nMembers);
-    this.memberTensileStrength = new Float64Array(nMembers);
+    this.memberCompressionStrength = new Float64Array(nMembers);
+    this.memberTensionStrength = new Float64Array(nMembers);
     this.maxMemberCompressiveForces = new Float64Array(nMembers);
     this.maxMemberTensileForces = new Float64Array(nMembers);
 
     for (let im = 0; im < nMembers; im++) {
       const material = members[im].material;
       const shape = members[im].shape;
-      this.memberCompressiveStrength[im] = InventoryService.compressiveStrength(material, shape, length[im]);
-      this.memberTensileStrength[im] = InventoryService.tensileStrength(material, shape);
+      this.memberCompressionStrength[im] = InventoryService.compressiveStrength(material, shape, length[im]);
+      this.memberTensionStrength[im] = InventoryService.tensileStrength(material, shape);
     }
     this._status = AnalysisStatus.PASSES;
     for (let im = 0; im < nMembers; im++) {
@@ -381,34 +382,32 @@ export class AnalysisService {
           if (force > maxCompression) {
             maxCompression = force;
           }
-          this.memberFails[ilc].setBitValue(im, force / this.memberCompressiveStrength[im] > 1.0);
+          this.memberFails[ilc].setBitValue(im, force / this.memberCompressionStrength[im] > 1.0);
         } else {
           if (force > maxTension) {
             maxTension = force;
           }
-          this.memberFails[ilc].setBitValue(im, force / this.memberTensileStrength[im] > 1.0);
+          this.memberFails[ilc].setBitValue(im, force / this.memberTensionStrength[im] > 1.0);
         }
       }
-      const cRatio = maxCompression / this.memberCompressiveStrength[im];
-      const tRatio = maxTension / this.memberTensileStrength[im];
+      const compressionStrength = this.memberCompressionStrength[im];
+      const tensionStrength = this.memberTensionStrength[im];
       // A fail for any member of any kind is a fail overall.
-      if (cRatio > 1 || tRatio > 1) {
+      if (maxCompression > compressionStrength || maxTension > tensionStrength) {
         this._status = AnalysisStatus.FAILS_LOAD_TEST;
       }
-      // Copy ratio information back to the bridge unless we're computing the intentionally distorted
-      // failure bridge.
       if (options?.populateBridgeMembers) {
-        members[im].compressionStrengthForceStrengthRatio = cRatio;
-        members[im].tensionForceStrengthRatio = tRatio;
+        const member = members[im];
+        member.maxCompression = maxCompression;
+        member.compressionStrength = compressionStrength;
+        member.maxTension = maxTension;
+        member.tensionStrength = tensionStrength;
       }
       this.maxMemberCompressiveForces[im] = maxCompression;
       this.maxMemberTensileForces[im] = maxTension;
     }
     if (!this.bridgeService.isPassingSlendernessCheck) {
       this._status = AnalysisStatus.FAILS_SLENDERNESS;
-    }
-    if (options?.populateBridgeMembers) {
-      this.eventBrokerService.analysisCompletion.next({origin: EventOrigin.SERVICE, data: this._status})
     }
   }
 }

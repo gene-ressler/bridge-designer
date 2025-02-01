@@ -4,8 +4,15 @@ import { Geometry } from './graphics';
 import { Joint } from './joint.model';
 
 export class Member implements Editable {
-  private _compressionStrengthForceStrengthRatio: number | undefined;
-  private _tensionForceStrengthRatio: number | undefined;
+  private static readonly OK = '✔️';
+  private static readonly FAILED = '❌';
+  private static readonly UNKNOWN = '—';
+
+  // Buffer for analysis data shown in member table.
+  public maxTension: number = NaN;
+  public maxCompression: number = NaN;
+  public tensionStrength: number = NaN;
+  public compressionStrength: number = NaN;
 
   constructor(
     public index: number,
@@ -15,16 +22,8 @@ export class Member implements Editable {
     public shape: Shape,
   ) {
     if (a === b) {
-      throw new Error(`Single joint member: ${a.number}`);
+      throw new Error(`Dupe member joints: ${a.number}`);
     }
-  }
-
-  public set compressionStrengthForceStrengthRatio(value: number | undefined) {
-    this._compressionStrengthForceStrengthRatio = value;
-  }
-
-  public set tensionForceStrengthRatio(value: number) {
-    this._tensionForceStrengthRatio = value;
   }
 
   public get number(): number {
@@ -82,12 +81,26 @@ export class Member implements Editable {
     return this.shape.width;
   }
 
-  public get compression(): number {
-    return this._compressionStrengthForceStrengthRatio === undefined ? NaN : this._compressionStrengthForceStrengthRatio;
+  public get compressionForceStrengthRatio(): number {
+    return this.maxCompression / this.compressionStrength;
   }
 
-  public get tension(): number {
-    return this._tensionForceStrengthRatio === undefined ? NaN : this._tensionForceStrengthRatio;
+  public get tensionForceStrengthRatio(): number {
+    return this.maxTension / this.tensionStrength;
+  }
+
+  public get compressionStatus(): string {
+    if (isNaN(this.maxCompression)) {
+      return Member.UNKNOWN;
+    }
+    return this.maxCompression <= this.compressionStrength ? Member.OK : Member.FAILED;
+  }
+
+  public get tensionStatus(): string {
+    if (isNaN(this.maxTension)) {
+      return Member.UNKNOWN;
+    }
+    return this.maxTension <= this.tensionStrength ? Member.OK : Member.FAILED; 
   }
 
   swapContents(other: Member): void {

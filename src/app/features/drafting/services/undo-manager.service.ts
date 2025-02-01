@@ -63,7 +63,7 @@ export class UndoManagerService {
     this.eventBrokerService.editCommandCompletion.next({
       origin: EventOrigin.SERVICE,
       data: {
-        effectsMask: effectsMask,
+        effectsMask,
         doneCount: this.done.length,
         undoneCount: this.undone.length,
       },

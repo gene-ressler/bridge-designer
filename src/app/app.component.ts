@@ -20,6 +20,7 @@ import { MemberTableComponent } from './features/drafting/member-table/member-ta
 import { TemplateSelectionDialogComponent } from './features/template/template-selection-dialog/template-selection-dialog.component';
 import { WorkflowManagementService } from './features/controls/management/workflow-management.service';
 import { UnstableBridgeDialogComponent } from './features/testing/unstable-bridge-dialog/unstable-bridge-dialog.component';
+import { LoadTestReportDialogComponent } from './features/testing/load-test-report-dialog/load-test-report-dialog.component';
 
 // ¯\_(ツ)_/¯
 
@@ -28,6 +29,7 @@ import { UnstableBridgeDialogComponent } from './features/testing/unstable-bridg
   standalone: true,
   imports: [
     DraftingPanelComponent,
+    LoadTestReportDialogComponent,
     MemberTableComponent,
     MenusComponent,
     RulerComponent,

@@ -30,12 +30,13 @@ export type EventInfo = { origin: EventOrigin; data?: any };
  *  o xxxInvalidation: Graphic entity xxx requires rendering, e.g. because 
  *    the underlying model has changed.
  *    - Handled by the graphic entity.
- *  o xxxChange: An service or component's state changed. Other services need to know.
+ *  o xxxChange: A service or component's state changed. Other services need to know.
  *    - Handled by the interested services.
  */
 @Injectable({ providedIn: 'root' })
 export class EventBrokerService {
   public readonly analysisCompletion = new Subject<EventInfo>();
+  public readonly analysisReportRequest = new Subject<EventInfo>();
   public readonly animationControlsToggle = new Subject<EventInfo>();
   public readonly animationToggle = new Subject<EventInfo>();
   public readonly autoCorrectToggle = new Subject<EventInfo>();
