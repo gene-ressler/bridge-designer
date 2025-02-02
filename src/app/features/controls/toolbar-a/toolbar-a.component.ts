@@ -138,25 +138,13 @@ export class ToolbarAComponent implements AfterViewInit {
         WidgetHelper.initToolbarImgButton('Show cost details', 'img/calculator.png', tool);
         break;
       case Tools.STATUS:
-         this.componentService.load(StatusIndicatorComponent, tool[0]);
+        this.componentService.load(StatusIndicatorComponent, tool[0]);
         break;
       case Tools.LOAD_TEST_REPORT:
-        WidgetHelper.initToolbarImgButton('Show load test details', 'img/loadtestreport.png', tool);
+        WidgetHelper.initToolbarImgButton('Show load test details', 'img/loadtestreport.png', tool, true);
         break;
     }
     return { minimizable: false, menuTool: false };
-  }
-
-  private disableUndo(value: boolean = true) {
-    this.uiStateService.disable(this.eventBrokerService.undoRequest, value);
-    const tools = this.toolbar.getTools();
-    tools[Tools.UNDO_MULTIPLE].tool.jqxToggleButton({ disabled: value });
-  }
-
-  private disableRedo(value: boolean = true) {
-    const tools = this.toolbar.getTools();
-    this.uiStateService.disable(this.eventBrokerService.redoRequest, value);
-    tools[Tools.REDO_MULTIPLE].tool.jqxToggleButton({ disabled: value });
   }
 
   ngAfterViewInit(): void {
@@ -167,14 +155,21 @@ export class ToolbarAComponent implements AfterViewInit {
       this.eventBrokerService.designModeSelection,
     );
     this.uiStateService.registerPlainToolbarButton(tools[Tools.DELETE], this.eventBrokerService.deleteSelectionRequest);
-    this.uiStateService.registerPlainToolbarButton(tools[Tools.LOAD_TEST_REPORT], this.eventBrokerService.analysisReportRequest);
+    this.uiStateService.registerPlainToolbarButton(
+      tools[Tools.LOAD_TEST_REPORT],
+      this.eventBrokerService.analysisReportRequest,
+    );
     this.uiStateService.registerPlainToolbarButton(tools[Tools.NEW], this.eventBrokerService.newDesignRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.REDO], this.eventBrokerService.redoRequest);
+    this.uiStateService.addWidgetDisabler(this.eventBrokerService.redoRequest, disable => {
+      const tools = this.toolbar.getTools();
+      tools[Tools.REDO_MULTIPLE].tool.jqxToggleButton({ disabled: disable });
+    });
     this.uiStateService.registerPlainToolbarButton(tools[Tools.SELECT_ALL], this.eventBrokerService.selectAllRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.UNDO], this.eventBrokerService.undoRequest);
-    this.eventBrokerService.editCommandCompletion.subscribe(info => {
-      this.disableUndo(info.data.doneCount === 0);
-      this.disableRedo(info.data.undoneCount === 0);
+    this.uiStateService.addWidgetDisabler(this.eventBrokerService.undoRequest, disable => {
+      const tools = this.toolbar.getTools();
+      tools[Tools.UNDO_MULTIPLE].tool.jqxToggleButton({ disabled: disable });
     });
   }
 }

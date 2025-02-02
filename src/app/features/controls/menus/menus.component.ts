@@ -26,7 +26,8 @@ export class MenusComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // this.mainMenu.disable('print', true); // TODO: Example/test. Remove.
+    // Can't disable items in HTML :-(
+    ['undo', 'redo', 'sizeup', 'sizedown'].forEach(id => this.mainMenu.disable(id, true));
     this.uiStateService.registerForDisablement(this.mainMenu);
 
     const gridGroup = ['coarseGrid', 'mediumGrid', 'fineGrid'];
@@ -44,8 +45,8 @@ export class MenusComponent implements AfterViewInit {
     this.uiStateService.registerPlainMenuEntry('new', this.eventBrokerService.newDesignRequest);
     this.uiStateService.registerPlainMenuEntry('redo', this.eventBrokerService.redoRequest);
     this.uiStateService.registerPlainMenuEntry('selectAll', this.eventBrokerService.selectAllRequest);
-    this.uiStateService.registerPlainMenuEntry('sizedown', this.eventBrokerService.memberSizeChangeRequest, -1);
-    this.uiStateService.registerPlainMenuEntry('sizeup', this.eventBrokerService.memberSizeChangeRequest, +1);
+    this.uiStateService.registerPlainMenuEntry('sizedown', this.eventBrokerService.memberSizeDecreaseRequest);
+    this.uiStateService.registerPlainMenuEntry('sizeup', this.eventBrokerService.memberSizeIncreaseRequest);
     this.uiStateService.registerPlainMenuEntry('undo', this.eventBrokerService.undoRequest);
 
     this.uiStateService.registerToggleMenuItem('animation', this.eventBrokerService.animationToggle);

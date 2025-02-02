@@ -5,8 +5,9 @@ import { Joint } from '../classes/joint.model';
 import { Member } from '../classes/member.model';
 import { SiteModel } from '../classes/site.model';
 import { DesignConditions, DesignConditionsService } from './design-conditions.service';
-import { StockId } from './inventory.service';
+import { AllowedShapeChangeMask, InventoryService, StockId } from './inventory.service';
 import { BridgeSketchModel } from '../classes/bridge-sketch.model';
+import { SelectedSet } from '../../features/drafting/services/selected-elements-service';
 
 /**
  * Injectable accessor of the bridge service in the root injector. Useful in components that
@@ -78,14 +79,12 @@ export class BridgeService {
     return this.bridge.members.filter(member => member.hasJoint(joint));
   }
 
-  /** Gets one of the stocks used for the most members in the bridge or EMPTY if none. */
-  public getMostCommonStockId(indices?: Iterable<number>): StockId {
-    const members = this.bridge.members;
+  /** Returns the stock (or one of them if more than one) used for the most members in the bridge, else EMPTY if none. */
+  public getMostCommonStockId(): StockId {
     const countsByStock = new Map<string, [StockId, number]>();
     let mostCommonCount: number = -1;
-    let mostCommonStockId: StockId = StockId.EMPTY;
-
-    function processMember(member: Member) {
+    let mostCommonStockId: StockId = InventoryService.USEFUL_STOCK; // Fall back to something reasonable for new users.
+    for (const member of  this.bridge.members) {
       const memberStockId = member.stockId;
       const memberStockIdKey = memberStockId.key;
       const pair = countsByStock.get(memberStockIdKey);
@@ -101,13 +100,46 @@ export class BridgeService {
         mostCommonStockId = memberStockId;
       }
     }
-
-    if (indices) {
-      for (const index of indices) processMember(members[index]);
-    } else {
-      members.forEach(processMember);
-    }
     return mostCommonStockId;
+  }
+
+  /** 
+   * Three cases:
+   *  - No members in the bridge: Return a stock generally useful to niave users.
+   *  - Empty member index list: returns the most common stock in the bridge, else EMPTY if no members.
+   *  - Otherwise: returns the stock shared by all given members, else EMPTY when they're various.
+   */
+  // TODO: This supports lists and sets. If both not needed, simplify for one.
+  public getUsefulStockId(indices: Iterable<number>): StockId {
+    const members = this.bridge.members;
+    if (members.length === 0) {
+      return InventoryService.USEFUL_STOCK;
+    }
+    let stockId: StockId = StockId.EMPTY;
+    let stockIdKey: string = '';
+    for (const index of indices) {
+      const member = members[index];
+      if (stockId === StockId.EMPTY) { // first iteration
+        stockId = member.stockId
+        stockIdKey = stockId.key;
+      } else if (stockIdKey !== member.stockId.key) {
+        return StockId.EMPTY; // Selection is various.
+      }
+    }
+    return stockId === StockId.EMPTY ? this.getMostCommonStockId() : stockId;
+  }
+
+  /** Returns whether the given members can be increased or decreased (or both) in size. */
+  public getAllowedShapeChangeMask(indices: Iterable<number>): number {
+    let mask = 0;
+    const members = this.bridge.members;
+    for (const index of indices) {
+      mask |= InventoryService.getAllowedShapeChangeMask(members[index].shape);
+      if (mask === AllowedShapeChangeMask.ALL) {
+        break;
+      }
+    }
+    return mask;
   }
 
   /** Returns joints in index order that need deletion along with a set of members. */
@@ -152,9 +184,9 @@ export class BridgeService {
   }
 
   /** Returns an array of arrays of selected members, Each inner array contains those having the same stock. Sorting is on ascending member number: inner then first element of outer. */
-  public partitionSelectedMembersByStock(selection: Set<number>): Member[][] {
+  public partitionSelectedMembersByStock(selectedSet: SelectedSet): Member[][] {
     const membersByStockId = new Map<string, Member[]>();
-    for (let memberIndex of selection) {
+    for (let memberIndex of selectedSet) {
       const member = this.bridge.members[memberIndex];
       const memberStockId = member.stockId;
       const memberStockIdKey = memberStockId.key;

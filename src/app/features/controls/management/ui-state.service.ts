@@ -134,7 +134,8 @@ export class UiStateService {
     return Utility.assertNotUndefined(this._menu);
   }
 
-  private addWidgetDisabler(subject: Subject<any>, disabler: (disable: boolean) => void): void {
+  /** Adds a disabler for given subject. Useful for disabling widgets that don't drive send messages themselves. */
+  public addWidgetDisabler(subject: Subject<any>, disabler: (disable: boolean) => void): void {
     let disablers: ((disable: boolean) => void)[] | undefined = this.widgetDisablersBySubject.get(subject);
     if (!disablers) {
       disablers = [];

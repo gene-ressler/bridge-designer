@@ -49,7 +49,7 @@ export class EventBrokerService {
   public readonly gridDensityChange = new Subject<EventInfo>();
   public readonly guidesToggle = new Subject<EventInfo>();
   public readonly inventorySelectionChange = new Subject<EventInfo>();
-  public readonly inventorySelectionComplete = new Subject<EventInfo>();
+  public readonly inventorySelectionCompletion = new Subject<EventInfo>();
   public readonly legacyGraphicsToggle = new Subject<EventInfo>();
   public readonly loadBridgeCompletion = new Subject<EventInfo>();
   public readonly loadBridgeRequest = new Subject<EventInfo>();
@@ -57,7 +57,8 @@ export class EventBrokerService {
   public readonly loadInventorySelectorRequest = new Subject<EventInfo>();
   public readonly loadSampleRequest = new Subject<EventInfo>();
   public readonly loadTemplateRequest = new Subject<EventInfo>();
-  public readonly memberSizeChangeRequest = new Subject<EventInfo>();
+  public readonly memberSizeIncreaseRequest = new Subject<EventInfo>();
+  public readonly memberSizeDecreaseRequest = new Subject<EventInfo>();
   public readonly memberNumbersToggle = new Subject<EventInfo>();
   public readonly memberTableToggle = new Subject<EventInfo>();
   public readonly newDesignRequest = new Subject<EventInfo>();

@@ -146,20 +146,19 @@ export class StockId {
   }
 }
 
-enum AllowedShapeChange {
-  DECREASE_SIZE,
-  INCREASE_SIZE,
+export const enum AllowedShapeChangeMask {
+  DECREASE_SIZE = 0x1,
+  INCREASE_SIZE = 0x2,
+  ALL = 0x4 - 1,
 }
 
 @Injectable({ providedIn: 'root' })
 export class InventoryService {
-  static readonly COMPRESSION_RESISTANCE_FACTOR: number = 0.9;
+  /** Stock a niave user can employ to get a first successful bridge in many cases. */
+  public static readonly USEFUL_STOCK: StockId = new StockId(0, 0, 22); // 200mm CSS solid bar
 
-  static readonly TENSION_RESISTANCE_FACTOR: number = 0.95;
-
-  static readonly ORDERING_FEE: number = 1000.0;
-
-  static readonly CONNECTION_FEE: number = 400.0;
+  private static readonly COMPRESSION_RESISTANCE_FACTOR: number = 0.9;
+  private static readonly TENSION_RESISTANCE_FACTOR: number = 0.95;
 
   public get materials(): Material[] {
     return Inventory.MATERIALS;
@@ -203,14 +202,14 @@ export class InventoryService {
     return InventoryService.TENSION_RESISTANCE_FACTOR * material.fy * shape.area;
   }
 
-  public static getAllowedShapeSizeChanges(shape: Shape): Set<AllowedShapeChange> {
-    const result = new Set<AllowedShapeChange>();
+  public static getAllowedShapeChangeMask(shape: Shape): number {
+    let mask: number = 0;
     if (shape.sizeIndex > 0) {
-      result.add(AllowedShapeChange.DECREASE_SIZE);
+      mask |= AllowedShapeChangeMask.DECREASE_SIZE;
     }
     if (shape.sizeIndex < Inventory.SHAPES[shape.section.index].length - 1) {
-      result.add(AllowedShapeChange.INCREASE_SIZE);
+      mask |= AllowedShapeChangeMask.INCREASE_SIZE;
     }
-    return result;
+    return mask;
   }
 }

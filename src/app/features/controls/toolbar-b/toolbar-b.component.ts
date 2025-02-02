@@ -51,10 +51,10 @@ export class ToolbarBComponent implements AfterViewInit {
         this.componentService.load(InventorySelectorComponent, tool[0]);
         break;
       case Tools.SIZE_UP:
-        WidgetHelper.initToolbarImgButton('Upsize selected members', 'img/sizeup.png', tool);
+        WidgetHelper.initToolbarImgButton('Upsize selected members', 'img/sizeup.png', tool, true);
         break;
       case Tools.SIZE_DOWN:
-        WidgetHelper.initToolbarImgButton('Downsize selected members', 'img/sizedown.png', tool);
+        WidgetHelper.initToolbarImgButton('Downsize selected members', 'img/sizedown.png', tool, true);
         break;
       case Tools.MEMBER_TABLE:
         WidgetHelper.initToolbarImgToggleButton('Show/hide member table', 'img/memtable.png', tool, { toggled: true });
@@ -88,8 +88,8 @@ export class ToolbarBComponent implements AfterViewInit {
     const gridTools = [Tools.COARSE_GRID, Tools.MEDIUM_GRID, Tools.FINE_GRID];
     const uiState = this.uiStateService;
     uiState.registerSelectToolbarButtons(tools, gridTools, this.eventBrokerService.gridDensitySelection);
-    uiState.registerPlainToolbarButton(tools[Tools.SIZE_DOWN], this.eventBrokerService.memberSizeChangeRequest, -1);
-    uiState.registerPlainToolbarButton(tools[Tools.SIZE_UP], this.eventBrokerService.memberSizeChangeRequest, +1);
+    uiState.registerPlainToolbarButton(tools[Tools.SIZE_DOWN], this.eventBrokerService.memberSizeDecreaseRequest);
+    uiState.registerPlainToolbarButton(tools[Tools.SIZE_UP], this.eventBrokerService.memberSizeIncreaseRequest);
     uiState.registerToggleToolbarButton(tools[Tools.MEMBER_TABLE], this.eventBrokerService.memberTableToggle);
     uiState.registerToggleToolbarButton(tools[Tools.MEMBER_NUMBERS], this.eventBrokerService.memberNumbersToggle);
     uiState.registerToggleToolbarButton(tools[Tools.GUIDES], this.eventBrokerService.guidesToggle);
