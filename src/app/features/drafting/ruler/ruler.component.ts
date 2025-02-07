@@ -39,7 +39,6 @@ export class RulerComponent implements AfterViewInit {
   }
 
   private render(ctx: CanvasRenderingContext2D): void {
-    const savedFont = ctx.font;
     const savedTextAlign = ctx.textAlign;
     const savedTextBaseline = ctx.textBaseline;
 
@@ -52,7 +51,6 @@ export class RulerComponent implements AfterViewInit {
 
     ctx.textBaseline = savedTextBaseline;
     ctx.textAlign = savedTextAlign;
-    ctx.font = savedFont;
   }
 
   private renderBottomRuler(ctx: CanvasRenderingContext2D) {

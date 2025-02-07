@@ -8,6 +8,7 @@ import { DesignConditions, DesignConditionsService } from './design-conditions.s
 import { AllowedShapeChangeMask, InventoryService, StockId } from './inventory.service';
 import { BridgeSketchModel } from '../classes/bridge-sketch.model';
 import { SelectedSet } from '../../features/drafting/services/selected-elements-service';
+import { DraftingPanelState } from './persistence.service';
 
 /**
  * Injectable accessor of the bridge service in the root injector. Useful in components that
@@ -18,13 +19,14 @@ export class RootBridgeService {
   constructor(public readonly instance: BridgeService) {}
 }
 
-/** Injectable, mutable container for a bridge model and related site and sketch information. */
+/** Injectable, mutable container for a bridge model and related site and drafting information. */
 @Injectable({ providedIn: 'root' })
 export class BridgeService {
   /** Current bridge. Initialized with reasonable default conditions for design drafting. */
   private _bridge: BridgeModel = new BridgeModel(DesignConditionsService.STANDARD_CONDITIONS[0]);
   private _sketch: BridgeSketchModel = BridgeSketchModel.ABSENT;
   private _siteInfo: SiteModel = new SiteModel(this.bridge.designConditions);
+  public draftingPanelState: DraftingPanelState = new DraftingPanelState();
 
   public get bridge(): BridgeModel {
     return this._bridge;

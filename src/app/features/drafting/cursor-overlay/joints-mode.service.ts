@@ -5,6 +5,8 @@ import { HotElementService } from '../services/hot-element.service';
 import { BridgeService } from '../../../shared/services/bridge.service';
 import { Utility } from '../../../shared/classes/utility';
 import { HotElementDragService } from '../services/hot-element-drag.service';
+import { GuideKnob } from '../services/guides.service';
+import { Labels } from '../services/labels.service';
 
 @Injectable({ providedIn: 'root' })
 export class JointsModeService {
@@ -18,10 +20,7 @@ export class JointsModeService {
     private readonly jointCursorService: JointCursorService,
   ) {}
 
-  public initialize(
-    ctx: CanvasRenderingContext2D,
-    addJointRequest: EventEmitter<Joint>,
-  ): JointsModeService {
+  public initialize(ctx: CanvasRenderingContext2D, addJointRequest: EventEmitter<Joint>): JointsModeService {
     this._ctx = ctx;
     this.addJointRequest = addJointRequest;
     return this;
@@ -55,6 +54,9 @@ export class JointsModeService {
     if (this.hotElementDragService.isDragging()) {
       return;
     }
+    this.hotElementService.updateRenderedHotElement(this.ctx, event.offsetX, event.offsetY, {
+      considerOnly: [GuideKnob, Labels], // Switches mouse cursor on hover over draggable.
+    });
     if (this.hotElementService.hotElement) {
       this.jointCursorService.clear(this.ctx);
     } else {

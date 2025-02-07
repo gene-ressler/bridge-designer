@@ -1,31 +1,35 @@
 import { Injectable } from '@angular/core';
-import { BridgeService } from '../../shared/services/bridge.service';
-import { ViewportTransform2D } from '../../shared/services/viewport-transform.service';
-import { DesignGridService } from '../../shared/services/design-grid.service';
-import { ImageService, ImagesLoader } from '../../shared/core/image.service';
-import { Utility } from '../../shared/classes/utility';
-import { EventBrokerService, EventOrigin } from '../../shared/services/event-broker.service';
-import { Rectangle2D } from '../../shared/classes/graphics';
-import { StandardCursor, WidgetHelper } from '../../shared/classes/widget-helper';
+import { Rectangle2D } from '../../../shared/classes/graphics';
+import { Utility } from '../../../shared/classes/utility';
+import { StandardCursor } from '../../../shared/classes/widget-helper';
+import { ImagesLoader, ImageService } from '../../../shared/core/image.service';
+import { BridgeService } from '../../../shared/services/bridge.service';
+import { DesignGridService } from '../../../shared/services/design-grid.service';
+import { EventBrokerService, EventOrigin } from '../../../shared/services/event-broker.service';
+import { ViewportTransform2D } from '../../../shared/services/viewport-transform.service';
+import { DraggableService } from './hot-element-drag.service';
 
-/** Sentinel class allowing a horizontal guide knob to be a hot element. */
+/** Sentinel class allowing a guide knob to be a hot element. */
 export class GuideKnob {
-  constructor(public readonly which: 'horizontal' | 'vertical') {}
+  constructor(
+    public readonly which: 'horizontal' | 'vertical',
+    public readonly draggableService: DraggableService,
+  ) {}
 }
 
 @Injectable({ providedIn: 'root' })
-export class GuidesService {
+export class GuidesService implements DraggableService {
   private static readonly HORIZONTAL_GUIDE_KNOB = 'img/hguideknob.png';
   private static readonly VERTICAL_GUILE_KNOB = 'img/vguideknob.png';
   private static readonly KNOB_THICKNESS = 11;
   private static readonly KNOB_LENGTH = 31;
-  private static readonly HOT_VERTICAL_GUIDE = new GuideKnob('vertical');
-  private static readonly HOT_HORIZONTAL_GUIDE = new GuideKnob('horizontal');
   private static readonly CURSORS_BY_GUIDE_ORIENTATION = {
     horizontal: StandardCursor.VERTICAL_MOVE,
     vertical: StandardCursor.HORIZONTAL_MOVE,
   };
 
+  private readonly hotVerticalGuide;
+  private readonly hotHorizontalGuide;
   private readonly imagesLoader: ImagesLoader;
   private x0World: number = 0;
   private x1World: number = 0;
@@ -43,7 +47,6 @@ export class GuidesService {
     GuidesService.KNOB_THICKNESS,
     GuidesService.KNOB_LENGTH,
   );
-  private savedKnobMoveCursor: string = '';
   private isVisible: boolean = false;
 
   constructor(
@@ -53,6 +56,8 @@ export class GuidesService {
     private readonly eventBrokerService: EventBrokerService,
     private readonly viewportTransform: ViewportTransform2D,
   ) {
+    this.hotHorizontalGuide = new GuideKnob('horizontal', this);
+    this.hotVerticalGuide = new GuideKnob('vertical', this);
     this.imagesLoader = imageService.createImagesLoader([
       GuidesService.HORIZONTAL_GUIDE_KNOB,
       GuidesService.VERTICAL_GUILE_KNOB,
@@ -68,7 +73,7 @@ export class GuidesService {
     });
   }
 
-  public show(ctx: CanvasRenderingContext2D): GuidesService {
+  public render(ctx: CanvasRenderingContext2D): GuidesService {
     if (!this.isVisible) {
       return this;
     }
@@ -125,28 +130,23 @@ export class GuidesService {
   }
 
   /** Locates the guide using given knob and viewport coordinate, snapped to nearest valid position. */
-  public move(ctx: CanvasRenderingContext2D, guideKnob: GuideKnob, x: number, y: number) {
-    this.clear(ctx).locate(guideKnob, x, y).show(ctx);
+  public move(ctx: CanvasRenderingContext2D, draggable: any, x: number, y: number) {
+    this.clear(ctx).locate(draggable as GuideKnob, x, y).render(ctx);
   }
 
   /** For the given viewport coordinate, returns the knob that's hot, if any. */
   public getHotGuideKnob(x: number, y: number): GuideKnob | undefined {
     if (this.horizontalGuideKnobRect.contains(x, y)) {
-      return GuidesService.HOT_HORIZONTAL_GUIDE;
+      return this.hotHorizontalGuide;
     }
     if (this.verticalGuideKnobRect.contains(x, y)) {
-      return GuidesService.HOT_VERTICAL_GUIDE;
+      return this.hotVerticalGuide;
     }
     return undefined;
   }
 
-  public setKnobMoveCursor(ctx: CanvasRenderingContext2D, knob: GuideKnob): void {
-    this.savedKnobMoveCursor = WidgetHelper.getPointerCursor(ctx);
-    WidgetHelper.setPointerCursor(ctx, GuidesService.CURSORS_BY_GUIDE_ORIENTATION[knob.which]);
-  }
-
-  public resetKnobMoveCursor(ctx: CanvasRenderingContext2D): void {
-    WidgetHelper.setPointerCursor(ctx, this.savedKnobMoveCursor);
+  public getKnobMoveCursor(knob: GuideKnob): StandardCursor {
+    return GuidesService.CURSORS_BY_GUIDE_ORIENTATION[knob.which];
   }
 
   private locate(guideKnob: GuideKnob, x: number, y: number): GuidesService {

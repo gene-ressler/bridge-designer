@@ -140,7 +140,7 @@ export class DesignConditions {
     this.loadType = (loadCaseIndex & 1) == 0 ? LoadType.STANDARD_TRUCK : LoadType.HEAVY_TRUCK;
     this.deckType = (loadCaseIndex & 2) == 0 ? DeckType.MEDIUM_STRENGTH : DeckType.HIGH_STRENGTH;
 
-    // Precomputation of condition-dependent site geometry, design constraints, and costs.
+    // Precomputation of condition-dependent site geometry and design constraints.
 
     // Work space dimensions.
     if (isArch) {

@@ -40,6 +40,9 @@ export class EraseModeService {
   }
 
   handlePointerMove(event: PointerEvent): void {
+    if (this.hotElementDragService.isDragging()) {
+      return;
+    }
     this.hotElementService.updateRenderedHotElement(this.ctx, event.offsetX, event.offsetY, {
       excludeFixedJoints: true,
     });

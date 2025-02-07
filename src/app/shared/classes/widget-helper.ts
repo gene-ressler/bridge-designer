@@ -10,6 +10,12 @@ export const enum StandardCursor {
   VERTICAL_MOVE = 'ns-resize',
 }
 
+export interface CustomCursor {
+  cursor: string;
+  orgX?: number;
+  orgY?: number;
+}
+
 export class WidgetHelper {
   public static initToolbarImgButton(title: string, imgSrc: string, tool: any, isDisabled: boolean = false) {
     WidgetHelper.addButtonImg(imgSrc, title, tool);
@@ -26,25 +32,17 @@ export class WidgetHelper {
     tool.jqxToggleButton({ height: 28, ...options });
   }
 
-  public static setPointerCursor(
-    ctx: CanvasRenderingContext2D,
-    cursor?: string | StandardCursor,
-    orgX: number = 0,
-    orgY: number = 0,
-  ): void {
+  public static setPointerCursor(ctx: CanvasRenderingContext2D, cursor?: CustomCursor | StandardCursor): void {
     if (cursor === undefined) {
       ctx.canvas.style.cursor = 'none';
       return;
     }
-    ctx.canvas.style.cursor = cursor.startsWith('img/') ? `url(${cursor}) ${orgX} ${orgY}, auto` : cursor;
+    ctx.canvas.style.cursor =
+      typeof cursor === 'string' ? cursor : `url(${cursor.cursor}) ${cursor.orgX} ${cursor.orgY}, auto`;
   }
 
-  public static getPointerCursor(ctx: CanvasRenderingContext2D): string {
-    return ctx.canvas.style.cursor;
-  }
-
-  /** 
-   * Mitigates a quirk in dropdown list API: if nothing selected, it returns index -1, 
+  /**
+   * Mitigates a quirk in dropdown list API: if nothing selected, it returns index -1,
    * but selecting index -1 does not clear the list.
    */
   public static setDropdownListSelection(list: jqxDropDownListComponent, index: number): void {

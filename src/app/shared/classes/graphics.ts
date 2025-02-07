@@ -205,6 +205,23 @@ export class Rectangle2D implements Rectangle2DInterface {
     this.height += dy + dy;
     return this;
   }
+
+  /** Enlarges rectangle, which must be canonical, to include given point. */
+  public include(x: number, y: number) {
+    if (x < this.x0) {
+      this.width += this.x0 - x;
+      this.x0 = x;
+    }
+    else if (x > this.x1) {
+      this.width = x - this.x0;
+    }
+    if (y < this.y0) {
+      this.height += this.y0 - y;
+      this.y0 = y;
+    } else if (y > this.y1) {
+      this.height = y - this.y0;
+    }
+  }
 }
 
 export class Geometry {
@@ -362,8 +379,8 @@ export class Geometry {
 }
 
 export class Graphics {
-  private static readonly ARROW_HALF_WIDTH = 3;
-  private static readonly ARROW_LENGTH = 8;
+  public static readonly ARROW_HALF_WIDTH = 3;
+  public static readonly ARROW_LENGTH = 8;
 
   /** Clears canvas: rgbg => 0. */
   public static clearCanvas(ctx: CanvasRenderingContext2D) {
@@ -434,7 +451,7 @@ export class Graphics {
     ctx.stroke();
   }
 
-  public static drawDoubleArrow(
+  public static drawArrow(
     ctx: CanvasRenderingContext2D,
     x0: number,
     y0: number,
@@ -448,6 +465,18 @@ export class Graphics {
     ctx.lineTo(x1, y1);
     ctx.stroke();
     Graphics.drawArrowhead(ctx, x0, y0, x1, y1, halfWidth, length);
+  }
+
+  public static drawDoubleArrow(
+    ctx: CanvasRenderingContext2D,
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+    halfWidth: number = Graphics.ARROW_HALF_WIDTH,
+    length: number = Graphics.ARROW_LENGTH,
+  ): void {
+    Graphics.drawArrow(ctx, x0, y0, x1, y1, halfWidth, length);
     Graphics.drawArrowhead(ctx, x1, y1, x0, y0, halfWidth, length);
   }
 }

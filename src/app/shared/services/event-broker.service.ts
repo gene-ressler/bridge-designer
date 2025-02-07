@@ -4,6 +4,7 @@ import { Subject } from 'rxjs';
 /** Origin of an event. For breaking event cycles. */
 export const enum EventOrigin {
   APP,
+  CURSOR_OVERLAY,
   DRAFTING_PANEL,
   MEMBER_TABLE,
   MENU,

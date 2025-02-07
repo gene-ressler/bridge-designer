@@ -5,9 +5,10 @@ import { BridgeService } from '../../../shared/services/bridge.service';
 import { InventorySelectionService } from '../../../shared/services/inventory-selection.service';
 import { HotElementService } from '../services/hot-element.service';
 import { MemberCursorService } from '../services/member-cursor.service';
-import { GuideKnob } from '../../guides/guides.service';
 import { Utility } from '../../../shared/classes/utility';
 import { HotElementDragService } from '../services/hot-element-drag.service';
+import { GuideKnob } from '../services/guides.service';
+import { Labels } from '../services/labels.service';
 
 @Injectable({ providedIn: 'root' })
 export class MembersModeService {
@@ -54,7 +55,7 @@ export class MembersModeService {
       return;
     }
     this.hotElementService.updateRenderedHotElement(this.ctx, event.offsetX, event.offsetY, {
-      considerOnly: [Joint, GuideKnob],
+      considerOnly: [Joint, GuideKnob, Labels],
       excludedJointIndices: this.existingMemberJointIndices,
     });
     this.memberCursorService.update(event.offsetX, event.offsetY, this.hotElementService.hotElement);

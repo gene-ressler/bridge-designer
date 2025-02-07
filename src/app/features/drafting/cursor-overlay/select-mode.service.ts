@@ -12,6 +12,9 @@ import { DesignGrid, DesignGridService } from '../../../shared/services/design-g
 import { EventOrigin } from '../../../shared/services/event-broker.service';
 import { Utility } from '../../../shared/classes/utility';
 import { HotElementDragService } from '../services/hot-element-drag.service';
+import { Member } from '../../../shared/classes/member.model';
+import { GuideKnob } from '../services/guides.service';
+import { Labels } from '../services/labels.service';
 
 /** Implementation of the select drafting panel mode i/o. Includes moving the selected joint. */
 @Injectable({ providedIn: 'root' })
@@ -67,6 +70,7 @@ export class SelectModeService {
       this.hideKeyboardJointMoveCursor();
       this.hotElementService.updateRenderedHotElement(this.ctx, event.offsetX, event.offsetY, {
         excludeFixedJoints: true,
+        considerOnly: [Joint, Member, GuideKnob, Labels]
       });
     }
     // These do nothing if the respective cursor isn't in use.

@@ -28,7 +28,9 @@ import { ToolSelectorComponent } from '../../controls/tool-selector/tool-selecto
 import { DesignGridDensity, DesignGridService } from '../../../shared/services/design-grid.service';
 import { MoveJointCommand } from '../../controls/edit-command/move-joint.command';
 import { BridgeSketchModel } from '../../../shared/classes/bridge-sketch.model';
-import { GuidesService } from '../../guides/guides.service';
+import { GuideKnob, GuidesService } from '../services/guides.service';
+import { Labels, LabelsService } from '../services/labels.service';
+import { Draggable } from '../services/hot-element-drag.service';
 
 @Component({
   selector: 'drafting-panel',
@@ -54,6 +56,7 @@ export class DraftingPanelComponent implements AfterViewInit {
     private readonly designRenderingService: DesignRenderingService,
     private readonly eventBrokerService: EventBrokerService,
     private readonly guideService: GuidesService,
+    private readonly labelsService: LabelsService,
     private readonly selectedElementsService: SelectedElementsService,
     private readonly undoManagerService: UndoManagerService,
     private readonly viewportTransform: ViewportTransform2D,
@@ -75,10 +78,13 @@ export class DraftingPanelComponent implements AfterViewInit {
     this.eventBrokerService.draftingPanelInvalidation.next({ origin: EventOrigin.DRAFTING_PANEL, data: 'viewport' });
   }
 
-  render(showGuides: boolean = true): void {
+  render(draggable?: Draggable | undefined): void {
     this.designRenderingService.render(this.ctx);
-    if (showGuides) {
-      this.guideService.show(this.ctx);
+    if (!(draggable instanceof Labels)) {
+      this.labelsService.render(this.ctx);
+    }
+    if (!(draggable instanceof GuideKnob)) {
+      this.guideService.render(this.ctx);
     }
   }
 
@@ -133,8 +139,8 @@ export class DraftingPanelComponent implements AfterViewInit {
   }
 
   /** Handles reports from cursor overlay at start and end of guides cursor movement. */
-  guidesCursorActiveHandler(isActive: boolean) {
-    this.render(!isActive);
+  dragCursorActive(draggable: Draggable | undefined) {
+    this.render(draggable);
   }
 
   moveJointRequestHandler({ joint, newLocation }: { joint: Joint; newLocation: Point2D }): void {
@@ -155,9 +161,13 @@ export class DraftingPanelComponent implements AfterViewInit {
 
   /** Sets the design grid density from the selection widget (menu or button) index. */
   selectGridDensityHandler(selectorIndex: number) {
-    if (DesignGridDensity.COARSE <= selectorIndex && selectorIndex <= DesignGridDensity.FINE && selectorIndex != this.designGridService.grid.density) {
+    if (
+      DesignGridDensity.COARSE <= selectorIndex &&
+      selectorIndex <= DesignGridDensity.FINE &&
+      selectorIndex != this.designGridService.grid.density
+    ) {
       this.designGridService.grid.density = selectorIndex;
-      this.eventBrokerService.gridDensityChange.next({origin: EventOrigin.DRAFTING_PANEL});
+      this.eventBrokerService.gridDensityChange.next({ origin: EventOrigin.DRAFTING_PANEL });
     }
   }
 
@@ -170,17 +180,16 @@ export class DraftingPanelComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     new ResizeObserver(() => this.handleResize()).observe(this.wrapper.nativeElement);
-    this.eventBrokerService.deleteSelectionRequest.subscribe(_info => this.deleteSelectionRequestHandler());
-    this.eventBrokerService.draftingPanelInvalidation.subscribe(_info => this.render());
-    this.eventBrokerService.gridDensitySelection.subscribe(info => this.selectGridDensityHandler(info.data));
-    this.eventBrokerService.loadBridgeRequest.subscribe(info => this.loadBridge(info.data));
-    this.eventBrokerService.loadSketchRequest.subscribe(info => this.loadSketch(info.data));
-    this.eventBrokerService.selectedElementsChange.subscribe(_info => this.render());
-    this.eventBrokerService.titleBlockToggle.subscribe(
-      info => (this.titleBlock.nativeElement.style.display = info.data ? '' : 'none'),
-    );
-    this.eventBrokerService.editCommandCompletion.subscribe(_info => this.render());
-    
+    this.eventBrokerService.deleteSelectionRequest.subscribe(_eventInfo => this.deleteSelectionRequestHandler());
+    this.eventBrokerService.draftingPanelInvalidation.subscribe(_eventInfo => this.render());
+    this.eventBrokerService.gridDensitySelection.subscribe(eventInfo => this.selectGridDensityHandler(eventInfo.data));
+    this.eventBrokerService.loadBridgeRequest.subscribe(eventInfo => this.loadBridge(eventInfo.data));
+    this.eventBrokerService.loadSketchRequest.subscribe(eventInfo => this.loadSketch(eventInfo.data));
+    this.eventBrokerService.selectedElementsChange.subscribe(_eventInfo => this.render());
+    this.eventBrokerService.titleBlockToggle.subscribe(eventInfo => {
+      this.titleBlock.nativeElement.style.display = eventInfo.data ? '' : 'none';
+    });
+    this.eventBrokerService.editCommandCompletion.subscribe(_eventInfo => this.render());
     this.handleResize();
   }
 }

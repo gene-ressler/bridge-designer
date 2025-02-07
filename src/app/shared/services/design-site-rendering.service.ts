@@ -39,6 +39,7 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     const conditions = this.bridgeService.designConditions;
 
     // Calculate deck beam dimensions in viewport pixel coordinates.
+    // Rendering in labels.service must match this.
     const halfBeamFlangeWidth = this.viewportTransform.worldToViewportDistance(0.18);
     const ySlabTop = this.viewportTransform.worldToViewportY(SiteConstants.WEAR_SURFACE_HEIGHT);
     const ySlabBottom = this.viewportTransform.worldToViewportY(

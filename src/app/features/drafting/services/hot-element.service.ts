@@ -8,23 +8,27 @@ import { BridgeService } from '../../../shared/services/bridge.service';
 import { DesignMemberRenderingService } from '../../../shared/services/design-member-rendering.service';
 import { ViewportTransform2D } from '../../../shared/services/viewport-transform.service';
 import { Member } from '../../../shared/classes/member.model';
-import { GuideKnob, GuidesService } from '../../guides/guides.service';
+import { GuideKnob, GuidesService } from './guides.service';
+import { Labels, LabelsService } from './labels.service';
+import { CustomCursor, StandardCursor, WidgetHelper } from '../../../shared/classes/widget-helper';
 
-export type HotElement = Joint | Member | GuideKnob | undefined;
-export type HotElementClass = typeof Joint | typeof Member | typeof GuideKnob;
+export type HotElement = GuideKnob | Joint | Labels | Member | undefined;
+export type HotElementClass = typeof GuideKnob | typeof Joint | typeof Labels | typeof Member;
 
 @Injectable({ providedIn: 'root' })
 export class HotElementService {
+  private _hotElement: HotElement;
+  public defaultCursor: StandardCursor | CustomCursor | undefined;
+
   constructor(
     private readonly bridgeService: BridgeService,
     private readonly designJointRenderingService: DesignJointRenderingService,
     private readonly designMemberRenderingService: DesignMemberRenderingService,
     private readonly elementSelectionService: SelectedElementsService,
     private readonly guidesService: GuidesService,
+    private readonly labelsService: LabelsService,
     private readonly viewportTransform: ViewportTransform2D,
-  ) {}
-
-  private _hotElement: HotElement;
+  ) {  }
 
   public get hotElement(): HotElement {
     return this._hotElement;
@@ -48,6 +52,7 @@ export class HotElementService {
     const yWorld = this.viewportTransform.viewportToworldY(y);
     const bridge = this.bridgeService.bridge;
     let hotElement: HotElement = undefined;
+    let pointerCursor: StandardCursor | CustomCursor | undefined = this.defaultCursor;
     const jointRadiusWorld = this.viewportTransform.viewportToWorldDistance(
       DesignJointRenderingService.JOINT_RADIUS_VIEWPORT,
     );
@@ -100,6 +105,14 @@ export class HotElementService {
       const hotGuideKnob = this.guidesService.getHotGuideKnob(x, y);
       if (hotGuideKnob) {
         hotElement = hotGuideKnob;
+        pointerCursor = this.guidesService.getKnobMoveCursor(hotGuideKnob);
+      }
+    }
+    if (!options.considerOnly || options.considerOnly.includes(Labels)) {
+      const hotLabels = this.labelsService.getHotLabels(x, y);
+      if (hotLabels) {
+        hotElement = hotLabels;
+        pointerCursor = LabelsService.MOVE_CURSOR;
       }
     }
     if (hotElement !== this._hotElement) {
@@ -107,6 +120,7 @@ export class HotElementService {
       this._hotElement = hotElement;
       this.render(ctx, this._hotElement);
     }
+    WidgetHelper.setPointerCursor(ctx, pointerCursor);
   }
 
   public clearRenderedHotElement(ctx: CanvasRenderingContext2D): void {
@@ -130,8 +144,6 @@ export class HotElementService {
       this.designMemberRenderingService.renderHot(ctx, member, this.elementSelectionService.isMemberSelected(member));
       this.designJointRenderingService.render(ctx, member.a, this.elementSelectionService.isJointSelected(member.a));
       this.designJointRenderingService.render(ctx, member.b, this.elementSelectionService.isJointSelected(member.b));
-    } else if (element instanceof GuideKnob) {
-      this.guidesService.setKnobMoveCursor(ctx, element);
     }
   }
 
@@ -143,8 +155,6 @@ export class HotElementService {
       this.designJointRenderingService.clear(ctx, element);
     } else if (element instanceof Member) {
       this.designMemberRenderingService.clear(ctx, element);
-    } else if (element instanceof GuideKnob) {
-      this.guidesService.resetKnobMoveCursor(ctx);
     }
   }
 }

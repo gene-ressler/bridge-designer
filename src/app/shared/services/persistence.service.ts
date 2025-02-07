@@ -55,7 +55,7 @@ export class PersistenceService {
     chunks.push(saveSet.bridge.designedBy, DELIMITER);
     chunks.push(saveSet.bridge.projectId, DELIMITER);
     chunks.push(saveSet.bridge.iterationNumber.toString(), DELIMITER);
-    chunks.push(saveSet.draftingPanelState.labelPosition.toFixed(3), DELIMITER);
+    chunks.push(saveSet.draftingPanelState.yLabels.toFixed(3), DELIMITER);
     return chunks.join('');
   }
 
@@ -74,7 +74,7 @@ export class SaveSet {
   private constructor(
     public readonly bridge: BridgeModel,
     public readonly analysisSummary: AnalysisSummary = new AnalysisSummary(),
-    public readonly draftingPanelState: PersistentDraftingPanelState = new PersistentDraftingPanelState()) { }
+    public readonly draftingPanelState: DraftingPanelState = new DraftingPanelState()) { }
 
   public static createNew(designConditions: DesignConditions = DesignConditionsService.PLACEHOLDER_CONDITIONS) {
     return this.createForBridge(new BridgeModel(designConditions));
@@ -91,11 +91,11 @@ export class SaveSet {
   }
 }
 
-export class PersistentDraftingPanelState {
-  public labelPosition: number = 2;
+export class DraftingPanelState {
+  public yLabels: number = 2;
 
   clear(): void {
-    this.labelPosition = 2; // Default for new bridge.
+    this.yLabels = 2; // Default for new bridge.
   }
 }
 
@@ -169,7 +169,7 @@ class SaveSetParser {
     saveSet.bridge.designedBy = this.scanToDelimiter('name of designer');
     saveSet.bridge.projectId = this.scanToDelimiter('project ID');
     saveSet.bridge.iterationNumber = parseInt(this.scanToDelimiter('iteration'));
-    saveSet.draftingPanelState.labelPosition = parseFloat(this.scanToDelimiter('label position'));
+    saveSet.draftingPanelState.yLabels = parseFloat(this.scanToDelimiter('label position'));
   }
 
   static extractRatioFromText(text: string): number | undefined {
