@@ -86,7 +86,7 @@ export class BridgeService {
     const countsByStock = new Map<string, [StockId, number]>();
     let mostCommonCount: number = -1;
     let mostCommonStockId: StockId = InventoryService.USEFUL_STOCK; // Fall back to something reasonable for new users.
-    for (const member of  this.bridge.members) {
+    for (const member of this.bridge.members) {
       const memberStockId = member.stockId;
       const memberStockIdKey = memberStockId.key;
       const pair = countsByStock.get(memberStockIdKey);
@@ -105,30 +105,40 @@ export class BridgeService {
     return mostCommonStockId;
   }
 
-  /** 
+  /**
    * Three cases:
    *  - No members in the bridge: Return a stock generally useful to niave users.
    *  - Empty member index list: returns the most common stock in the bridge, else EMPTY if no members.
-   *  - Otherwise: returns the stock shared by all given members, else EMPTY when they're various.
+   *  - Otherwise: returns stock attributes shared by all given members.
    */
-  // TODO: This supports lists and sets. If both not needed, simplify for one.
   public getUsefulStockId(indices: Iterable<number>): StockId {
     const members = this.bridge.members;
     if (members.length === 0) {
       return InventoryService.USEFUL_STOCK;
     }
-    let stockId: StockId = StockId.EMPTY;
-    let stockIdKey: string = '';
-    for (const index of indices) {
-      const member = members[index];
-      if (stockId === StockId.EMPTY) { // first iteration
-        stockId = member.stockId
-        stockIdKey = stockId.key;
-      } else if (stockIdKey !== member.stockId.key) {
-        return StockId.EMPTY; // Selection is various.
+    const indexList = Array.from(indices);
+    if (indexList.length === 0) {
+      return this.getMostCommonStockId();
+    }
+    const firstMember = members[indexList[0]];
+    let materialIndex: number = firstMember.material.index;
+    let sectionIndex: number = firstMember.shape.section.index;
+    let sizeIndex: number = firstMember.shape.sizeIndex;
+    for (let i: number = 1; i < indexList.length; ++i) {
+      const member = members[indexList[i]];
+      if (member.material.index !== materialIndex) {
+        materialIndex = -1;
+      }
+      if (member.shape.section.index !== sectionIndex) {
+        sectionIndex = -1;
+      }
+      if (member.shape.sizeIndex !== sizeIndex) {
+        sizeIndex = -1;
       }
     }
-    return stockId === StockId.EMPTY ? this.getMostCommonStockId() : stockId;
+    return materialIndex === undefined
+      ? this.getMostCommonStockId()
+      : new StockId(materialIndex, sectionIndex, sizeIndex);
   }
 
   /** Returns whether the given members can be increased or decreased (or both) in size. */

@@ -1,3 +1,54 @@
-:host {
-  display: block;
+.header {
+  font-weight: 700;
+}
+
+.scroller {
+  overflow-y: auto;
+  height: 430px;
+  width: calc(100% - 2px);
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: none;
+}
+
+.table-header {
+  position: sticky;
+  top: 0;
+  z-index: 1; 
+}
+
+.table-header th {
+  background-color: lightgray;
+  font-weight: normal;
+  padding: 4px;
+  text-align: center;
+}
+
+.table-body td {
+  padding: 2px 4px;
+}
+
+.shrink-to-fit {
+  padding: 0;
+  width: 1%;
+}
+
+.numeric {
+  text-align: right;
+}
+
+.bottom-line td {
+  border-top: 1px solid gray;
+  font-weight: bold;
+}
+
+.buttons {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
 }

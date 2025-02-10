@@ -8,12 +8,17 @@ type Node<K, V> = {
 
 export class TreeMap<K, V> {
   private root: NullableNode<K, V> = null;
-  private size: number = 0;
+  private _size: number = 0;
 
   constructor(
     private readonly cmpFn: (a: K, b: K) => number,
     private readonly keyFn: (value: V) => K,
   ) {}
+
+  /** Returns the current number of values in the map. */
+  public get size(): number {
+    return this._size;
+  }
 
   /** Finds the value with given key and returns it or undefined if not found. */
   public find(key: K): V | undefined {
@@ -35,7 +40,7 @@ export class TreeMap<K, V> {
   public insert(value: V): V | undefined {
     if (this.root === null) {
       this.root = { value, color: 'b', kids: [null, null] };
-      this.size = 1;
+      this._size = 1;
       return undefined;
     }
 
@@ -59,7 +64,7 @@ export class TreeMap<K, V> {
     // Insert new node.
     let child: Node<K, V> = { value, color: 'r', kids: [null, null] };
     lastSearchPtr.kids[searchDir] = child;
-    this.size++;
+    this._size++;
 
     // Rebalance.
     while (stack.length >= 2) {
@@ -155,7 +160,7 @@ export class TreeMap<K, V> {
       toDelete.value = searchPtr.value;
       lastSearchPtr.kids[searchDir] = searchPtr.kids[1];
     }
-    this.size--;
+    this._size--;
     // Stack has all but deleted (former successor) node.
     if (searchPtr!.color === 'r') {
       // No rebalance needed.
@@ -163,6 +168,12 @@ export class TreeMap<K, V> {
     }
     // TODO: Rebalance.
     return true;
+  }
+
+  public forEach(f: (item: V) => any) {
+    for (const item of this) {
+      f(item);
+    }
   }
 
   [Symbol.iterator](): any {
@@ -177,9 +188,9 @@ export class TreeMap<K, V> {
         if (stk.length === 0) {
           return { value: undefined, done: true };
         }
-        const nextNode: Node<K, V> = stk.pop()!;
-        node = nextNode.kids[1];
-        return { value: nextNode.value, done: false };
+        const visitNode: Node<K, V> = stk.pop()!;
+        node = visitNode.kids[1];
+        return { value: visitNode.value, done: false };
       },
     };
   }

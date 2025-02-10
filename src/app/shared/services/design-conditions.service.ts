@@ -36,7 +36,7 @@ const enum CodeError {
   UPPER_HEIGHT_OUT_OF_RANGE,
 }
 
-export type FixedCostSummary = {
+export type SiteCostsModel = {
   siteCondition: string;
   panelCount: number;
   deckCostRate: number;
@@ -108,7 +108,7 @@ export class DesignConditions {
   public readonly underClearance: number = 0;
   public readonly xLeftmostDeckJoint: number = 0;
   public readonly xRightmostDeckJoint: number = 0;
-  public readonly fixedCostSummary?: FixedCostSummary;
+  public readonly siteCosts: SiteCostsModel = {} as SiteCostsModel;
 
   private constructor(tag: string, codeLong: number) {
     this.tag = tag;
@@ -292,7 +292,7 @@ export class DesignConditions {
         ? [0, this.panelCount, this.pierJointIndex]
         : [0, this.panelCount];
 
-    this.fixedCostSummary = {
+    this.siteCosts = {
       siteCondition: this.tag,
       panelCount: this.panelCount,
       deckCostRate: this.deckCostRate,

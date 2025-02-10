@@ -89,6 +89,7 @@ export class DraftingPanelComponent implements AfterViewInit {
   }
 
   loadBridge(bridge: BridgeModel): void {
+    this.eventBrokerService.selectNoneRequest.next({origin: EventOrigin.DRAFTING_PANEL });
     const bridgeGridDensity = DesignGridService.getDensityOfWorldPoints(bridge.joints);
     this.selectGridDensity(bridgeGridDensity);
     this.bridgeService.bridge = bridge;

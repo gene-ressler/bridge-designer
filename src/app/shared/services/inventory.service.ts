@@ -55,14 +55,14 @@ class BarCrossSection extends CrossSection {
       const width = CrossSection.WIDTHS[sizeIndex];
       const area = Utility.sqr(width) * 1e-6;
       const moment = (Utility.p4(width) / 12) * 1e-12;
-      return Shape.createSolidBar(this, sizeIndex, `${width}x${width}`, width, area, moment);
+      return Shape.createSolidBar(this, sizeIndex, `${width}×${width}`, width, area, moment);
     });
   }
 }
 
 class TubeCrossSection extends CrossSection {
   constructor() {
-    super(0, 'Hollow Tube', 'Tube');
+    super(1, 'Hollow Tube', 'Tube');
   }
 
   public override createShapes(): Shape[] {
@@ -71,7 +71,7 @@ class TubeCrossSection extends CrossSection {
       const thickness = Math.max(Math.trunc(width / 20), 2);
       const area = (Utility.sqr(width) - Utility.sqr(width - 2 * thickness)) * 1e-6;
       const moment = ((Utility.p4(width) - Utility.p4(width - 2 * thickness)) / 12) * 1e-12;
-      return Shape.createHollowTube(this, sizeIndex, `${width}x${width}x${thickness}`, width, area, moment, thickness);
+      return Shape.createHollowTube(this, sizeIndex, `${width}×${width}×${thickness}`, width, area, moment, thickness);
     });
   }
 }
@@ -134,7 +134,7 @@ class Inventory {
 /** An identifier for a Material/Size/Section triple. Indices are -1 for nothing selected. */
 export class StockId {
   public static readonly EMPTY = new StockId(-1, -1, -1);
-  
+
   constructor(
     public materialIndex: number,
     public sectionIndex: number,
@@ -187,6 +187,13 @@ export class InventoryService {
     return shapes[Utility.clamp(shape.sizeIndex + increment, 0, shapes.length - 1)];
   }
 
+  public static mergeStockId(stockId: StockId, material: Material, shape: Shape): { material: Material; shape: Shape } {
+    const materialIndex = stockId.materialIndex < 0 ? material.index : stockId.materialIndex;
+    const sectionIndex = stockId.sectionIndex < 0 ? shape.section.index : stockId.sectionIndex;
+    const sizeIndex = stockId.sizeIndex < 0 ? shape.sizeIndex : stockId.sizeIndex;
+    return { material: Inventory.MATERIALS[materialIndex], shape: Inventory.SHAPES[sectionIndex][sizeIndex] };
+  }
+  
   public static compressiveStrength(material: Material, shape: Shape, length: number): number {
     const fy = material.fy;
     const area = shape.area;

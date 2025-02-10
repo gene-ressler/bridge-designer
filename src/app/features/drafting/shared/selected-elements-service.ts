@@ -39,4 +39,16 @@ export class SelectedElementsService {
   public isMemberSelected(member: Member): boolean {
     return this.selectedElements.selectedMembers.has(member.index);
   }
+
+  public selectJoint(index: number, toggle: boolean = false) {
+    if (!toggle || !this.selectedElements.selectedJoints.delete(index)) {
+      this.selectedElements.selectedJoints.add(index);
+    }
+  }
+
+  public selectMember(index: number, toggle: boolean = false) {
+    if (!toggle || !this.selectedElements.selectedMembers.delete(index)) {
+      this.selectedElements.selectedMembers.add(index);
+    }
+  }
 }

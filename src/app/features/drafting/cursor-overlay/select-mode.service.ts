@@ -86,7 +86,7 @@ export class SelectModeService {
     }
     const selectCursor = this.selectCursorService.end(event.offsetX, event.offsetY, this.cursor);
     if (selectCursor) {
-      this.elementSelectorService.select(selectCursor, event.ctrlKey || event.shiftKey, EventOrigin.DRAFTING_PANEL);
+      this.elementSelectorService.select(selectCursor, event.ctrlKey, EventOrigin.DRAFTING_PANEL);
       this.hotElementService.invalidate(this.ctx);
     }
     if (this.movingJoint) {

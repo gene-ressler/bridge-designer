@@ -7,9 +7,16 @@ export const DOLLARS_FORMATTER = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 2,
   useGrouping: true,
 });
+
 export const COUNT_FORMATTER = new Intl.NumberFormat('en-US', {
   style: 'decimal',
   maximumFractionDigits: 0,
+  useGrouping: true,
+});
+
+export const FIXED_FORMATTER = new Intl.NumberFormat('en-US', {
+  style: 'decimal',
+  maximumFractionDigits: 2,
   useGrouping: true,
 });
 

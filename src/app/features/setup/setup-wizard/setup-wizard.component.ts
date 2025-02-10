@@ -9,12 +9,12 @@ import { jqxListBoxComponent, jqxListBoxModule } from 'jqwidgets-ng/jqxlistbox';
 import { jqxRadioButtonComponent, jqxRadioButtonModule } from 'jqwidgets-ng/jqxradiobutton';
 import { jqxWindowComponent, jqxWindowModule } from 'jqwidgets-ng/jqxwindow';
 import { EventBrokerService, EventOrigin } from '../../../shared/services/event-broker.service';
-import { COUNT_FORMATTER, DOLLARS_FORMATTER } from '../../../shared/classes/utility';
+import { COUNT_FORMATTER, DOLLARS_FORMATTER, FIXED_FORMATTER } from '../../../shared/classes/utility';
 import {
   DeckType,
   DesignConditions,
   DesignConditionsService,
-  FixedCostSummary,
+  SiteCostsModel,
   LoadType,
 } from '../../../shared/services/design-conditions.service';
 import { CartoonRenderingService } from '../../../shared/services/cartoon-rendering.service';
@@ -98,6 +98,7 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
   readonly dialogWidth: number = 872;
   readonly toDollars = DOLLARS_FORMATTER.format;
   readonly toCount = COUNT_FORMATTER.format;
+  readonly toFixed = FIXED_FORMATTER.format;
 
   @ViewChild('archAbutmentsButton') archAbutmentsButton!: jqxRadioButtonComponent;
   @ViewChild('archHeightList') archHeightList!: HeightListComponent;
@@ -247,8 +248,8 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
     return localContestCode?.length === 6 ? localContestCode : `000${this.designConditions.tag}`;
   }
 
-  get costSummary(): FixedCostSummary {
-    return this.designConditions.fixedCostSummary!;
+  get siteCosts(): SiteCostsModel {
+    return this.designConditions.siteCosts!;
   }
 
   archAbutmentRadioChangeHandler(event: any): void {

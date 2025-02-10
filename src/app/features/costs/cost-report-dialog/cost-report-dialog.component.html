@@ -2,36 +2,131 @@
   #dialog
   [isModal]="true"
   [autoOpen]="false"
-  [width]="810"
-  [height]="730"
+  [width]="960"
+  [height]="500"
   (onOpen)="dialogOpenHandler()"
 >
-  <div class="header">Load test results</div>
+  <div class="header">Cost calculations</div>
   <div>
     <div class="scroller">
-      <table class="member-table">
+      <table class="report-table">
         <thead class="table-header">
           <th>Type of cost</th>
-          <th>Item</th>
-          <th>Calculatioms</th>
+          <th colspan="4">Item</th>
+          <th>Calculations</th>
+          <th></th>
           <th>Cost</th>
         </thead>
         <tbody class="table-body">
-          @for (materialCostItem of costs.weightByMaterialAndSection; track materialCostItem.trackingTag) {
+          @for (item of bridgeCosts.weightByMaterialAndSection; track item.sortKey) {
             <tr>
               <td>
                 @if ($first) {
                   Material cost (M)
                 }
               </td>
-              <td>{{ materialCostItem.name }}</td>
-              <td>{{ materialCostItem.costTabulation }}</td>
-              <td>=</td>
-              <td>{{ materialCostItem.cost }}</td>
+              <td colspan="4">{{ item.material.name }} {{ item.section.name.toLowerCase() }}</td>
+              <td>
+                ({{ toFixed(item.memberKg) }} kg) × ({{ toDollars(item.material.getCost(item.section)) }} per kg) × (2
+                trusses)
+              </td>
+              <td class="shrink-to-fit">=</td>
+              <td class="numeric">{{ toDollars(item.cost) }}</td>
             </tr>
           }
           <tr>
-            <td>Material cost (M)</td>
+            <td>Connection cost (C)</td>
+            <td colspan="4"></td>
+            <td>
+              ({{ bridgeCosts.connectionCount }} joints) × ({{ toDollars(bridgeCosts.connectionFee) }} per joint) × (2
+              trusses)
+            </td>
+            <td class="shrink-to-fit">=</td>
+            <td class="numeric">{{ toDollars(bridgeCosts.connectionCost) }}</td>
+          </tr>
+          @for (item of bridgeCosts.countBySizeMaterialAndSection; track item.sortKey) {
+            <tr>
+              <td>
+                @if ($first) {
+                  Product cost (P)
+                }
+              </td>
+              <!-- Following 3 columns cover colspan of other rows. -->
+              <td class="numeric">{{ item.count }}</td>
+              <td class="shrink-to-fit">—</td>
+              <td>{{ item.material.name }} {{ item.shape.section.name.toLowerCase() }}</td>
+              <td>{{ item.shape.name }}mm</td>
+              <td>({{ toDollars(bridgeCosts.productFee) }} per product)</td>
+              <td class="shrink-to-fit">=</td>
+              <td class="numeric">{{ toDollars(bridgeCosts.productFee) }}</td>
+            </tr>
+          }
+          <tr>
+            <td>Site cost (S)</td>
+            <td colspan="4">Deck cost</td>
+            <td>
+              ({{ siteCosts.panelCount }} each 4-meter panels) × ({{ toDollars(siteCosts.deckCostRate) }} per panel)
+            </td>
+            <td class="shrink-to-fit">=</td>
+            <td class="numeric">{{ toDollars(siteCosts.deckCost) }}</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td colspan="4">Excavation cost</td>
+            <td>
+              ({{ toCount(siteCosts.excavationVolume) }} cubic meters) × (
+              {{ toDollars(siteCosts.excavationCostRate) }} per cubic meter)
+            </td>
+            <td class="shrink-to-fit">=</td>
+            <td class="numeric">{{ toDollars(siteCosts.excavationCost) }}</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td colspan="4">Abutment cost</td>
+            <td>
+              ({{ siteCosts.abutmentCount }} {{ siteCosts.abutmentType }} abutments) × ({{
+                toDollars(siteCosts.abutmentCostRate)
+              }}
+              per abutment)
+            </td>
+            <td class="shrink-to-fit">=</td>
+            <td class="numeric">{{ toDollars(siteCosts.abutmentCost) }}</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td colspan="4">Pier cost</td>
+            <td>
+              <div *ngIf="siteCosts.isPier; then hasPier; else noPier"></div>
+              <ng-template #hasPier>(1 each {{ siteCosts.pierHeight }} meter pier)</ng-template>
+              <ng-template #noPier>No pier</ng-template>
+            </td>
+            <td class="shrink-to-fit">=</td>
+            <td class="numeric">{{ toDollars(siteCosts.pierCost) }}</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td colspan="4">Anchorage cost</td>
+            <td>
+              <div *ngIf="siteCosts.anchorageCount > 0; then hasAnchorages; else noAnchorages"></div>
+              <ng-template #hasAnchorages
+                >({{ siteCosts.anchorageCount }} anchorages) × ({{ toDollars(siteCosts.anchorageCostRate) }} per
+                anchorage)</ng-template
+              >
+              <ng-template #noAnchorages>No anchorage</ng-template>
+            </td>
+            <td class="shrink-to-fit">=</td>
+            <td class="numeric">{{ toDollars(siteCosts.anchorageCost) }}</td>
+          </tr>
+          <tr class="bottom-line">
+            <td>Total cost</td>
+            <td colspan="4">M + C + P + S</td>
+            <td>
+              {{ toDollars(bridgeCosts.materialCost) }} + {{ toDollars(bridgeCosts.connectionCost) }} +
+              {{ toDollars(bridgeCosts.productCost) }} +
+              {{ toDollars(siteCosts.totalFixedCost) }}
+            </td>
+            <td class="shrink-to-fit">=</td>
+            <td class="numeric">{{ toDollars(totalCost) }}</td>
           </tr>
         </tbody>
       </table>

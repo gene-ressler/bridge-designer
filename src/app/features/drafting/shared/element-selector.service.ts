@@ -20,7 +20,7 @@ export class ElementSelectorService {
     private readonly viewportTransform: ViewportTransform2D,
   ) {
     eventBrokerService.selectAllRequest.subscribe(_eventInfo => this.selectAllMembers(_eventInfo.data));
-    eventBrokerService.loadBridgeRequest.subscribe(eventInfo => this.clear(eventInfo.origin));
+    eventBrokerService.selectNoneRequest.subscribe(eventInfo => this.clear(eventInfo.origin));
   }
 
   private readonly worldCursor = Rectangle2D.createEmpty();
@@ -35,7 +35,7 @@ export class ElementSelectorService {
       selectedElements.selectedMembers.clear();
     }
     if (cursor.width === 0 && cursor.height === 0) {
-      this.doPointSelection();
+      this.doPointSelection(extend);
     } else {
       this.doAreaSelection(cursor);
     }
@@ -98,16 +98,17 @@ export class ElementSelectorService {
     });
   }
 
-  /** Assumes the hot element is set based on point location. Selects if joint or member. */
-  private doPointSelection(): void {
+  /** Assumes the hot element is set based on point location. Selects or toggles if joint or member. */
+  private doPointSelection(toggle: boolean): void {
     const hotElement = this.hotElementService.hotElement;
     const selectedElements = this.selectedElementsService.selectedElements;
     if (hotElement instanceof Joint) {
-      selectedElements.selectedJoints.add(hotElement.index);
-      selectedElements.selectedMembers.clear(); // Ignores extend flag.
+      this.selectedElementsService.selectJoint(hotElement.index, toggle);
+      // Ignores extend flag, but that's reasonable.
+      selectedElements.selectedMembers.clear();
     } else if (hotElement instanceof Member) {
+      this.selectedElementsService.selectMember(hotElement.index, toggle);
       // Joint selection already clear.
-      selectedElements.selectedMembers.add(hotElement.index);
     }
   }
 

@@ -7,8 +7,9 @@ import { ChangeMembersCommand } from '../edit-command/change-members.command';
 import { UndoManagerService } from '../../drafting/shared/undo-manager.service';
 import { UiStateService } from './ui-state.service';
 import { AnalysisValidityService } from './analysis-validity.service';
-import { AllowedShapeChangeMask } from '../../../shared/services/inventory.service';
+import { AllowedShapeChangeMask, InventoryService, StockId } from '../../../shared/services/inventory.service';
 import { EditEffect } from '../../../shared/classes/editing';
+import { Member } from '../../../shared/classes/member.model';
 
 /**
  * Container for the state of the user's design workflow and associated logic.
@@ -61,12 +62,16 @@ export class WorkflowManagementService {
       if (selectedMembers.size === 0) {
         return;
       }
-      const changeMembersCommand = ChangeMembersCommand.forMemberMaterialsUpdate(
-        bridgeService.bridge.members,
-        selectedMembers,
-        eventInfo.data.material,
-        eventInfo.data.shape,
-      );
+      // Stock ID can be partial, so merge populated fields with each selected member.
+      const stockId: StockId = eventInfo.data.stockId;
+      const members = bridgeService.bridge.members;
+      const updatedMembers: Member[] = [];
+      for (const index of selectedMembers) {
+        const member = members[index];
+        const { material, shape } = InventoryService.mergeStockId(stockId, member.material, member.shape);
+        updatedMembers.push(new Member(member.index, member.a, member.b, material, shape));
+      }
+      const changeMembersCommand = ChangeMembersCommand.forMemberMaterialsUpdate(members, updatedMembers);
       undoManagerService.do(changeMembersCommand);
     });
 

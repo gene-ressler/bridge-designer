@@ -1,39 +1,33 @@
 import { TreeMap } from '../core/tree-map';
 import { CrossSection, Material, Shape } from '../services/inventory.service';
-import { DOLLARS_FORMATTER } from './utility';
+import { FIXED_FORMATTER } from './utility';
 
 /** Accumulator for report line denoting a material+section with corresponding total truss weight in kilograms. */
 export class MaterialSectionWeight {
   public memberKg: number = 0;
-  public readonly name: string;
-  public readonly trackingTag: string;
+  public readonly sortKey: string;
 
   constructor(
     public readonly material: Material,
     public readonly section: CrossSection,
   ) {
-    this.name = `${this.material.name} ${this.section.name.toLowerCase()}`;
-    this.trackingTag = `${this.material.name}|${this.section.name.toLowerCase()}|${this.memberKg.toFixed(2)}`;
+    this.sortKey = `${material.name.padEnd(32)}|${section.name.padEnd(12)}|${FIXED_FORMATTER.format(this.memberKg).padStart(10)}`;
   }
 
-  public get costTablulation(): string {
-    return `(${this.memberKg.toFixed(2)} kg) × (\$${this.material.cost[this.section.index]}) × (2 trusses)`;
-  }
-
-  public get cost(): string {
-    return DOLLARS_FORMATTER.format(this.memberKg * this.material.cost[this.section.index] * 2);
+  public get cost(): number {
+    return this.memberKg * this.material.getCost(this.section) * 2;
   }
 }
 
 export class SizeMaterialSectionCount {
   public count: number = 0;
-  public readonly name: string;
+  public readonly sortKey: string;
 
   constructor(
-    public readonly shape: Shape,
     public readonly material: Material,
+    public readonly shape: Shape,
   ) {
-    this.name = `${shape.name}mm ${material.name} ${shape.section.shortName}`;
+    this.sortKey = `${material.name.padEnd(32)}|${shape.section.name.padEnd(12)}|${shape.sizeIndex.toString().padStart(3)}|${this.count.toString().padStart(3)}`;
   }
 }
 
@@ -43,5 +37,25 @@ export class BridgeCostModel {
     public readonly weightByMaterialAndSection: TreeMap<string, MaterialSectionWeight>,
     public readonly countBySizeMaterialAndSection: TreeMap<string, SizeMaterialSectionCount>,
     public readonly connectionCount: number,
+    public readonly connectionFee: number,
+    public readonly productFee: number,
   ) {}
+
+  public get materialCost(): number {
+    let cost: number = 0;
+    this.weightByMaterialAndSection.forEach(item => cost += item.cost);
+    return cost;
+  }
+  
+  public get connectionCost(): number {
+    return this.connectionCount * this.connectionFee * 2;
+  }
+
+  public get productCost(): number {
+    return this.countBySizeMaterialAndSection.size * this.productFee;
+  }
+
+  public get totalCost(): number {
+    return this.materialCost + this.connectionCost + this.productCost;
+  }
 }

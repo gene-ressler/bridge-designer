@@ -5,7 +5,9 @@ import { jqxButtonModule } from 'jqwidgets-ng/jqxbuttons';
 import { EventBrokerService } from '../../../shared/services/event-broker.service';
 import { BridgeCostService } from './bridge-cost.service';
 import { BridgeCostModel } from '../../../shared/classes/bridge-cost.model';
-import { COUNT_FORMATTER, DOLLARS_FORMATTER } from '../../../shared/classes/utility';
+import { COUNT_FORMATTER, DOLLARS_FORMATTER, FIXED_FORMATTER } from '../../../shared/classes/utility';
+import { BridgeService } from '../../../shared/services/bridge.service';
+import { SiteCostsModel } from '../../../shared/services/design-conditions.service';
 
 @Component({
   selector: 'cost-report-dialog',
@@ -17,18 +19,31 @@ import { COUNT_FORMATTER, DOLLARS_FORMATTER } from '../../../shared/classes/util
 })
 export class CostReportDialogComponent implements AfterViewInit {
   @ViewChild('dialog') dialog!: jqxWindowComponent;
-  readonly costs: BridgeCostModel;
+  bridgeCosts: BridgeCostModel;
   readonly toDollars = DOLLARS_FORMATTER.format;
   readonly toCount = COUNT_FORMATTER.format;
+  readonly toFixed = FIXED_FORMATTER.format;
 
   constructor(
+    private readonly bridgeCostService: BridgeCostService,
+    private readonly bridgeService: BridgeService,
     private readonly eventBrokerService: EventBrokerService,
-    bridgeCostService: BridgeCostService,
+    private readonly changeDetector: ChangeDetectorRef,
   ) {
-    this.costs = bridgeCostService.createBridgeCostModel();
+    this.bridgeCosts = this.bridgeCostService.createBridgeCostModel();
+  }
+
+  get siteCosts(): SiteCostsModel {
+    return this.bridgeService.designConditions.siteCosts;
+  }
+
+  get totalCost(): number {
+    return this.bridgeCosts.totalCost + this.siteCosts.totalFixedCost;
   }
 
   dialogOpenHandler(): void {
+    this.bridgeCosts = this.bridgeCostService.createBridgeCostModel();
+    this.changeDetector.detectChanges();
   }
 
   ngAfterViewInit(): void {

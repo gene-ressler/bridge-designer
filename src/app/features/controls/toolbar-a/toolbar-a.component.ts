@@ -7,6 +7,7 @@ import { UiStateService } from '../management/ui-state.service';
 import { UndoManagerService } from '../../drafting/shared/undo-manager.service';
 import { UndoRedoDropdownComponent } from '../undo-redo-dropdown/undo-redo-dropdown.component';
 import { StatusIndicatorComponent } from '../status-indicator/status-indicator.component';
+import { CostIndicatorComponent } from '../cost-indicator/cost-indicator.component';
 
 const enum Tools {
   NEW,
@@ -130,9 +131,7 @@ export class ToolbarAComponent implements AfterViewInit {
         WidgetHelper.initToolbarImgButton('To next iteration', 'img/right.png', tool);
         break;
       case Tools.COST:
-        tool.append('<div style="line-height: 32px; padding: 0px 8px"></div>');
-        const cost = tool.children();
-        cost.text('$123,456');
+        this.componentService.load(CostIndicatorComponent, tool[0]);
         break;
       case Tools.COST_REPORT:
         WidgetHelper.initToolbarImgButton('Show cost details', 'img/calculator.png', tool);

@@ -454,14 +454,14 @@
           <div>
             <div class="cost-summary-line">
               <div class="deck-cost">
-                <ng-container *ngIf="siteCostExpander.disabled(); else siteCostEnabled">$0.00</ng-container>
-                <ng-template #siteCostEnabled>{{ toDollars(costSummary.totalFixedCost) }}</ng-template>
+                <ng-container *ngIf="siteCostExpander.disabled(); else siteCostEnabled">toDollars(0)</ng-container>
+                <ng-template #siteCostEnabled>{{ toDollars(siteCosts.totalFixedCost) }}</ng-template>
               </div>
               <div class="deck-cost-comment">(Includes cost of deck, excavation, and supports; not steel)</div>
               <div class="site-condition">
                 Site condition:
                 <ng-container *ngIf="siteCostExpander.disabled(); else siteConditionEnabled">-----</ng-container>
-                <ng-template #siteConditionEnabled>{{ costSummary.siteCondition }}</ng-template>
+                <ng-template #siteConditionEnabled>{{ siteCosts.siteCondition }}</ng-template>
               </div>
             </div>
           </div>
@@ -470,59 +470,59 @@
               <tr>
                 <td>Deck cost</td>
                 <td>
-                  ({{ costSummary.panelCount }} each 4-meter panels) x ({{ toDollars(costSummary.deckCostRate) }} per
+                  ({{ siteCosts.panelCount }} each 4-meter panels) × ({{ toDollars(siteCosts.deckCostRate) }} per
                   panel)
                 </td>
                 <td>=</td>
-                <td>{{ toDollars(costSummary.deckCost) }}</td>
+                <td>{{ toDollars(siteCosts.deckCost) }}</td>
               </tr>
               <tr>
                 <td>Excavation cost</td>
                 <td>
-                  ({{ toCount(costSummary.excavationVolume) }} cubic meters) x (
-                  {{ toDollars(costSummary.excavationCostRate) }} per cubic meter)
+                  ({{ toCount(siteCosts.excavationVolume) }} cubic meters) × (
+                  {{ toDollars(siteCosts.excavationCostRate) }} per cubic meter)
                 </td>
                 <td>=</td>
-                <td>{{ toDollars(costSummary.excavationCost) }}</td>
+                <td>{{ toDollars(siteCosts.excavationCost) }}</td>
               </tr>
               <tr>
                 <td>Abutment cost</td>
                 <td>
-                  ({{ costSummary.abutmentCount }} {{ costSummary.abutmentType }} abutments) x ({{
-                    toDollars(costSummary.abutmentCostRate)
+                  ({{ siteCosts.abutmentCount }} {{ siteCosts.abutmentType }} abutments) × ({{
+                    toDollars(siteCosts.abutmentCostRate)
                   }})
                 </td>
                 <td>=</td>
-                <td>{{ toDollars(costSummary.abutmentCost) }}</td>
+                <td>{{ toDollars(siteCosts.abutmentCost) }}</td>
               </tr>
               <tr>
                 <td>Pier cost</td>
                 <td>
-                  <div *ngIf="costSummary.isPier; then hasPier; else noPier"></div>
-                  <ng-template #hasPier>(1 each {{ costSummary.pierHeight }} meter pier)</ng-template>
+                  <div *ngIf="siteCosts.isPier; then hasPier; else noPier"></div>
+                  <ng-template #hasPier>(1 each {{ siteCosts.pierHeight }} meter pier)</ng-template>
                   <ng-template #noPier>No pier</ng-template>
                 </td>
                 <td>=</td>
-                <td>{{ toDollars(costSummary.pierCost) }}</td>
+                <td>{{ toDollars(siteCosts.pierCost) }}</td>
               </tr>
               <tr>
                 <td>Anchorage cost</td>
                 <td>
-                  <div *ngIf="costSummary.anchorageCount > 0; then hasAnchorages; else noAnchorages"></div>
+                  <div *ngIf="siteCosts.anchorageCount > 0; then hasAnchorages; else noAnchorages"></div>
                   <ng-template #hasAnchorages
-                    >({{ costSummary.anchorageCount }} anchorages) x ({{ toDollars(costSummary.anchorageCostRate) }} per
+                    >({{ siteCosts.anchorageCount }} anchorages) × ({{ toDollars(siteCosts.anchorageCostRate) }} per
                     anchorage)</ng-template
                   >
                   <ng-template #noAnchorages>No anchorage</ng-template>
                 </td>
                 <td>=</td>
-                <td>{{ toDollars(costSummary.anchorageCost) }}</td>
+                <td>{{ toDollars(siteCosts.anchorageCost) }}</td>
               </tr>
               <tr>
                 <td></td>
                 <td class="total">Total site cost</td>
                 <td>=</td>
-                <td class="total">{{ toDollars(costSummary.totalFixedCost) }}</td>
+                <td class="total">{{ toDollars(siteCosts.totalFixedCost) }}</td>
               </tr>
             </table>
           </div>

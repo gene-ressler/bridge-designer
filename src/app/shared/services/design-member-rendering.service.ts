@@ -58,7 +58,7 @@ export class DesignMemberRenderingService {
   /** Create a set of member colors indexed by material with optional intensity and blueness modifications. */
   private static createColors(intensification: number = 0, blueification: number = 0): string[] {
     return [
-      Graphics.computeColor(128, 128, 128, intensification, blueification),
+      Graphics.computeColor(96, 96, 96, intensification, blueification),
       Graphics.computeColor(64, 64, 64, intensification, blueification),
       Graphics.computeColor(192, 192, 192, intensification, blueification),
     ];

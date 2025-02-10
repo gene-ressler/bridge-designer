@@ -27,7 +27,7 @@ export class InventorySelectionService {
           that._shape = shape;
           eventBrokerService.inventorySelectionCompletion.next({
             origin: EventOrigin.SERVICE,
-            data: { material, crossSection, shape },
+            data: { material, crossSection, shape, stockId },
           });
         }
       }

@@ -1,6 +1,6 @@
 import { EditableUtility, EditCommand, EditEffect } from '../../../shared/classes/editing';
 import { Member } from '../../../shared/classes/member.model';
-import { InventoryService, Material, Shape } from '../../../shared/services/inventory.service';
+import { InventoryService } from '../../../shared/services/inventory.service';
 import { SelectedSet } from '../../drafting/shared/selected-elements-service';
 
 export class ChangeMembersCommand extends EditCommand {
@@ -17,12 +17,7 @@ export class ChangeMembersCommand extends EditCommand {
   }
 
   /** Returns a command that updates selected items of the bridge members list to a new material. */
-  public static forMemberMaterialsUpdate(members: Member[], selected: SelectedSet, material: Material, shape: Shape): ChangeMembersCommand {
-    const updatedMembers = [];
-    for (const index of selected) {
-      const member = members[index];
-      updatedMembers.push(new Member(member.index, member.a, member.b, material, shape));
-    }
+  public static forMemberMaterialsUpdate(members: Member[], updatedMembers: Member[]): ChangeMembersCommand {
     return new ChangeMembersCommand(`Update selected member material`, members, updatedMembers);
   }
 
