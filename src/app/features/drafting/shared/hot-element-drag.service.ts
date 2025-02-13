@@ -7,8 +7,10 @@ export interface Draggable {
 }
 
 export interface DraggableService {
-  move(ctx: CanvasRenderingContext2D, draggable: any, x: number, y: number): void;
-  clear(ctx: CanvasRenderingContext2D): void;
+  /** Signals a need to (re)render the draggable element. Start is true for the beginning of the drag.  */
+  move(ctx: CanvasRenderingContext2D, draggable: any, x: number, y: number, start?: boolean): void;
+  /** Signals a need to erase the draggable element. End is true for the end of the drag.  */
+  clear(ctx: CanvasRenderingContext2D, end?: boolean): void;
 }
 
 /** 
@@ -51,7 +53,7 @@ export class HotElementDragService {
     const draggable = hotElement as unknown as Draggable;
     this.ctx.canvas.setPointerCapture(event.pointerId);
     this.dragging = draggable;
-    draggable.draggableService.move(this.ctx, draggable, event.offsetX, event.offsetY);
+    draggable.draggableService.move(this.ctx, draggable, event.offsetX, event.offsetY, true);
     this.dragCursorActive?.emit(this.dragging);
   }
 
@@ -59,7 +61,7 @@ export class HotElementDragService {
     if (!this.dragging) {
       return;
     }
-    this.dragging.draggableService.move(this.ctx, this.dragging, event.offsetX, event.offsetY);
+    this.dragging.draggableService.move(this.ctx, this.dragging, event.offsetX, event.offsetY, false);
   }
 
   handlePointerUp(event: PointerEvent): void {
@@ -69,7 +71,7 @@ export class HotElementDragService {
     this.ctx.canvas.releasePointerCapture(event.pointerId);
     this.dragEndEvent = event;
     this.dragCursorActive?.emit(undefined);
-    this.dragging.draggableService.clear(this.ctx);
+    this.dragging.draggableService.clear(this.ctx, true);
     this.dragging = undefined;
   }
 

@@ -6,6 +6,14 @@ type Node<K, V> = {
   kids: [NullableNode<K, V>, NullableNode<K, V>];
 };
 
+function isBlack<K, V>(node: NullableNode<K, V>): boolean {
+  return node === null || node.color === 'b';
+}
+
+function isRed<K, V>(node: NullableNode<K, V>): boolean {
+  return node !== null && node.color === 'r';
+}
+
 export class TreeMap<K, V> {
   private root: NullableNode<K, V> = null;
   private _size: number = 0;
@@ -75,7 +83,7 @@ export class TreeMap<K, V> {
       const [grandparent, grandparentDir] = stack.pop()!;
       const oppositeGrandparentDir = 1 - grandparentDir;
       const parentSibling = grandparent.kids[oppositeGrandparentDir];
-      if (parentSibling === null || parentSibling.color === 'b') {
+      if (isBlack(parentSibling)) {
         // Do canonical rotations and return. Swap value references to avoid
         // mutating the great-grandparent's kids, where the root is a special case.
         if (parentDir === grandparentDir) {
@@ -94,7 +102,7 @@ export class TreeMap<K, V> {
         break;
       }
       // Do re-coloring and recur for the grandparent.
-      parent.color = parentSibling.color = 'b';
+      parent.color = parentSibling!.color = 'b';
       if (grandparent !== this.root) {
         grandparent.color = 'r';
       }
@@ -103,7 +111,8 @@ export class TreeMap<K, V> {
     return undefined;
   }
 
-  public delete(key: K): boolean {
+  /** Deletes and returns the value with given key or undefined if it didn't exist. */
+  public delete(key: K): V | undefined {
     // Search for node to delete. Build a stack of nodes and directions taken.
     const stack: [Node<K, V>, number][] = [];
     let lastSearchPtr: NullableNode<K, V> = null;
@@ -111,7 +120,7 @@ export class TreeMap<K, V> {
     let searchDir: number = NaN;
     while (true) {
       if (searchPtr === null) {
-        return false;
+        return undefined;
       }
       const cmp = this.cmpFn(key, this.keyFn(searchPtr.value));
       if (cmp === 0) {
@@ -123,51 +132,102 @@ export class TreeMap<K, V> {
       searchPtr = searchPtr.kids[searchDir];
     }
     const toDelete = searchPtr;
+    const deletedValue = toDelete.value;
     const toDeleteParent = lastSearchPtr;
-    if (toDelete.kids[0] === null && toDelete.kids[1] === null) {
-      // No children. Remove node.
-      if (toDeleteParent) {
-        toDeleteParent.kids[searchDir] = null;
+    if (toDelete.kids[0] === null) {
+      if (toDelete.kids[1] === null) {
+        // No children. Remove node.
+        if (toDeleteParent) {
+          toDeleteParent.kids[searchDir] = null;
+        } else {
+          this.root = null;
+          return deletedValue;
+        }
       } else {
-        this.root = null;
-      }
-    } else if (toDelete.kids[0] !== null && toDelete.kids[1] === null) {
-      // Left child only.
-      if (toDeleteParent) {
-        toDeleteParent.kids[searchDir] = toDelete.kids[0];
-      } else {
-        this.root = toDelete.kids[0];
-      }
-    } else if (toDelete.kids[0] === null && toDelete.kids[1] !== null) {
-      // Right child only.
-      if (toDeleteParent) {
-        toDeleteParent.kids[searchDir] = toDelete.kids[1];
-      } else {
-        this.root = toDelete.kids[1];
+        // Right child only.
+        if (toDeleteParent) {
+          toDeleteParent.kids[searchDir] = toDelete.kids[1];
+        } else {
+          this.root = toDelete.kids[1];
+          this.root.color = 'b';
+        }
       }
     } else {
-      // Two children. Find successor node, copy its value up, and delete.
-      // Successor is one step right, then left as far as possible.
-      lastSearchPtr = toDelete;
-      searchDir = 1;
-      searchPtr = toDelete.kids[1]!;
-      while (searchPtr.kids[0]) {
-        stack.push([searchPtr, searchDir]);
-        searchDir = 0;
-        lastSearchPtr = searchPtr;
-        searchPtr = searchPtr.kids[0];
+      if (toDelete.kids[1] === null) {
+        // Left child only.
+        if (toDeleteParent) {
+          toDeleteParent.kids[searchDir] = toDelete.kids[0];
+        } else {
+          this.root = toDelete.kids[0];
+          this.root.color = 'b';
+        }
+      } else {
+        // Two children. Find successor node, copy its value up, and delete.
+        // Successor is one step right, then left as far as possible.
+        lastSearchPtr = toDelete;
+        searchDir = 1;
+        searchPtr = toDelete.kids[1]!;
+        while (searchPtr.kids[0]) {
+          stack.push([searchPtr, searchDir]);
+          searchDir = 0;
+          lastSearchPtr = searchPtr;
+          searchPtr = searchPtr.kids[0];
+        }
+        toDelete.value = searchPtr.value;
+        lastSearchPtr.kids[searchDir] = searchPtr.kids[1];
       }
-      toDelete.value = searchPtr.value;
-      lastSearchPtr.kids[searchDir] = searchPtr.kids[1];
     }
     this._size--;
     // Stack has all but deleted (former successor) node.
     if (searchPtr!.color === 'r') {
-      // No rebalance needed.
-      return true;
+      // Case 1: No rebalance needed.
+      return deletedValue;
     }
-    // TODO: Rebalance.
-    return true;
+    //let db: Node<K, V> = null;
+    let [dbParent, dbParentDir] = stack.pop()!;
+    let oppositeDbParentDir = 1 - dbParentDir;
+    while (stack.length > 0) {
+      const dbSibling = dbParent.kids[oppositeDbParentDir]!;
+      if (isRed(dbSibling)) {
+        // Case 4
+        [dbParent.color, dbSibling.color] = [dbSibling.color, dbParent.color]; // parent -> red
+        this.rotate(dbParent, oppositeDbParentDir);
+        stack.push([dbParent, dbParentDir]); // Push node rotated into path to root.
+        dbParent = dbSibling; // Account for value swap.
+      } else if (isRed(dbSibling!.kids[oppositeDbParentDir] /* far is red */)) {
+        // Case 6
+        [dbParent.color, dbSibling.color] = [dbSibling.color, dbParent.color];
+        this.rotate(dbParent, oppositeDbParentDir);
+        stack.push([dbParent, dbParentDir]); // Push node rotated into path to root.
+        dbParent = dbSibling; // Account for value swap.
+      } else if (isBlack(dbSibling!.kids[dbParentDir]) /* near is black */) {
+        // Case 3
+        dbSibling.color = 'r';
+        if (isRed(dbParent) || stack.length === 0) {
+          dbParent.color = 'b';
+          break;
+        }
+        //db = dbParent;
+        [dbParent, dbParentDir] = stack.pop()!;
+        oppositeDbParentDir = 1 - dbParentDir;
+      } else {
+        // Case 5
+        // Sibling is black. far is black. near is red
+        dbSibling.color = 'r';
+        dbSibling!.kids[dbParentDir]!.color = 'b';
+        this.rotate(dbSibling, dbParentDir);
+      }
+    }
+    return deletedValue;
+  }
+
+  private rotate(a: Node<K, V>, d: number) {
+    const b = a.kids[d]!;
+    const e = 1 - d;
+    [a.value, b.value] = [b.value, a.value]
+    a.kids[d] = b.kids[d];
+    b.kids[d] = b.kids[e];
+    b.kids[e] = a.kids[e];
   }
 
   public forEach(f: (item: V) => any) {

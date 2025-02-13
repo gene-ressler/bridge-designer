@@ -1,0 +1,100 @@
+<jqxWindow
+  #dialog
+  [isModal]="true"
+  [autoOpen]="false"
+  [width]="640"
+  [height]="590"
+  (onOpen)="dialogOpenHandler($event)"
+>
+  <div
+    #header
+    class="header"
+  >
+    Load a sample design
+  </div>
+  <div
+    #content
+    class="content"
+  >
+    <div>
+      <jqxTabs
+        #tabsReference
+        [width]="'90%'"
+        [height]="200"
+        [position]="'top'"
+        [animationType]="'none'"
+        [selectionTracker]="false"
+      >
+        <ul>
+          <li>List view</li>
+          <li>Tree view</li>
+        </ul>
+        <div></div>
+        <div>
+          <jqxTreeGrid
+            #tree
+            [width]="638"
+            [height]="400"
+            [columns]="columns"
+            [source]="dataAdapter"
+          ></jqxTreeGrid>
+        </div>
+      </jqxTabs>
+      <div class="dialog-topic">Preview:</div>
+      <canvas
+        #preview
+        class="preview"
+        width="498"
+        height="298"
+      >
+      </canvas>
+    </div>
+    <div class="dialog-topic">Preview:</div>
+    <canvas
+      #preview
+      class="preview"
+      width="498"
+      height="298"
+    >
+    </canvas>
+    <div class="right-column">
+      <fieldset class="design-tip">
+        <legend class="dialog-topic">Design tip:</legend>
+        <div>
+          <p>
+            <img
+              class="tip-icon"
+              src="img/tipicon.png"
+            />
+            You can select two ways of viewing design iterations. The <b>List view</b> tab presents them in them in the
+            order created. The <b>Tree view shows</b>
+            how each iteration depends on previous ones. Pick the one that makes most sense to you!
+          </p>
+          <p>
+            In either view, you can use the up and down arrow keys to scroll through the design iterations while viewing
+            each in the <b>Preview</b> window. Navigate up and down through the views with arrow keys.
+          </p>
+        </div>
+      </fieldset>
+      <div>
+        <jqxButton
+          #cancelButton
+          id="cancelButton"
+          (onClick)="dialog.close()"
+          style="float: right; margin-top: 40px; margin-right: 8px"
+          [width]="'110px'"
+          >Cancel</jqxButton
+        >
+      </div>
+      <div>
+        <jqxButton
+          #okButton
+          (onClick)="okClickHandler()"
+          style="float: right; margin-top: 16px; margin-right: 8px"
+          [width]="'110px'"
+          >OK</jqxButton
+        >
+      </div>
+    </div>
+  </div>
+</jqxWindow>

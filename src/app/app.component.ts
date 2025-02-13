@@ -22,6 +22,7 @@ import { WorkflowManagementService } from './features/controls/management/workfl
 import { UnstableBridgeDialogComponent } from './features/testing/unstable-bridge-dialog/unstable-bridge-dialog.component';
 import { LoadTestReportDialogComponent } from './features/testing/load-test-report-dialog/load-test-report-dialog.component';
 import { CostReportDialogComponent } from './features/costs/cost-report-dialog/cost-report-dialog.component';
+import { DesignIterationDialogComponent } from './features/iterations/design-iteration-dialog/design-iteration-dialog.component';
 
 // ¯\_(ツ)_/¯
 
@@ -30,6 +31,7 @@ import { CostReportDialogComponent } from './features/costs/cost-report-dialog/c
   standalone: true,
   imports: [
     CostReportDialogComponent,
+    DesignIterationDialogComponent,
     DraftingPanelComponent,
     LoadTestReportDialogComponent,
     MemberTableComponent,

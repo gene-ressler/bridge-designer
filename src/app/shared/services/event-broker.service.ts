@@ -55,6 +55,7 @@ export class EventBrokerService {
   public readonly legacyGraphicsToggle = new Subject<EventInfo>();
   public readonly loadBridgeCompletion = new Subject<EventInfo>();
   public readonly loadBridgeRequest = new Subject<EventInfo>();
+  public readonly loadDesignIterationRequest = new Subject<EventInfo>();
   public readonly loadSketchRequest = new Subject<EventInfo>();
   public readonly loadInventorySelectorRequest = new Subject<EventInfo>();
   public readonly loadSampleRequest = new Subject<EventInfo>();

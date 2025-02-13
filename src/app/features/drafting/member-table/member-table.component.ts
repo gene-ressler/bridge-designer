@@ -29,9 +29,9 @@ export class MemberTableComponent implements AfterViewInit {
   ];
 
   // prettier-ignore
-  readonly columns = 
-   [
-    { text: '#', 
+  readonly columns: any[] = [
+    { 
+      text: '#', 
       datafield: 'number', 
       cellsalign: 'center', 
       width: 30,
@@ -89,7 +89,7 @@ export class MemberTableComponent implements AfterViewInit {
   ];
 
   readonly source: any = {
-    localdata: [],
+    localdata: [], // replaced
     datatype: 'array',
     datafields: MemberTableComponent.MEMBER_DATA_FIELDS,
   };

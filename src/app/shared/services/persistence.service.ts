@@ -5,7 +5,6 @@ import { Joint } from "../classes/joint.model";
 import { Member } from "../classes/member.model";
 import { DesignConditions, DesignConditionsService } from "./design-conditions.service";
 import { InventoryService } from "./inventory.service";
-import { AnalysisSummary } from "./analysis.service";
 import { Utility } from "../classes/utility";
 
 const DELIMITER = '|';
@@ -25,7 +24,7 @@ export class PersistenceService {
     private readonly designConditionsService: DesignConditionsService,
     private readonly inventoryService: InventoryService) { }
 
-  getSaveSetAsString(saveSet: SaveSet): string {
+  public getSaveSetAsText(saveSet: SaveSet): string {
     const chunks: string[] = [];
     const grid: Readonly<DesignGrid> = DesignGridService.FINEST_GRID;
     chunks.push(saveSet.bridge.version.toString().padStart(YEAR_LENGTH));
@@ -43,24 +42,15 @@ export class PersistenceService {
       chunks.push(member.shape.section.index.toString().padStart(MEMBER_SECTION_LENGTH));
       chunks.push(member.shape.sizeIndex.toString().padStart(MEMBER_SIZE_LENGTH));
     }
-    for (let i = 0; i < saveSet.bridge.members.length; ++i) {
-      const ratios = saveSet.analysisSummary.forceStrengthRatios[i];
-      if (ratios === undefined) {
-        chunks.push('--', DELIMITER, '--', DELIMITER);
-      }
-      else {
-        chunks.push(ratios.compression.toFixed(2), DELIMITER, ratios.tension.toFixed(2), DELIMITER);
-      }
-    }
     chunks.push(saveSet.bridge.designedBy, DELIMITER);
     chunks.push(saveSet.bridge.projectId, DELIMITER);
-    chunks.push(saveSet.bridge.iterationNumber.toString(), DELIMITER);
+    chunks.push(saveSet.bridge.iteration.toString(), DELIMITER);
     chunks.push(saveSet.draftingPanelState.yLabels.toFixed(3), DELIMITER);
     return chunks.join('');
   }
 
   /** Parse the input string, mutating the save set to match. */
-  parseSaveSetText(text: string, saveSet: SaveSet): void {
+  public parseSaveSetText(text: string, saveSet: SaveSet): void {
     return new SaveSetParser(
       text,
       this.designConditionsService,
@@ -73,7 +63,6 @@ export class PersistenceService {
 export class SaveSet {
   private constructor(
     public readonly bridge: BridgeModel,
-    public readonly analysisSummary: AnalysisSummary = new AnalysisSummary(),
     public readonly draftingPanelState: DraftingPanelState = new DraftingPanelState()) { }
 
   public static createNew(designConditions: DesignConditions = DesignConditionsService.PLACEHOLDER_CONDITIONS) {
@@ -86,7 +75,6 @@ export class SaveSet {
 
   clear(): void {
     this.bridge.clear();  
-    this.analysisSummary.clear();
     this.draftingPanelState.clear();
   }
 }
@@ -157,18 +145,9 @@ class SaveSetParser {
         this.inventoryService.getShape(sectionIndex, sizeIndex));
       saveSet.bridge.members.push(member);
     }
-    for (let i: number = 0; i < memberCount; i++) {
-      const compressionRatioText = this.scanToDelimiter('compression/strength ratio');
-      const compressionRatio = SaveSetParser.extractRatioFromText(compressionRatioText);
-      const tensionRatioText = this.scanToDelimiter('compression/strength ratio');
-      const tensionRatio = SaveSetParser.extractRatioFromText(tensionRatioText);
-      if (compressionRatio !== undefined && tensionRatio !== undefined) {
-        saveSet.analysisSummary.setForceStrengthRatio(i, compressionRatio, tensionRatio);
-      }
-    }
     saveSet.bridge.designedBy = this.scanToDelimiter('name of designer');
     saveSet.bridge.projectId = this.scanToDelimiter('project ID');
-    saveSet.bridge.iterationNumber = parseInt(this.scanToDelimiter('iteration'));
+    saveSet.bridge.iteration = parseInt(this.scanToDelimiter('iteration'));
     saveSet.draftingPanelState.yLabels = parseFloat(this.scanToDelimiter('label position'));
   }
 

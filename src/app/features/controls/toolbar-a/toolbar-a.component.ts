@@ -8,6 +8,7 @@ import { UndoManagerService } from '../../drafting/shared/undo-manager.service';
 import { UndoRedoDropdownComponent } from '../undo-redo-dropdown/undo-redo-dropdown.component';
 import { StatusIndicatorComponent } from '../status-indicator/status-indicator.component';
 import { CostIndicatorComponent } from '../cost-indicator/cost-indicator.component';
+import { IterationIndicatorComponent } from '../iteration-indicator/iteration-indicator.component';
 
 const enum Tools {
   NEW,
@@ -25,6 +26,7 @@ const enum Tools {
   ITERATION,
   PREVIOUS_ITERATION,
   NEXT_ITERATION,
+  GOTO_ITERATION,
   COST,
   COST_REPORT,
   STATUS,
@@ -48,7 +50,7 @@ export class ToolbarAComponent implements AfterViewInit {
     'button button | ' +
     'button toggleButton | ' +
     'button toggleButton | ' +
-    'custom button button | ' +
+    'custom button button button | ' +
     'custom button | ' +
     'custom | ' +
     'button';
@@ -111,24 +113,16 @@ export class ToolbarAComponent implements AfterViewInit {
         redoComponentRef.instance.initialize(tool, this.undoManagerService.undone);
         break;
       case Tools.ITERATION:
-        tool.append('<div style="padding: 3px;"><div></div></div>');
-        const tree = tool.children().children();
-        const source = [{ label: 'Iteration 1' }, { label: 'Iteration 2' }];
-        tree.jqxTree({ width: 200, source: source });
-        tool.jqxDropDownButton({
-          width: 100,
-          height: 28,
-          initContent: function () {
-            tool.jqxDropDownButton('setContent', '<div style="padding: 4px;">Iteration 1</div>');
-          },
-        });
-        tool.jqxDropDownButton('setContent', '<div style="padding: 4px;">Iteration 1</div>');
+        this.componentService.load(IterationIndicatorComponent, tool[0]);
         break;
       case Tools.PREVIOUS_ITERATION:
         WidgetHelper.initToolbarImgButton('To previous iteration', 'img/left.png', tool);
         break;
       case Tools.NEXT_ITERATION:
         WidgetHelper.initToolbarImgButton('To next iteration', 'img/right.png', tool);
+        break;
+      case Tools.GOTO_ITERATION:
+        WidgetHelper.initToolbarImgButton('Choose a previous iteration', 'img/goto.png', tool);
         break;
       case Tools.COST:
         this.componentService.load(CostIndicatorComponent, tool[0]);
@@ -156,6 +150,7 @@ export class ToolbarAComponent implements AfterViewInit {
     );
     this.uiStateService.registerPlainToolbarButton(tools[Tools.COST_REPORT], eventBroker.costReportRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.DELETE], eventBroker.deleteSelectionRequest);
+    this.uiStateService.registerPlainToolbarButton(tools[Tools.GOTO_ITERATION], eventBroker.loadDesignIterationRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.LOAD_TEST_REPORT], eventBroker.analysisReportRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.NEW], eventBroker.newDesignRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.REDO], eventBroker.redoRequest);

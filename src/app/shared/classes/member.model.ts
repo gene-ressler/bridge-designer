@@ -3,16 +3,11 @@ import { Editable } from './editing';
 import { Geometry } from './graphics';
 import { Joint } from './joint.model';
 
+/** POTO member object. Shouldn't ever contain business logic. */
 export class Member implements Editable {
   private static readonly OK = '✔️';
   private static readonly FAILED = '❌';
-  private static readonly UNKNOWN = '—';
-
-  // Buffer for analysis data shown in member table.
-  public maxTension: number = NaN;
-  public maxCompression: number = NaN;
-  public tensionStrength: number = NaN;
-  public compressionStrength: number = NaN;
+  public static readonly UNKNOWN = '—';
 
   constructor(
     public index: number,
@@ -20,6 +15,11 @@ export class Member implements Editable {
     public b: Joint,
     public material: Material,
     public shape: Shape,
+    // Buffer for analysis data shown in member table.
+    public maxTension: number = NaN,
+    public maxCompression: number = NaN,
+    public tensionStrength: number = NaN,
+    public compressionStrength: number = NaN,
   ) {
     if (a === b) {
       throw new Error(`Dupe member joints: ${a.number}`);
@@ -67,7 +67,7 @@ export class Member implements Editable {
     return joint === this.a ? this.b : this.a;
   }
 
-  // Extra accessors for member table. 
+  // Extra accessors for member table.
 
   public get materialShortName(): string {
     return this.material.shortName;
@@ -100,7 +100,7 @@ export class Member implements Editable {
     if (isNaN(this.maxTension)) {
       return Member.UNKNOWN;
     }
-    return this.maxTension <= this.tensionStrength ? Member.OK : Member.FAILED; 
+    return this.maxTension <= this.tensionStrength ? Member.OK : Member.FAILED;
   }
 
   swapContents(other: Member): void {

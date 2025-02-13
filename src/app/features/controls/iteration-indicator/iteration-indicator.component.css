@@ -1,0 +1,8 @@
+:host {
+  display: block;
+}
+
+.container {
+  line-height: 32px;
+  padding: 0px 8px
+}

@@ -19,13 +19,13 @@ describe('TreeMap', () => {
 
   describe('insert', () => {
     it('should insert a value into an empty tree', () => {
-      expect(treeMap.insert('1')).toBeTrue();
+      expect(treeMap.insert('1')).toBeUndefined();
       expect(treeMap.find(1)).toBe('1');
     });
 
     it('should not insert a duplicate value', () => {
       treeMap.insert('1');
-      expect(treeMap.insert('1')).toBeFalse();
+      expect(treeMap.insert('1')).toBe('1');
     });
 
     it('should insert multiple ascending values', () => {
@@ -52,7 +52,7 @@ describe('TreeMap', () => {
       for (let i = 0; i <= 10000; ++i) {
         const n = rand();
         data.push(n);
-        expect(treeMap.insert(n.toString())).withContext(`i=${i}, n=${n}`).toBeTrue();
+        expect(treeMap.insert(n.toString())).withContext(`i=${i}, n=${n}`).toBeUndefined();
       }
       for (let i = 0; i <= 10000; ++i) {
         expect(treeMap.find(data[i])).withContext(`i=${i}`).toBe(data[i].toString());
@@ -62,26 +62,26 @@ describe('TreeMap', () => {
 
   describe('delete', () => {
     it('should return false if deleting from empty tree', () => {
-      expect(treeMap.delete(42)).toBeFalse();
+      expect(treeMap.delete(42)).toBeUndefined();
     });
 
     it('should return false deleting nonexistent element', () => {
-      expect(treeMap.insert('1')).toBeTrue();
-      expect(treeMap.delete(42)).toBeFalse();
+      expect(treeMap.insert('1')).toBeUndefined();
+      expect(treeMap.delete(42)).toBeUndefined();
     });
 
     it('should delete the root', () => {
-      expect(treeMap.insert('1')).toBeTrue();
-      expect(treeMap.delete(1)).toBeTrue();
+      expect(treeMap.insert('1')).toBeUndefined();
+      expect(treeMap.delete(1)).toBe('1');
       expect(treeMap.find(1)).toBeUndefined();
     });
 
     it('should delete multiple ascending values', () => {
       for (let i = 0; i <= 10000; ++i) {
-        expect(treeMap.insert(i.toString())).withContext(`i=${i}`).toBeTrue();
+        expect(treeMap.insert(i.toString())).withContext(`i=${i}`).toBeUndefined();
       }
       for (let i = 0; i <= 10000; ++i) {
-        expect(treeMap.delete(i)).withContext(`i=${i}`).toBeTrue();
+        expect(treeMap.delete(i)).withContext(`i=${i}`).toBe(i.toString());
       }
       for (let i = 9999; i >= 0; --i) {
         expect(treeMap.find(i)).withContext(`i=${i}`).toBeUndefined();
@@ -90,10 +90,10 @@ describe('TreeMap', () => {
 
     it('should delete multiple decending values', () => {
       for (let i = 9999; i >= 0; --i) {
-        expect(treeMap.insert(i.toString())).withContext(`i=${i}`).toBeTrue();
+        expect(treeMap.insert(i.toString())).withContext(`i=${i}`).toBeUndefined();
       }
       for (let i = 9999; i >= 0; --i) {
-        expect(treeMap.delete(i)).withContext(`i=${i}`).toBeTrue();
+        expect(treeMap.delete(i)).withContext(`i=${i}`).toBe(i.toString());
       }
       for (let i = 9999; i >= 0; --i) {
         expect(treeMap.find(i)).withContext(`i=${i}`).toBeUndefined();
@@ -106,10 +106,10 @@ describe('TreeMap', () => {
       for (let i = 0; i <= 10000; ++i) {
         const n = rand();
         data.push(n);
-        expect(treeMap.insert(n.toString())).withContext(`i=${i}, n=${n}`).toBeTrue();
+        expect(treeMap.insert(n.toString())).withContext(`i=${i}, n=${n}`).toBeUndefined();
       }
       for (let i = 0; i <= 10000; ++i) {
-        expect(treeMap.delete(data[i])).withContext(`i=${i}`).toBeTrue();
+        expect(treeMap.delete(data[i])).withContext(`i=${i}`).toBe(data[i].toString());
       }
       for (let i = 9999; i >= 0; --i) {
         expect(treeMap.find(i)).withContext(`i=${i}`).toBeUndefined();

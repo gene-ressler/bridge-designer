@@ -4,7 +4,8 @@ import { EventBrokerService } from '../../../shared/services/event-broker.servic
 
 /**
  * Container for logic that determines if the last bridge analysis is still valid for the current bridge.
- * Changes on analysis completion and maybe on edit command completion.
+ * Changes during analysis completion and maybe on edit command completion. Should  not be used in handlers
+ * of those events.
  */
 @Injectable({ providedIn: 'root' })
 export class AnalysisValidityService {

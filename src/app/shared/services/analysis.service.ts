@@ -6,19 +6,6 @@ import { BitVector } from '../core/bitvector';
 import { BridgeService } from './bridge.service';
 import { EventBrokerService, EventOrigin } from './event-broker.service';
 
-/** Summary of the analysis, possibly supporting a pass or fail. */
-export class AnalysisSummary {
-  public readonly forceStrengthRatios: ForceStrengthRatios[] = [];
-
-  public setForceStrengthRatio(index: number, compression: number, tension: number): void {
-    this.forceStrengthRatios[index] = { compression, tension };
-  }
-
-  public clear(): void {
-    this.forceStrengthRatios.length = 0;
-  }
-}
-
 export type ForceStrengthRatios = { compression: number; tension: number };
 
 /** Status of the analysis. Use status > UNSTABLE to test whether report will be valid.  */
@@ -34,6 +21,7 @@ export const enum AnalysisStatus {
   /** Analysis was completed, and the bridge passed. */
   PASSES,
 }
+
 
 @Injectable({ providedIn: 'root' })
 export class AnalysisService {
@@ -408,6 +396,21 @@ export class AnalysisService {
     }
     if (!this.bridgeService.isPassingSlendernessCheck) {
       this._status = AnalysisStatus.FAILS_SLENDERNESS;
+    }
+  }
+
+  public static getStatusIcon(status: AnalysisStatus): {src: string, title: string} {
+    switch (status) {
+      case AnalysisStatus.PASSES:
+        return {src: 'img/good.png', title: 'The design passed its last test.'};
+      case AnalysisStatus.FAILS_LOAD_TEST:
+        return {src: 'img/bad.png', title: 'The design failed its last test.'};
+      case AnalysisStatus.FAILS_SLENDERNESS:
+        return {src: 'img/bad.png', title: 'Some members that are too slender.'};
+      case AnalysisStatus.UNSTABLE:
+        return {src: 'img/bad.png', title: 'The design is unstable.'};
+      default:
+        return {src: 'img/working.png', title: "The design hasn't been analyzed."};
     }
   }
 }

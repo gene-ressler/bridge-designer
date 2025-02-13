@@ -1,18 +1,18 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 import { jqxListBoxComponent, jqxListBoxModule } from 'jqwidgets-ng/jqxlistbox';
 import { jqxWindowComponent, jqxWindowModule } from 'jqwidgets-ng/jqxwindow';
-import { Graphics } from '../../../shared/classes/graphics';
-import { DesignBridgeRenderingService } from '../../../shared/services/design-bridge-rendering.service';
+import { jqxButtonComponent, jqxButtonModule } from 'jqwidgets-ng/jqxbuttons';
 import { BridgeService } from '../../../shared/services/bridge.service';
+import { DesignBridgeRenderingService } from '../../../shared/services/design-bridge-rendering.service';
 import { DesignJointRenderingService } from '../../../shared/services/design-joint-rendering.service';
 import { DesignMemberRenderingService } from '../../../shared/services/design-member-rendering.service';
 import { DesignRenderingService } from '../../../shared/services/design-rendering.service';
 import { DesignSiteRenderingService } from '../../../shared/services/design-site-rendering.service';
 import { EventBrokerService, EventInfo, EventOrigin } from '../../../shared/services/event-broker.service';
-import { SAMPLE_BRIDGES, SampleService } from '../../../shared/services/sample.service';
-import { ViewportTransform2D } from '../../../shared/services/viewport-transform.service';
+import { Graphics } from '../../../shared/classes/graphics';
+import { SampleService, SAMPLE_BRIDGES } from '../sample.service';
 import { SelectedElementsService } from '../../drafting/shared/selected-elements-service';
-import { jqxButtonComponent, jqxButtonModule } from 'jqwidgets-ng/jqxbuttons';
+import { ViewportTransform2D } from '../../../shared/services/viewport-transform.service';
 
 @Component({
   selector: 'sample-selection-dialog',
@@ -20,8 +20,8 @@ import { jqxButtonComponent, jqxButtonModule } from 'jqwidgets-ng/jqxbuttons';
   imports: [jqxListBoxModule, jqxWindowModule, jqxButtonModule],
   /** Component-level injections of stateful services. Root versions are hidden. */
   providers: [
-    DesignBridgeRenderingService,
     BridgeService,
+    DesignBridgeRenderingService,
     DesignJointRenderingService,
     DesignMemberRenderingService,
     DesignRenderingService,

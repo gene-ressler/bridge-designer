@@ -6,6 +6,8 @@ import { SiteConstants } from '../../../shared/classes/site.model';
 import { StandardCursor } from '../../../shared/classes/widget-helper';
 import { DraggableService } from './hot-element-drag.service';
 import { Utility } from '../../../shared/classes/utility';
+import { UndoManagerService } from './undo-manager.service';
+import { MoveLabelsCommand } from '../../controls/edit-command/move-labels.command';
 
 /** Token used when labels are hot draggable elements. See hot-element.service. */
 export class Labels {
@@ -27,11 +29,17 @@ export class LabelsService implements DraggableService {
   private readonly labelsTextExtent = Rectangle2D.createEmpty();
   /** Extent of labels and arrows to respective graphics. The area to clear for erasure. */
   private readonly extent = Rectangle2D.createEmpty();
+  private _yLabelsStart: number = NaN;
 
   constructor(
     private readonly bridgeService: BridgeService,
+    private readonly undoManagerService: UndoManagerService,
     private readonly viewportTransform: ViewportTransform2D,
   ) {}
+
+  public get yLabelStart(): number {
+    return this._yLabelsStart;
+  }
 
   public render(ctx: CanvasRenderingContext2D): LabelsService {
     const savedTextBaseline = ctx.textBaseline;
@@ -63,7 +71,8 @@ export class LabelsService implements DraggableService {
 
     this.labelsTextExtent.x0 = xAnchorBase + LabelsService.X_LABEL_OFFSET + LabelsService.X_LABEL_LEADING;
     this.labelsTextExtent.y0 = yText - beamLabelMetrics.actualBoundingBoxAscent;
-    this.labelsTextExtent.width = 2 * LabelsService.X_INTER_LABEL_GAP + beamLabelMetrics.width + deckLabelMetrics.width + roadLabelMetrics.width;
+    this.labelsTextExtent.width =
+      2 * LabelsService.X_INTER_LABEL_GAP + beamLabelMetrics.width + deckLabelMetrics.width + roadLabelMetrics.width;
     this.labelsTextExtent.height = beamLabelMetrics.actualBoundingBoxAscent + beamLabelMetrics.actualBoundingBoxDescent;
     this.labelsTextExtent.pad(4, 6); // For usability.
 
@@ -77,12 +86,20 @@ export class LabelsService implements DraggableService {
     return this;
   }
 
-  public clear(ctx: CanvasRenderingContext2D): LabelsService {
+  public clear(ctx: CanvasRenderingContext2D, end?: boolean): LabelsService {
     ctx.clearRect(this.extent.x0, this.extent.y0, this.extent.width, this.extent.height);
+    this.extent.makeEmpty();
+    if (end) {
+      this.endDrag();
+    }
     return this;
   }
 
-  public move(ctx: CanvasRenderingContext2D, _draggable: any, _x: number, y: number): void {
+  /** Erases, relocates, and re-draws */
+  public move(ctx: CanvasRenderingContext2D, _draggable: any, _x: number, y: number, start: boolean): void {
+    if (start) {
+      this.startDrag();
+    }
     this.clear(ctx).locate(y).render(ctx);
   }
 
@@ -91,11 +108,14 @@ export class LabelsService implements DraggableService {
     return this.labelsTextExtent.contains(x, y) ? this.labels : undefined;
   }
 
+  /** Locates the labels at a new, valid viewport postion.  But doesn't render. */
   private locate(y: number): LabelsService {
     const conditions = this.bridgeService.designConditions;
     const yMin = this.viewportTransform.worldToViewportY(conditions.overClearance);
     const yMax = this.viewportTransform.worldToViewportY(-conditions.underClearance);
-    this.bridgeService.draftingPanelState.yLabels = this.viewportTransform.viewportToworldY(Utility.clamp(y, yMin, yMax));
+    this.bridgeService.draftingPanelState.yLabels = this.viewportTransform.viewportToworldY(
+      Utility.clamp(y, yMin, yMax),
+    );
     return this;
   }
 
@@ -108,5 +128,20 @@ export class LabelsService implements DraggableService {
     ctx.lineTo(xText - 2, yText);
     ctx.stroke();
     ctx.fillText(text, xText, yText);
+  }
+
+  /** Starts the drag by recording the location of the labels. */
+  private startDrag(): void {
+    this._yLabelsStart = this.bridgeService.draftingPanelState.yLabels;
+  }
+
+  /** Ends the drag by executing a move labels command in the undo manager.  */
+  private endDrag(): void {
+    const draftingPanelState = this.bridgeService.draftingPanelState;
+    const moveLabelsCommand = new MoveLabelsCommand(
+      draftingPanelState, this.yLabelStart, this.bridgeService.draftingPanelState.yLabels,
+    );
+    this.undoManagerService.do(moveLabelsCommand);
+    this._yLabelsStart = NaN;
   }
 }

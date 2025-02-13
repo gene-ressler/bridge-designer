@@ -78,6 +78,7 @@ export class DraftingPanelComponent implements AfterViewInit {
     this.eventBrokerService.draftingPanelInvalidation.next({ origin: EventOrigin.DRAFTING_PANEL, data: 'viewport' });
   }
 
+  /** Renders sthe panel, optionally with draggable elements missing e,g, because they're being dragged. */
   render(draggable?: Draggable | undefined): void {
     this.designRenderingService.render(this.ctx);
     if (!(draggable instanceof Labels)) {
@@ -95,7 +96,7 @@ export class DraftingPanelComponent implements AfterViewInit {
     this.bridgeService.bridge = bridge;
     this.handleResize();
     this.changeDetector.detectChanges(); // Updates title block.
-    this.eventBrokerService.loadBridgeCompletion.next({ origin: EventOrigin.DRAFTING_PANEL });
+    this.eventBrokerService.loadBridgeCompletion.next({ origin: EventOrigin.DRAFTING_PANEL, data: bridge });
   }
 
   loadSketch(sketch: BridgeSketchModel) {
@@ -139,7 +140,7 @@ export class DraftingPanelComponent implements AfterViewInit {
     this.undoManagerService.do(command);
   }
 
-  /** Handles reports from cursor overlay at start and end of guides cursor movement. */
+  /** Handles reports from cursor overlay at start and end of draggable dragging. */
   dragCursorActive(draggable: Draggable | undefined) {
     this.render(draggable);
   }
