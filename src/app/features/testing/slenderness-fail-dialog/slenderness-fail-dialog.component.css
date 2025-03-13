@@ -1,0 +1,79 @@
+.header {
+  font-weight: 700;
+}
+
+.heading {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.content {
+  padding: 8px;
+}
+
+.too-slender {
+  color: magenta;
+}
+
+.cartoon {
+  border-width: 2px;
+  border-style: inset;
+}
+
+.textbox {
+  margin-left: 8px;
+  padding: 4px;
+  border-width: 2px;
+  border-style: inset;
+  height: 72px;
+}
+
+.frame {
+  border: 2px solid lightgray;
+}
+
+.part {
+  padding: 8px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.part:last-child {
+  flex-grow: 1;
+}
+
+.part-buttons {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  margin-top: -28px;
+  margin-bottom: 8px;
+  margin-right: 8px;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.design-tip {
+  height: 78px;
+  margin-top: 8px;
+  margin-left: -0.5px;
+  margin-right: -1.5px;
+}
+
+.referenced-button {
+  float: right;
+}
+
+.tip-icon {
+  float: left;
+}

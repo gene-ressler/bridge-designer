@@ -13,6 +13,7 @@ export const enum EventOrigin {
   SAMPLE_DIALOG,
   SERVICE,
   SETUP_DIALOG,
+  SLENDERNESS_FAIL_DIALOG,
   TEMPLATE_DIALOG,
   TOOL_SELECTOR,
   TOOLBAR,
@@ -82,6 +83,7 @@ export class EventBrokerService {
   public readonly selectedElementsChange = new Subject<EventInfo>();
   public readonly sessionStateSaveRequest = new Subject<TypedEventInfo<void>>();
   public readonly sessionStateRestoreComplete = new Subject<TypedEventInfo<void>>();
+  public readonly slendernessFailDialogOpenRequest = new Subject<EventInfo>();
   public readonly templateToggle = new Subject<EventInfo>();
   public readonly titleBlockToggle = new Subject<EventInfo>();
   public readonly toolsToggle = new Subject<EventInfo>();

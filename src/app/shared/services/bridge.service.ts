@@ -242,7 +242,7 @@ export class BridgeService {
     return result;
   }
 
-  public isPassingSlendernessCheck(): boolean {
+  public get isPassingSlendernessCheck(): boolean {
     const allowableSlenderness = this.designConditions.allowableSlenderness;
     for (let member of this.bridge.members) {
       if (member.slenderness > allowableSlenderness) {

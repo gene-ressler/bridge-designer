@@ -51,6 +51,8 @@ export class MenusComponent implements AfterViewInit {
     this.uiStateService.registerPlainMenuEntry('loadTemplate', this.eventBrokerService.loadTemplateRequest);
     this.uiStateService.registerPlainMenuEntry('loadTestResults', this.eventBrokerService.analysisReportRequest);
     this.uiStateService.registerPlainMenuEntry('new', this.eventBrokerService.newDesignRequest);
+    // TODO: Make this actually open a bridge file.
+    this.uiStateService.registerPlainMenuEntry('open', this.eventBrokerService.slendernessFailDialogOpenRequest);
     this.uiStateService.registerPlainMenuEntry('redo', this.eventBrokerService.redoRequest);
     this.uiStateService.registerPlainMenuEntry('selectAll', this.eventBrokerService.selectAllRequest);
     this.uiStateService.registerPlainMenuEntry('sizedown', this.eventBrokerService.memberSizeDecreaseRequest);

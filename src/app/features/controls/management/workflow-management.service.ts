@@ -33,6 +33,8 @@ export class WorkflowManagementService {
       uiStateService.disable(eventBrokerService.analysisReportRequest, false);
       if (eventInfo.data === AnalysisStatus.UNSTABLE) {
         eventBrokerService.unstableBridgeDialogOpenRequest.next({ origin: EventOrigin.SERVICE });
+      } else if (eventInfo.data === AnalysisStatus.FAILS_SLENDERNESS) {
+        eventBrokerService.slendernessFailDialogOpenRequest.next({ origin: EventOrigin.SERVICE });
       }
     });
 

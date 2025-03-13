@@ -68,7 +68,8 @@ export class MemberTableComponent implements AfterViewInit {
       cellsalign: 'right', 
       cellsformat: 'f2',
       width: 66, 
-      renderer: MemberTableComponent.renderHeader
+      renderer: MemberTableComponent.renderHeader,
+      cellsrenderer: this.renderSlenderness.bind(this),
     }, { 
       text: 'Compression force/strength', 
       datafield: 'compressionForceStrengthRatio',
@@ -152,6 +153,17 @@ export class MemberTableComponent implements AfterViewInit {
     defaultHtml?: string,
   ): string {
     return this.renderAnalysisCell(value, defaultHtml!, 'rgb(150,150,255)');
+  }
+
+  private renderSlenderness(_row?: number, _columnField?: string, value?: any, defaultHtml?: string): string {
+    const html = defaultHtml!;
+    if (value <= this.bridgeService.designConditions.allowableSlenderness) {
+      return html;
+    }
+    return html.replace(
+      MemberTableComponent.STYLE_MATCH,
+      'style="padding-top: 4.5px;padding-bottom: 3px;margin-bottom: -1px;background-color: magenta',
+    );
   }
 
   private renderAnalysisCell(value: any, defaultHtml: string, backgroundColor: string) {

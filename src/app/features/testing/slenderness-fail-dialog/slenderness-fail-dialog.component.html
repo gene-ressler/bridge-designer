@@ -1,0 +1,80 @@
+<jqxWindow
+  #dialog
+  [isModal]="true"
+  [autoOpen]="false"
+  [width]="640"
+  [height]="432"
+>
+  <div class="header">Bridge design analysis</div>
+  <div class="content">
+    <div class="heading">🙁 A member fails the slenderness test. Let's fix it! 🙂</div>
+    <div class="text">
+      <p>Click the close button when ready to return to the drawing board.</p>
+    </div>
+    <div class="frame">
+      <div class="part">
+        <img
+          class="cartoon"
+          [src]="exampleImgSrc"
+        />
+        <div
+          #textBox
+          class="textbox"
+        >
+          <div>
+            (1) A member with <span class="too-slender">magenta</span> marks has failed the slenderness test. Its
+            slenderness ratio is over 300, therefore the member is too slender. Press
+            <span class="g">Next&gt;&gt;</span> to see a fix for this problem.
+          </div>
+          <div>(2) To fix the problem, select the member either on the drafting board or in the member list...</div>
+          <div>
+            (3) Then increase its size. This decreases the slenderness ratio. When the ratio becomes 300 or less, it
+            passes the test, and the <span class="too-slender">magenta</span> marks disappear.
+          </div>
+        </div>
+      </div>
+      <div class="part-buttons">
+        <jqxButton
+          [width]="'110px'"
+          [disabled]="partIndex === 0"
+          (onClick)="bumpPart(-1)"
+          >&lt;&lt; Back</jqxButton
+        >
+        <jqxButton
+          [width]="'110px'"
+          style="margin-left: 4px"
+          (onClick)="bumpPart(1)"
+          >Next &gt;&gt;</jqxButton
+        >
+      </div>
+    </div>
+    <fieldset class="design-tip">
+      <legend>Design tip:</legend>
+      <div>
+        <img
+          class="tip-icon"
+          src="img/tipicon.png"
+        />
+        <img
+          class="referenced-button"
+          src="img/sizeupbutton.png"
+          alt="Size up button icon"
+        />
+        You can use the increase member size button to decrease the slenderness ratio of selected members.
+      </div>
+    </fieldset>
+    <div class="buttons">
+      <jqxButton
+        (onClick)="showSlendernessHelp()"
+        [width]="'110px'"
+        >Help...</jqxButton
+      >
+      <jqxButton
+        style="margin-left: 4px"
+        (onClick)="dialog.close()"
+        [width]="'110px'"
+        >Close</jqxButton
+      >
+    </div>
+  </div>
+</jqxWindow>

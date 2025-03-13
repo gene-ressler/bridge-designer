@@ -28,6 +28,7 @@ import { WelcomeDialogComponent } from './features/welcome/welcome-dialog/welcom
 import { SessionStateService } from './shared/services/session-state.service';
 import { UndoManagerSessionStateService } from './features/drafting/shared/undo-manager-session-state.service';
 import { HelpDialogComponent } from './features/help/help-dialog/help-dialog.component';
+import { SlendernessFailDialogComponent } from './features/testing/slenderness-fail-dialog/slenderness-fail-dialog.component';
 
 // ¯\_(ツ)_/¯
 
@@ -45,6 +46,7 @@ import { HelpDialogComponent } from './features/help/help-dialog/help-dialog.com
     RulerComponent,
     SampleSelectionDialogComponent,
     SetupWizardComponent,
+    SlendernessFailDialogComponent,
     TemplateSelectionDialogComponent,
     ToolbarAComponent,
     ToolbarBComponent,
