@@ -32,7 +32,7 @@ export class UndoManagerService {
     return this.done.peekLeft() || UndoManagerService.NO_EDIT_COMMAND;
   }
 
-  private undo(count: number = 1): void {
+ undo(count: number = 1): void {
     let effectsMask: number = 0;
     while (count-- > 0) {
       const editCommand = this.done.popLeft();
@@ -46,7 +46,7 @@ export class UndoManagerService {
     this.emitCommandCompletion('undo', effectsMask);
   }
 
-  private redo(count: number = 1): void {
+  redo(count: number = 1): void {
     let effectsMask: number = 0;
     while (count-- > 0) {
       const editCommand = this.undone.popLeft();
@@ -72,7 +72,7 @@ export class UndoManagerService {
     });
   }
 
-  private clear(): void {
+  clear(): void {
     this.done.clear();
     this.undone.clear();
   }

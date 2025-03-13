@@ -3,9 +3,10 @@ import { AnalysisService, AnalysisStatus } from '../../shared/services/analysis.
 import { DOLLARS_FORMATTER, Utility } from '../../shared/classes/utility';
 import { EventBrokerService, EventOrigin } from '../../shared/services/event-broker.service';
 import { BridgeService } from '../../shared/services/bridge.service';
-import { DraftingPanelState } from '../../shared/services/persistence.service';
+import { DraftingPanelState, PersistenceService, SaveSet } from '../../shared/services/persistence.service';
 import { BridgeCostService } from '../costs/cost-report-dialog/bridge-cost.service';
 import { BridgeModel } from '../../shared/classes/bridge.model';
+import { SessionStateService } from '../../shared/services/session-state.service';
 
 /** A POTO representation of iterations for jqxTreegrid and jqxListbox. */
 export class DesignIteration {
@@ -87,7 +88,19 @@ export class DesignIterationService {
     private readonly bridgeService: BridgeService,
     private readonly bridgeCostService: BridgeCostService,
     private readonly eventBrokerService: EventBrokerService,
+    private readonly persistenceService: PersistenceService,
+    sessionStateService: SessionStateService,
   ) {
+    sessionStateService.register(
+      'iterations',
+      () => this.dehydrate(),
+      state => this.rehydrate(state),
+    );
+    eventBrokerService.sessionStateRestoreComplete.subscribe(_eventInfo => {
+      if (this.iterations.length > 0) {
+        this.sendChangeEvent();
+      }
+    });
     eventBrokerService.loadBridgeRequest.subscribe(eventInfo => {
       if (eventInfo.origin !== EventOrigin.DESIGN_ITERATION_DIALOG) {
         this.clearIterations();
@@ -96,10 +109,7 @@ export class DesignIterationService {
       }
     });
     eventBrokerService.analysisCompletion.subscribe(eventInfo => {
-      const inProgress = this.inProgress;
-      if (inProgress.isOpen) {
-        inProgress.closeOrUpdateClosedIteration(bridgeCostService.allCosts, eventInfo.data);
-      }
+      this.inProgress.closeOrUpdateClosedIteration(bridgeCostService.allCosts, eventInfo.data);
     });
     eventBrokerService.editCommandCompletion.subscribe(_eventInfo => {
       if (!this.inProgress.isOpen) {
@@ -110,14 +120,17 @@ export class DesignIterationService {
     });
     eventBrokerService.designIterationForwardRequest.subscribe(_eventInfo => this.chooseRelative(+1));
     eventBrokerService.designIterationBackRequest.subscribe(_eventInfo => this.chooseRelative(-1));
-    this.createInProgressIteration(bridgeService.bridge, bridgeService.draftingPanelState); // Placeholder.
+    if (this.iterations.length === 0) {
+      // Skip if rehydrated.
+      this.createInProgressIteration(bridgeService.bridge, bridgeService.draftingPanelState); // Placeholder.
+    }
   }
 
   public get inProgressIndex(): number {
     return this._inProgressIndex;
   }
 
-  public refreshOpenInProgress(): void {
+  public refreshInProgress(): void {
     this.inProgress.refreshCost(this.bridgeCostService.allCosts);
   }
 
@@ -197,12 +210,66 @@ export class DesignIterationService {
   }
 
   private clearIterations(): void {
-    if (this.iterations.length !== 0) {
-      this.iterations.length = 0;
-      this._inProgressIndex = -1;
-      this.maxIterationNumber = 0;
-      this.inProgressParentIndex = undefined;
-      this.sendChangeEvent();
+    if (this.iterations.length === 0) {
+      return;
     }
+    this.iterations.length = 0;
+    this._inProgressIndex = -1;
+    this.maxIterationNumber = 0;
+    this.inProgressParentIndex = undefined;
+    this.sendChangeEvent();
+  }
+
+  dehydrate(): State {
+    this.refreshInProgress();
+    return {
+      iterations: this.iterations.map(iteration => ({
+        index: iteration.index,
+        parentIndex: iteration.parentIndex,
+        bridge: this.persistenceService.getSaveSetAsText(
+          SaveSet.create(iteration.bridge, iteration.draftingPanelState),
+        ),
+        cost: iteration.cost,
+        status: iteration.status,
+      })),
+      inProgressIndex: this._inProgressIndex,
+      maxIterationNumber: this.maxIterationNumber,
+      inProgressParentIndex: this.inProgressParentIndex,
+    };
+  }
+
+  rehydrate(state: State): void {
+    state.iterations.forEach(iteration => {
+      const saveSet = SaveSet.createNew();
+      this.persistenceService.parseSaveSetText(iteration.bridge, saveSet);
+      this.iterations.push(
+        new DesignIteration(
+          iteration.index,
+          iteration.parentIndex,
+          saveSet.bridge,
+          iteration.cost,
+          saveSet.draftingPanelState,
+          iteration.status,
+        ),
+      );
+    });
+    this._inProgressIndex = state.inProgressIndex;
+    this.maxIterationNumber = state.maxIterationNumber;
+    this.inProgressParentIndex = state.inProgressParentIndex;
   }
 }
+
+type IterationState = {
+  index: number;
+  parentIndex: number | undefined;
+  bridge: string;
+  cost: number;
+  status: AnalysisStatus | undefined;
+};
+
+type State = {
+  iterations: IterationState[];
+  inProgressIndex: number;
+  maxIterationNumber: number;
+  inProgressParentIndex: number | undefined;
+};

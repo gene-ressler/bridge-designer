@@ -6,7 +6,7 @@ import { jqxTreeGridComponent, jqxTreeGridModule } from 'jqwidgets-ng/jqxtreegri
 import { jqxWindowComponent, jqxWindowModule } from 'jqwidgets-ng/jqxwindow';
 import { jqxButtonComponent, jqxButtonModule } from 'jqwidgets-ng/jqxbuttons';
 import { EventBrokerService, EventInfo } from '../../../shared/services/event-broker.service';
-import { BridgeService } from '../../../shared/services/bridge.service';
+import { BridgeService, BridgeServiceSessionStateKey } from '../../../shared/services/bridge.service';
 import { DesignBridgeRenderingService } from '../../../shared/services/design-bridge-rendering.service';
 import { DesignJointRenderingService } from '../../../shared/services/design-joint-rendering.service';
 import { DesignMemberRenderingService } from '../../../shared/services/design-member-rendering.service';
@@ -28,6 +28,7 @@ import { DraftingPanelState } from '../../../shared/services/persistence.service
   providers: [
     DesignBridgeRenderingService,
     BridgeService,
+    { provide: BridgeServiceSessionStateKey, useValue: { key: undefined } },
     DesignJointRenderingService,
     DesignMemberRenderingService,
     DesignRenderingService,
@@ -43,6 +44,7 @@ export class DesignIterationDialogComponent implements AfterViewInit {
   private static readonly PREVIEW_SCALE = 0.5;
   private static readonly ITERATION_DATA_FIELDS = [
     { name: 'cost', type: 'number' },
+    { name: 'expanded', type: 'boolean'},
     { name: 'index', type: 'number' },
     { name: 'iterationNumber', type: 'number' },
     { name: 'parentIndex', type: 'number' },
@@ -85,7 +87,7 @@ export class DesignIterationDialogComponent implements AfterViewInit {
 
   // TODO: The tree grid widget alone can't depict the case where a parent has more than one run of
   // contiguous descendants. We could do this with a special icon or leading graphic character for
-  // the first child of every run.
+  // the first child of every run. Or add a column of icons evoking tree branches.
   readonly source: any = {
     localdata: [],
     datatype: 'array',
@@ -141,13 +143,12 @@ export class DesignIterationDialogComponent implements AfterViewInit {
   }
 
   handleDialogOpen(_event: any): void {
-    this.designIterationService.refreshOpenInProgress();
+    this.designIterationService.refreshInProgress();
     this.source.localdata = this.designIterationService.iterations;
     this.tree.updateBoundData();
     const inProgressIndex = this.designIterationService.inProgressIndex;
-    this.tree.expandRow(inProgressIndex);
     this.tree.selectRow(inProgressIndex);
-    this.grid.selectrow(inProgressIndex);
+    this.tree.ensureRowVisible(inProgressIndex);
     this.renderPreview();
     this.tree.focus();
   }

@@ -64,7 +64,9 @@ export class GuidesService implements DraggableService {
     ]);
     this.eventBrokerService.draftingPanelInvalidation.subscribe(eventInfo => {
       if (eventInfo.data === 'viewport') {
-        this.clampToDesignArea();
+        // Re-run the locators to clamp guide coordinates with new conditions/view.
+        this.locateVerticalGuideWorld(this.x0World);
+        this.locateHorizontalGuideWorld(this.yWorld);
       }
     });
     this.eventBrokerService.guidesToggle.subscribe(eventInfo => {
@@ -131,7 +133,9 @@ export class GuidesService implements DraggableService {
 
   /** Locates the guide using given knob and viewport coordinate, snapped to nearest valid position. */
   public move(ctx: CanvasRenderingContext2D, draggable: any, x: number, y: number) {
-    this.clear(ctx).locate(draggable as GuideKnob, x, y).render(ctx);
+    this.clear(ctx)
+      .locate(draggable as GuideKnob, x, y)
+      .render(ctx);
   }
 
   /** For the given viewport coordinate, returns the knob that's hot, if any. */
@@ -176,20 +180,5 @@ export class GuidesService implements DraggableService {
     const x1WorldRaw = conditions.xRightmostDeckJoint - (x0WorldRaw - conditions.xLeftmostDeckJoint);
     this.x0World = grid.xformGridToWorld(grid.xformWorldToGrid(x0WorldRaw));
     this.x1World = grid.xformGridToWorld(grid.xformWorldToGrid(x1WorldRaw));
-  }
-
-  private clampToDesignArea(): void {
-    const conditions = this.bridgeService.designConditions;
-    if (this.x0World < conditions.xLeftmostDeckJoint) {
-      this.locateVerticalGuideWorld(conditions.xLeftmostDeckJoint);
-    } else if (this.x1World > conditions.xRightmostDeckJoint) {
-      this.locateVerticalGuideWorld(conditions.xRightmostDeckJoint);
-    }
-    if (this.yWorld < -conditions.underClearance) {
-      this.locateHorizontalGuideWorld(-conditions.underClearance);
-    } else if (this.yWorld > conditions.overClearance) {
-      this.locateHorizontalGuideWorld(conditions.overClearance);
-    }
-    this.locateVerticalGuideWorld(this.x0World); // Ensure x1World is valid.
   }
 }

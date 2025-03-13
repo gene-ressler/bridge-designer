@@ -19,7 +19,11 @@ import {
 } from '../../../shared/services/design-conditions.service';
 import { CartoonRenderingService } from '../../../shared/services/cartoon-rendering.service';
 import { ViewportTransform2D } from '../../../shared/services/viewport-transform.service';
-import { BridgeService, RootBridgeService } from '../../../shared/services/bridge.service';
+import {
+  BridgeService,
+  BridgeServiceSessionStateKey,
+  RootBridgeService,
+} from '../../../shared/services/bridge.service';
 import { CartoonSiteRenderingService } from '../../../shared/services/cartoon-site-rendering.service';
 import { Graphics } from '../../../shared/classes/graphics';
 import { HeightListComponent } from '../height-list/height-list.component';
@@ -57,6 +61,7 @@ import { DraftingPanelState } from '../../../shared/services/persistence.service
   ],
   providers: [
     BridgeService,
+    { provide: BridgeServiceSessionStateKey, useValue: { key: undefined } },
     BridgeSketchService,
     CardService,
     CartoonJointRenderingService,
@@ -302,7 +307,6 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
 
   helpButtonOnClickHandler(): void {
     // TODO: Dev only. Implement me for real.
-    // console.log(DesignConditionsService.STANDARD_CONDITIONS);
     // window.open('https://google.com', '_blank', 'location=yes,height=570,width=520,scrollbars=yes,status=yes');
   }
 

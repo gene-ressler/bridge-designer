@@ -6,5 +6,6 @@
   },
   "prettier.printWidth": 100,
   "prettier.requireConfig": false,
-  "prettier.proseWrap": "always"
+  "prettier.proseWrap": "always",
+  "markdown.highlightjs.enabled": false
 }

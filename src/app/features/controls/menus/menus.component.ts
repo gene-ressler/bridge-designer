@@ -18,7 +18,9 @@ export class MenusComponent implements AfterViewInit {
   constructor(
     private readonly uiStateService: UiStateService,
     private readonly eventBrokerService: EventBrokerService,
-  ) {}
+  ) {
+    
+  }
 
   handleItemClick(event: any): void {
     const liElement = event.args as HTMLElement;
@@ -42,7 +44,9 @@ export class MenusComponent implements AfterViewInit {
     this.uiStateService.registerPlainMenuEntry('back', this.eventBrokerService.designIterationBackRequest);
     this.uiStateService.registerPlainMenuEntry('costCalculations', this.eventBrokerService.costReportRequest);
     this.uiStateService.registerPlainMenuEntry('delete', this.eventBrokerService.deleteSelectionRequest);
+    this.uiStateService.registerPlainMenuEntry('designWindow', this.eventBrokerService.helpRequest, 'hlp_bridge_design_window');
     this.uiStateService.registerPlainMenuEntry('forward', this.eventBrokerService.designIterationForwardRequest);
+    this.uiStateService.registerPlainMenuEntry('howTo', this.eventBrokerService.helpRequest, 'hlp_how_to');
     this.uiStateService.registerPlainMenuEntry('loadSample', this.eventBrokerService.loadSampleRequest);
     this.uiStateService.registerPlainMenuEntry('loadTemplate', this.eventBrokerService.loadTemplateRequest);
     this.uiStateService.registerPlainMenuEntry('loadTestResults', this.eventBrokerService.analysisReportRequest);

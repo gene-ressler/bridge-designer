@@ -1,0 +1,11 @@
+:host {
+  display: inline-block;
+}
+
+.topic-link {
+  color:darkgreen;
+}
+
+.topic-link:hover {
+  text-decoration: underline;
+}

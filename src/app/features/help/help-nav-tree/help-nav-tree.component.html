@@ -1,0 +1,200 @@
+<jqxTree
+  #navTree
+  class="jqx-hideborder"
+  style="padding-top: 8px"
+  [width]="'100%'"
+  [height]="'100%'"
+  [allowDrag]="false"
+  [enableHover]="true"
+  [toggleMode]="'click'"
+  (onSelect)="handleSelect($event)"
+>
+  <ul class="navtree">
+    <li id="hlp_whats_new">🗎 What's new in the Cloud Edition?</li>
+    <li class="open">
+      Overview of the Bridge Designer
+      <ul>
+        <li id="hlp_purposes">🗎 Purposes of the Bridge Designer</li>
+        <li id="hlp_how_wpbd_works">🗎 How the Bridge Designer works</li>
+        <li id="hlp_restrictions">🗎 Restrictions on use</li>
+        <li id="hlp_realistic">🗎 What's realistic about the Bridge Designer</li>
+        <li id="hlp_not_realistic">🗎 What's <em>not</em> realistic</li>
+      </ul>
+    </li>
+    <li class="open">
+      How to design a bridge
+      <ul>
+        <li id="hlp_design_specifications">🗎 Design specifications</li>
+        <li id="hlp_how_to">🗎 Overview: how to design a bridge</li>
+        <li>
+          How to...
+          <ul>
+            <li>
+              Create a structural model
+              <ul>
+                <li id="hlp_local_contest">🗎 Enter a local contest code</li>
+                <li id="hlp_new_design">🗎 Start a new bridge design</li>
+                <li id="hlp_load_a_template">🗎 Load a template</li>
+                <li id="hlp_draw_joint">🗎 Draw joints</li>
+                <li id="hlp_draw_member">🗎 Draw members</li>
+              </ul>
+            </li>
+            <li>
+              Edit a structural model
+              <ul>
+                <li id="hlp_move_joint">🗎 Move a joint</li>
+                <li id="hlp_delete_joint">🗎 Delete a joint</li>
+                <li id="hlp_delete_member">🗎 Delete a member</li>
+                <li id="hlp_erase">🗎 Erase a joint or member</li>
+                <li id="hlp_change_member_properties">🗎 Change properties of a member</li>
+                <li id="hlp_using_undo">🗎 Use undo and redo to correct mistakes</li>
+                <li id="hlp_member_list">🗎 Use the member list</li>
+              </ul>
+            </li>
+            <li>
+              Evaluate a design
+              <ul>
+                <li id="hlp_slenderness">🗎 Slenderness check</li>
+                <li id="hlp_run_load_test">🗎 Load test your design</li>
+                <li id="hlp_load_test_status">🗎 Determine the status of your design</li>
+                <li id="hlp_cost">🗎 Determine the cost of your design</li>
+                <li id="hlp_member_details">🗎 Determine properties of a member</li>
+              </ul>
+            </li>
+            <li>
+              Work with design iterations
+              <ul>
+                <li id="hlp_design_iteration">🗎 What is a design iteration?</li>
+                <li id="hlp_go_to">🗎 Go to a specific design iteration</li>
+                <li id="hlp_undo_vs_go_back">🗎 What's the difference between Go Back and Undo?</li>
+              </ul>
+            </li>
+            <li>
+              Work with files
+              <ul>
+                <li id="hlp_save_your_design">🗎 Save your design</li>
+                <li id="hlp_open_existing">🗎 Open a saved design file</li>
+                <li id="hlp_open_sample_design">🗎 Load a sample design</li>
+                <li id="hlp_print_drawing">🗎 Print a drawing of your design</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li class="open">
+      The bridge design window
+      <ul>
+        <li id="hlp_bridge_design_window">🗎 Overview: bridge design window</li>
+        <li id="hlp_title_bar">🗎 Title bar</li>
+        <li id="hlp_menu_bar">🗎 Menu bar</li>
+        <li id="hlp_toolbars">🗎 Tool bar</li>
+        <li id="hlp_drawing_board">🗎 Drawing board</li>
+        <li id="hlp_rulers">🗎 Rulers</li>
+        <li id="hlp_titleblock">🗎 Title block</li>
+        <li id="hlp_member_list">🗎 Member list</li>
+        <li id="hlp_member_details">🗎 Member details</li>
+        <li id="hlp_design_tools">🗎 Design tools palette</li>
+        <li>
+          Controls
+          <ul>
+            <li>
+              File
+              <ul>
+                <li id="hlp_new_design">🗎 New design</li>
+                <li id="hlp_open_file">🗎 Open</li>
+                <li id="hlp_save_file">🗎 Save</li>
+                <li id="hlp_save_as">🗎 Save as</li>
+                <li id="hlp_open_sample_design">🗎 Open sample design</li>
+                <li id="hlp_load_template">🗎 Load template</li>
+                <li id="hlp_print_drawing">🗎 Print</li>
+              </ul>
+            </li>
+            <li>
+              Edit
+              <ul>
+                <li id="hlp_select_all">🗎 Select all</li>
+                <li id="hlp_delete">🗎 Delete</li>
+                <li id="hlp_undo">🗎 Undo</li>
+                <li id="hlp_redo">🗎 Redo</li>
+                <li id="hlp_go_back">🗎 Go back</li>
+                <li id="hlp_go_forward">🗎 Go forward</li>
+                <li id="hlp_go_to">🗎 Go to iteration</li>
+                <li id="hlp_increase_member">🗎 Increase member size</li>
+                <li id="hlp_decrease_member">🗎 Decrease member Size</li>
+              </ul>
+            </li>
+            <li>
+              View
+              <ul>
+                <li id="hlp_view_tools">🗎 Tools</li>
+                <li id="hlp_view_animation_controls">🗎 Animation controls</li>
+                <li id="hlp_view_member_list">🗎 Member list</li>
+                <li id="hlp_view_rulers">🗎 Rulers</li>
+                <li id="hlp_view_title">🗎 Title block</li>
+                <li id="hlp_view_member_numbers">🗎 Member numbers</li>
+                <li id="hlp_view_symmetry">🗎 Guides</li>
+                <li id="hlp_grid_resolution">🗎 Grid resolution</li>
+              </ul>
+            </li>
+            <li>
+              Design Tools
+              <ul>
+                <li id="hlp_joint_tool">🗎 Joints tool button</li>
+                <li id="hlp_member_tool">🗎 Members tool button</li>
+                <li id="hlp_select_tool">🗎 Select tool button</li>
+                <li id="hlp_erase_tool">🗎 Erase tool button</li>
+              </ul>
+            </li>
+            <li>
+              Test
+              <ul>
+                <li id="hlp_drawing_board">🗎 Drawing board</li>
+                <li id="hlp_load_test_options">🗎 Load test</li>
+                <li id="hlp_show_animation">🗎 Show animation</li>
+                <li id="hlp_auto_correct_errors">🗎 Auto-correct errors</li>
+                <li id="hlp_old_style_graphics">🗎 Use old-Style graphics</li>
+              </ul>
+            </li>
+            <li>
+              Report
+              <ul>
+                <li id="hlp_report_cost">🗎 Cost calculations</li>
+                <li id="hlp_report_load_test">🗎 Load test results</li>
+              </ul>
+            </li>
+            <li>
+              Animation
+              <ul>
+                <li id="hlp_animation_controls">🗎 Animation controls</li>
+                <li id="hlp_animation_view_controls">🗎 Animation view controls</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li class="open">
+      About trusses and truss bridges
+      <ul>
+        <li id="hlp_truss_bridges">🗎 Overview: about trusses and truss bridges</li>
+        <li id="hlp_component_parts">🗎 Component parts of a truss bridge</li>
+        <li id="hlp_standard_truss">🗎 Standard truss configurations</li>
+      </ul>
+    </li>
+    <li class="open">
+      About structural engineering
+      <ul>
+        <li id="hlp_the_engineering">🗎 The engineering design process</li>
+        <li id="hlp_load_combinations">🗎 Load combinations</li>
+        <li id="hlp_aashto_h20x44">🗎 Truck loading</li>
+        <li id="hlp_tensile_strength">🗎 Tensile strength</li>
+        <li id="hlp_compressive_strength">🗎 Compressive strength</li>
+        <li id="hlp_slenderness">🗎 Slenderness check</li>
+        <li id="hlp_bars_or_tubes">🗎 Solid bar or hollow tube?</li>
+        <li id="hlp_materials">🗎 Materials</li>
+      </ul>
+    </li>
+    <li id="glossary">🗎 Glossary</li>
+  </ul>
+</jqxTree>

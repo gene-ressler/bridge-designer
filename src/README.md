@@ -1,11 +1,10 @@
-# Bridge Designer, Cloud Edition
+# Bridge Designer, Cloud Edition (BDCE)
 
 This is a redesign and implementation as a web app of the Engineering Encounters Bridge Designer, formerly the West
-Point Bridge Designer. The latter were desktop apps originally in Visual Basic for Windows (circa 2000) and then Java
-(2003 through present) for Windows and Mac OSX. Our purpose is to make the app useful on more platforms, particularly
-Chromebooks, which are common in K-12 schools.
-
-I'm calling this the "Cloud Edition" to distinguish it from previous ones. Hence, BDCE.
+Point Bridge Designer. Engineering Encounters no longer exists, so the new app is just "Bridge Designer," and it's the
+"Cloud edition" becaust it no longer relies on a native binary installed locally. Earlier versions were desktop apps
+originally in Visual Basic for Windows (circa 2000) and then Java (2003 through present) for Windows and Mac OSX. Our
+purpose is to make the app useful on more platforms, particularly Chromebooks, which are common in K-12 schools.
 
 # Design considerations
 

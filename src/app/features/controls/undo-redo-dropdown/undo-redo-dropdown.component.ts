@@ -1,20 +1,10 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  HostListener,
-  Input,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, HostListener, Input, ViewChild } from '@angular/core';
 import { jqxListBoxComponent, jqxListBoxModule } from 'jqwidgets-ng/jqxlistbox';
 import { jqxWindowComponent, jqxWindowModule } from 'jqwidgets-ng/jqxwindow';
 import { Subject } from 'rxjs';
 import { Deque } from '../../../shared/core/deque';
 import { EditCommand, EditCommandPlaceholder } from '../../../shared/classes/editing';
-import {
-  EventInfo,
-  EventOrigin,
-} from '../../../shared/services/event-broker.service';
+import { EventInfo, EventOrigin } from '../../../shared/services/event-broker.service';
 
 @Component({
   selector: 'undo-redo-dropdown',
@@ -71,23 +61,20 @@ export class UndoRedoDropdownComponent implements AfterViewInit {
     this.commandList.push(UndoRedoDropdownComponent.CANCEL_ITEM);
     this.listBox.source(this.commandList);
     this.listBox.refresh();
-    const listBounds: DOMRect =
-      this.listBox.elementRef.nativeElement.getBoundingClientRect();
+    const listBounds: DOMRect = this.listBox.elementRef.nativeElement.getBoundingClientRect();
     this.dropdown.height(listBounds.height);
     // Monkeypatch jqxListBox to handle mouseover on items.
     const listBoxElement: HTMLElement = this.listBox.elementRef.nativeElement;
     listBoxElement
       .querySelectorAll('jqxlistbox .jqx-listitem-element')
       .forEach((item: Element, index: number) =>
-        item.addEventListener('mouseover', () =>
-          this.handleMouseoverItem(index)
-        )
+        item.addEventListener('mouseover', () => this.handleMouseoverItem(index)),
       );
   }
 
   handleDropdownClose(_event: any) {
     this.toolbarButton.jqxToggleButton('toggled', false);
-    // Remove content so it doesn't render briefly before open 
+    // Remove content so it doesn't render briefly before open
     // handler replaces it. One item avoids item width weirdness.
     this.listBox.source([UndoRedoDropdownComponent.CANCEL_ITEM]);
     this.listBox.refresh();
@@ -111,10 +98,7 @@ export class UndoRedoDropdownComponent implements AfterViewInit {
 
   handleMouseoverItem(index: number) {
     const toastIndex = this.commandList.length - 1;
-    const prompt =
-      index < toastIndex
-        ? `${this.operation} ${index + 1} command${index === 0 ? '' : 's'}`
-        : 'Cancel';
+    const prompt = index < toastIndex ? `${this.operation} ${index + 1} command${index === 0 ? '' : 's'}` : 'Cancel';
     this.listBox.updateAt({ label: prompt }, toastIndex);
   }
 
@@ -125,8 +109,7 @@ export class UndoRedoDropdownComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     // Monkeypatch jqxWindow to hide the header.
-    const headerElement =
-      this.listBox.elementRef.nativeElement?.previousSibling;
+    const headerElement = this.dropdown.host[0][0];
     if (headerElement) {
       headerElement.style.display = 'none';
     }

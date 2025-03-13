@@ -1,8 +1,16 @@
+import { BridgeModel } from '../../../shared/classes/bridge.model';
 import { EditableUtility, EditCommand, EditEffect } from '../../../shared/classes/editing';
 import { Member } from '../../../shared/classes/member.model';
 import { InventoryService } from '../../../shared/services/inventory.service';
 import { SelectedSet } from '../../drafting/shared/selected-elements-service';
+import {
+  ContextElementRef,
+  RehydrationContext,
+  DehydrationContext,
+} from './dehydration-context';
 import { EditCommandDescription } from './edit-command-description';
+import { DehydratedEditCommand } from './dehydration-context';
+import { EditCommandTag } from './dehydration-context';
 
 export class ChangeMembersCommand extends EditCommand {
   private constructor(
@@ -49,4 +57,31 @@ export class ChangeMembersCommand extends EditCommand {
   public override undo(): void {
     EditableUtility.exchangeAll(this.members, this.updatedMembers);
   }
+
+  override dehydrate(context: DehydrationContext): State {
+    return {
+      tag: 'change-members',
+      description: this.description,
+      updatedMembers: this.updatedMembers.map(member => context.getMemberRef(member)),
+    };
+  }
+
+  static rehydrate(
+    context: RehydrationContext,
+    rawState: DehydratedEditCommand,
+    bridge: BridgeModel,
+  ): ChangeMembersCommand {
+    const state = rawState as State;
+    return new ChangeMembersCommand(
+      state.description,
+      bridge.members,
+      state.updatedMembers.map(member => context.rehydrateMemberRef(member)),
+    );
+  }
 }
+
+type State = {
+  tag: EditCommandTag;
+  description: string;
+  updatedMembers: ContextElementRef[];
+};

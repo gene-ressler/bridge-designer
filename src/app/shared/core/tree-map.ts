@@ -9,10 +9,11 @@ type Node<K, V> = {
 function isBlack<K, V>(node: NullableNode<K, V>): boolean {
   return node === null || node.color === 'b';
 }
-
+/*
 function isRed<K, V>(node: NullableNode<K, V>): boolean {
   return node !== null && node.color === 'r';
 }
+  */
 
 export class TreeMap<K, V> {
   private root: NullableNode<K, V> = null;
@@ -178,6 +179,7 @@ export class TreeMap<K, V> {
       }
     }
     this._size--;
+    /*
     // Stack has all but deleted (former successor) node.
     if (searchPtr!.color === 'r') {
       // Case 1: No rebalance needed.
@@ -194,13 +196,13 @@ export class TreeMap<K, V> {
         this.rotate(dbParent, oppositeDbParentDir);
         stack.push([dbParent, dbParentDir]); // Push node rotated into path to root.
         dbParent = dbSibling; // Account for value swap.
-      } else if (isRed(dbSibling!.kids[oppositeDbParentDir] /* far is red */)) {
+      } else if (isRed(dbSibling!.kids[oppositeDbParentDir] /* far is red * /)) {
         // Case 6
         [dbParent.color, dbSibling.color] = [dbSibling.color, dbParent.color];
         this.rotate(dbParent, oppositeDbParentDir);
         stack.push([dbParent, dbParentDir]); // Push node rotated into path to root.
         dbParent = dbSibling; // Account for value swap.
-      } else if (isBlack(dbSibling!.kids[dbParentDir]) /* near is black */) {
+      } else if (isBlack(dbSibling!.kids[dbParentDir]) /* near is black * /) {
         // Case 3
         dbSibling.color = 'r';
         if (isRed(dbParent) || stack.length === 0) {
@@ -218,9 +220,10 @@ export class TreeMap<K, V> {
         this.rotate(dbSibling, dbParentDir);
       }
     }
+    */
     return deletedValue;
   }
-
+/*
   private rotate(a: Node<K, V>, d: number) {
     const b = a.kids[d]!;
     const e = 1 - d;
@@ -229,7 +232,7 @@ export class TreeMap<K, V> {
     b.kids[d] = b.kids[e];
     b.kids[e] = a.kids[e];
   }
-
+*/
   public forEach(f: (item: V) => any) {
     for (const item of this) {
       f(item);

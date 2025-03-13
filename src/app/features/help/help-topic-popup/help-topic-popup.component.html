@@ -1,0 +1,17 @@
+<span
+  #link
+  class="popup-topic-link"
+  (pointerdown)="openPopup($event)"
+  ><ng-content/></span>
+<div class="popup-container">
+  <div
+    #popup
+    class="popup"
+    *ngIf="renderPopup"
+  >
+    <help-topic
+      [containerType]="'popup-content'"
+      [visibleTopicName]="name"
+    ></help-topic>
+  </div>
+</div>

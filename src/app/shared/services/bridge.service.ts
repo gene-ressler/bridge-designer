@@ -8,7 +8,9 @@ import { DesignConditions, DesignConditionsService } from './design-conditions.s
 import { AllowedShapeChangeMask, InventoryService, StockId } from './inventory.service';
 import { BridgeSketchModel } from '../classes/bridge-sketch.model';
 import { SelectedSet } from '../../features/drafting/shared/selected-elements-service';
-import { DraftingPanelState } from './persistence.service';
+import { DraftingPanelState, PersistenceService, SaveSet } from './persistence.service';
+import { SessionStateService } from './session-state.service';
+import { BridgeSketchService } from './bridge-sketch.service';
 
 /**
  * Injectable accessor of the bridge service in the root injector. Useful in components that
@@ -19,6 +21,12 @@ export class RootBridgeService {
   constructor(public readonly instance: BridgeService) {}
 }
 
+/** Container for session key providable in non-root instances of the service. */
+@Injectable({ providedIn: 'root' })
+export class BridgeServiceSessionStateKey {
+  public readonly key: string | undefined = 'bridge.service';
+}
+
 /** Injectable, mutable container for a bridge model and related site and drafting information. */
 @Injectable({ providedIn: 'root' })
 export class BridgeService {
@@ -26,6 +34,19 @@ export class BridgeService {
   private _sketch: BridgeSketchModel = BridgeSketchModel.ABSENT;
   private _siteInfo: SiteModel = new SiteModel(this.bridge.designConditions);
   private _draftingPanelState: DraftingPanelState = DraftingPanelState.createNew();
+
+  constructor(
+    private readonly persistenceService: PersistenceService,
+    bridgeServiceSessionStateKey: BridgeServiceSessionStateKey,
+    private readonly bridgeSketchService: BridgeSketchService,
+    sessionStateService: SessionStateService,
+  ) {
+    sessionStateService.register(
+      bridgeServiceSessionStateKey.key,
+      () => this.dehydrate(),
+      state => this.rehydrate(state),
+    );
+  }
 
   public get bridge(): BridgeModel {
     return this._bridge;
@@ -158,7 +179,7 @@ export class BridgeService {
     return mask;
   }
 
-  /** Returns joints in index order that need deletion along with a set of members. */
+  /** Returns joints orphaned (no incident members remaining) by deletion of the given members . */
   public getJointsForMembersDeletion(deletedMemberIndices: Set<number>): Joint[] {
     const members = this.bridge.members;
     // Consider for deletion non-fixed joints touched by the deleted members.
@@ -230,4 +251,24 @@ export class BridgeService {
     }
     return true;
   }
+
+  private dehydrate(): State {
+    const text = this.persistenceService.getSaveSetAsText(SaveSet.create(this.bridge, this.draftingPanelState));
+    return {
+      saveSetText: text,
+      sketchName: this.sketch.name,
+    };
+  }
+
+  private rehydrate(savedState: State) {
+    const saveSet = SaveSet.createNew();
+    this.persistenceService.parseSaveSetText(savedState.saveSetText, saveSet);
+    this.setBridge(saveSet.bridge, saveSet.draftingPanelState);
+    this.sketch = this.bridgeSketchService.getSketch(this.designConditions, savedState.sketchName);
+  }
 }
+
+type State = {
+  saveSetText: string;
+  sketchName: string;
+};

@@ -5,7 +5,7 @@ the bridge at the end of each iteration. At this point, the iteration is conside
 immutable.
 
 The UI allows the user to jump among iterations. For each jump, the captured bridge is restored, and design continues as
-a fresh iteration.
+a fresh iteration. To be precise, the fresh iteration begins at the next user action that changes the bridge.
 
 A significant detail is that when a user jumps to a different iteration before performing a test in the current one, the
 iteration is considered complete and frozen just as though a test had been peformed. Such an iteration is consided
@@ -22,15 +22,16 @@ the design visible at the moment in the drafting panel, is always displayed to t
 
 Testing a bridge automatically causes capture of the drafting panel design along with the in-progress iteration number.
 
-Changing a tested design automatically creates a new, open, in-progress iteration with the next available number. The
-user sees the diplayed in-progress iteration number advance by one. This is the only mechanism for creating new
-iterations. As a consequence, multiple tests of an unchanging design are all part of the same iteration.
+Changing a tested design and then performing some edit operation automatically creates a new, open, in-progress
+iteration with the next available number. The user sees the diplayed in-progress iteration number advance by one. This
+is the only mechanism for creating new iterations. As a consequence, multiple tests of an unchanging design (reasonable
+to repeatedly view the truck animation) are all part of the same iteration.
 
 ## Iteration objects
 
-In the implementation, an iteration is an object including the bridge model and the status resulting from the
-corresponding test. The bridge model may be a frozen deep copy (for closed iterations) or a shallow reference to the
-bridge currently in the drafting panel (open in-progress iteration) From these, a full description can be drawn:
+In the implementation, an iteration is an object including the bridge model, the status resulting from the corresponding
+test, and its cost. The bridge model may be a frozen deep copy (for closed iterations) or a shallow reference to the
+bridge currently in the drafting panel (open in-progress iteration). From these, a full description can be drawn:
 
 - Iteration number.
 - Test status: Pass, fails load, fails slenderness, unstable. "None" is the pseudo-state for untested iterations.
@@ -44,8 +45,8 @@ Since the Project ID can be modified at any time, the user can effectively use i
 ## Iteration jumping
 
 At any time, the user can ask the BD for a dialog with a list of past iterations including the one in progress. A
-preview pane shows a sketch of the currently selected one. The user can choose choose to jump their design to the
-selected iteration. This jump can be backward or forward in the iteration sequence. There are three possibilities:
+preview pane shows a sketch of the currently selected one. The user can choose to jump their design to the selected
+iteration. This jump can be backward or forward in the iteration sequence. There are three possibilities:
 
 - User chooses the in-progress iteration and...
   - ...it's open. This is a no-op. The user continues the design and test cycle as though the dialog hadn't been
@@ -56,7 +57,7 @@ selected iteration. This jump can be backward or forward in the iteration sequen
 What happens in the second case?
 
 - First we need to deal with the in-progress iteration:
-  - If it was open, it is captured and closed without a test. Its status is "working."
+  - If it was open, it is captured and closed without a test. Its status is "no test."
   - If it was closed, no further work is required. Its bridge model was already captured as tested.
 - Next, the captured bridge of the chosen iteration is restored to the drafting panel.
 - The displayed iteration number becomes the one taken from the restored bridge model.
@@ -75,7 +76,8 @@ Notes:
 ## Parent-child relation of iterations
 
 Every iteration has a natural child relationship with its predecessor. After a jump, the jumped-to iteration becomes the
-parent. Since an iteration can be jumped-to any number of times, parent-child pairs naturally form an n-ary tree.
+parent of the next iteration created. Since an iteration can be jumped-to any number of times, parent-child pairs
+naturally form an n-ary tree.
 
 The UI widget offers two views of available iterations:
 
@@ -83,16 +85,21 @@ The UI widget offers two views of available iterations:
 - Treegrid showing parent-child relatiohships. Each run of parent and successively numbered descendents is shown as a
   single list. Each time an iteration is jumped-to, it gets a new list, which again continues as long as descendents are
   successivel numbered.
+  - It's an unfortunate detail that the treegrid view hides some information. If the same iteration is jumped-to
+    multiple times, each followed by a sequence of new iterations, these sequences are effectively concatenated into a
+    single list in the treegrid view. TODO: It may be possible to give visual cues - via an extra column of iconsor
+    similar - where the sublists are separated. This would make the view capable of showing the full multi-tree
+    structure.
 
-It is expected that the list view is superior for going back a small number of iterations, while the tree view makes it
-easier to navigate among major decision points.
+For the user, it's expected that the list view is superior for going back a small number of iterations, while the
+treegrid makes it easier to navigate among major decision points.
 
 ## Lifetimes
 
-Iterations persist throughout a user's session until user requests new bridge or to load a previously saved bridge. New
-conditions purge the iteration structure.
+Iterations persist throughout a user's session until user requests a new bridge, sample bridge, or previously saved
+bridge.
 
-Nice to have: We should persist and restore iterations across user sessions.
+Iterations are part of session state, so live between uses of the same browser/machine combination.
 
 ## Implementation details
 
@@ -100,6 +107,7 @@ Nice to have: We should persist and restore iterations across user sessions.
 - Design iteration service. Container for iteration data.
 - Displayed iteration number.
 - Interaction with analysis validity service.
+- Interaction with session state preservation.
 
 ## Data structures
 
@@ -132,6 +140,7 @@ Nice to have: We should persist and restore iterations across user sessions.
   - Update in-progress iteration status. This is relevant where "working" was set for newly loaded and previously
     abandoned iterations.
 - Edit command completion.
+
   - If in-progress iteration is closed, create a fresh, open iteration with the next sequence number. Drafting panel
     bridge gets sequence number updated to this.
   - Else in-progress iteration is open. Do nothing.

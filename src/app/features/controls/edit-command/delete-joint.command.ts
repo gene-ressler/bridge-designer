@@ -3,6 +3,13 @@ import { EditableUtility, EditCommand, EditEffect } from '../../../shared/classe
 import { Joint } from '../../../shared/classes/joint.model';
 import { Member } from '../../../shared/classes/member.model';
 import { SelectedElements } from '../../drafting/shared/selected-elements-service';
+import {
+  ContextElementRef,
+  RehydrationContext,
+  DehydrationContext,
+} from './dehydration-context';
+import { DehydratedEditCommand } from './dehydration-context';
+import { EditCommandTag } from './dehydration-context';
 
 export class DeleteJointCommand extends EditCommand {
   private readonly joint: Joint[]; // List of one joint.
@@ -19,7 +26,7 @@ export class DeleteJointCommand extends EditCommand {
   }
 
   override get effectsMask(): number {
-    return this.members.length > 0 ? (EditEffect.JOINTS | EditEffect.MEMBERS) : EditEffect.JOINTS;
+    return this.members.length > 0 ? EditEffect.JOINTS | EditEffect.MEMBERS : EditEffect.JOINTS;
   }
 
   public override do(): void {
@@ -31,4 +38,30 @@ export class DeleteJointCommand extends EditCommand {
     EditableUtility.merge(this.bridge.joints, this.joint, this.selectedElements.selectedJoints);
     EditableUtility.merge(this.bridge.members, this.members, this.selectedElements.selectedMembers);
   }
+
+  override dehydrate(context: DehydrationContext): State {
+    return {
+      tag: 'delete-joint',
+      joint: context.getJointRef(this.joint[0]),
+      members: this.members.map(member => context.getMemberRef(member)),
+    };
+  }
+
+  static rehydrate(
+    context: RehydrationContext,
+    rawState: DehydratedEditCommand,
+    bridge: BridgeModel,
+    selectedElements: SelectedElements,
+  ): DeleteJointCommand {
+    const state = rawState as State;
+    const command = new DeleteJointCommand(context.rehydrateJointRef(state.joint), bridge, selectedElements);
+    state.members.forEach(member => command.members.push(context.rehydrateMemberRef(member)));
+    return command;
+  }
 }
+
+type State = {
+  tag: EditCommandTag;
+  joint: ContextElementRef;
+  members: ContextElementRef[];
+};

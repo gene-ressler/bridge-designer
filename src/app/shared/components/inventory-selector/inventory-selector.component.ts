@@ -3,6 +3,7 @@ import { jqxDropDownListComponent, jqxDropDownListModule } from 'jqwidgets-ng/jq
 import { EventBrokerService, EventOrigin } from '../../services/event-broker.service';
 import { InventoryService, StockId } from '../../services/inventory.service';
 import { WidgetHelper } from '../../classes/widget-helper';
+import { SessionStateService } from '../../services/session-state.service';
 
 @Component({
   selector: 'inventory-selector',
@@ -26,6 +27,7 @@ export class InventorySelectorComponent implements AfterViewInit {
   constructor(
     readonly inventoryService: InventoryService,
     private readonly eventBrokerService: EventBrokerService,
+    private readonly sessionStateService: SessionStateService,
   ) {}
 
   public load(stockId: StockId) {
@@ -42,8 +44,8 @@ export class InventorySelectorComponent implements AfterViewInit {
     return this.vertical ? 206 : 106;
   }
 
-  handleMaterialSelectorOnChange(_event: any): void {
-    if (_event.args.type !== 'mouse') {
+  handleMaterialSelectorOnChange(event: any): void {
+    if (event.args.type === 'none') {
       return;
     }
     this.sendStockId();
@@ -51,31 +53,45 @@ export class InventorySelectorComponent implements AfterViewInit {
 
   handleCrossSectionSelectorOnChange(event: any): void {
     this.sizeSelector.source(this.inventoryService.getShapes(event.args.index));
-    if (event.args.type !== 'mouse') {
+    if (event.args.type === 'none') {
       return;
     }
     this.sendStockId();
   }
 
-  handleSizeSelectorOnChange(_event: any): void {
-    if (_event.args.type !== 'mouse') {
+  handleSizeSelectorOnChange(event: any): void {
+    if (event.args.type === 'none') {
       return;
     }
     this.sendStockId();
+  }
+
+  private get stockId(): StockId {
+    return new StockId(
+      this.materialSelector.selectedIndex(),
+      this.crossSectionSelector.selectedIndex(),
+      this.sizeSelector.selectedIndex(),
+    );
   }
 
   private sendStockId(): void {
     this.eventBrokerService.inventorySelectionChange.next({
       origin: this.eventOrigin,
-      data: new StockId(
-        this.materialSelector.selectedIndex(),
-        this.crossSectionSelector.selectedIndex(),
-        this.sizeSelector.selectedIndex(),
-      ),
+      data: this.stockId,
     });
   }
 
   ngAfterViewInit(): void {
+    this.sessionStateService.register('inventorySelector.component', () => this.dehydrate(), state => this.rehydrate(state));
     this.eventBrokerService.loadInventorySelectorRequest.subscribe(eventInfo => this.load(eventInfo.data));
+  }
+
+  dehydrate(): StockId {
+    return this.stockId;
+  }
+
+  rehydrate(state: StockId): void {
+    this.load(state);
+    this.sendStockId();
   }
 }

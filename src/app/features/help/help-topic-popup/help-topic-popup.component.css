@@ -1,0 +1,24 @@
+:host {
+  display: inline-block;
+}
+
+.popup-topic-link {
+  color:darkgreen;
+}
+
+.popup-topic-link:hover {
+  text-decoration: dotted underline;
+}
+
+.popup-container {
+  position: relative;
+}
+
+.popup {
+  position: absolute;
+  display: block;
+  padding: 8px;
+  background-color: white;
+  border: 2px solid black;
+  z-index: 10000;
+}

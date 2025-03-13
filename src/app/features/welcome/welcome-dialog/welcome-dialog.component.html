@@ -1,7 +1,7 @@
 <jqxWindow
   #dialog
   [isModal]="true"
-  [autoOpen]="true"
+  [autoOpen]="!sessionStateService.isRehydrating"
   [width]="840"
   [height]="350"
 >

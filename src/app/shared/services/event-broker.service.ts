@@ -14,6 +14,7 @@ export const enum EventOrigin {
   SERVICE,
   SETUP_DIALOG,
   TEMPLATE_DIALOG,
+  TOOL_SELECTOR,
   TOOLBAR,
   WELCOME_DIALOG,
 }
@@ -58,6 +59,7 @@ export class EventBrokerService {
   public readonly gridDensitySelection = new Subject<EventInfo>();
   public readonly gridDensityChange = new Subject<EventInfo>();
   public readonly guidesToggle = new Subject<EventInfo>();
+  public readonly helpRequest = new Subject<EventInfo>();
   public readonly inventorySelectionChange = new Subject<EventInfo>();
   public readonly inventorySelectionCompletion = new Subject<EventInfo>();
   public readonly legacyGraphicsToggle = new Subject<EventInfo>();
@@ -78,6 +80,8 @@ export class EventBrokerService {
   public readonly selectAllRequest = new Subject<EventInfo>();
   public readonly selectNoneRequest = new Subject<EventInfo>();
   public readonly selectedElementsChange = new Subject<EventInfo>();
+  public readonly sessionStateSaveRequest = new Subject<TypedEventInfo<void>>();
+  public readonly sessionStateRestoreComplete = new Subject<TypedEventInfo<void>>();
   public readonly templateToggle = new Subject<EventInfo>();
   public readonly titleBlockToggle = new Subject<EventInfo>();
   public readonly toolsToggle = new Subject<EventInfo>();

@@ -4,7 +4,10 @@ import { Joint } from '../../../shared/classes/joint.model';
 import { Member } from '../../../shared/classes/member.model';
 import { BridgeService } from '../../../shared/services/bridge.service';
 import { SelectedElements } from '../../drafting/shared/selected-elements-service';
+import { ContextElementRef, RehydrationContext, DehydrationContext } from './dehydration-context';
 import { EditCommandDescription } from './edit-command-description';
+import { DehydratedEditCommand } from './dehydration-context';
+import { EditCommandTag } from './dehydration-context';
 
 export class DeleteMembersCommand extends EditCommand {
   private constructor(
@@ -13,8 +16,7 @@ export class DeleteMembersCommand extends EditCommand {
     private readonly bridge: BridgeModel,
     private readonly selectedElements: SelectedElements,
   ) {
-    const description = EditCommandDescription.formatMemberMessage(members, 'Delete member');
-    super(description);
+    super(EditCommandDescription.formatMemberMessage(members, 'Delete member'));
   }
 
   public static forMember(
@@ -50,4 +52,30 @@ export class DeleteMembersCommand extends EditCommand {
     EditableUtility.merge(this.bridge.joints, this.joints, this.selectedElements.selectedJoints);
     EditableUtility.merge(this.bridge.members, this.members, this.selectedElements.selectedMembers);
   }
+
+  override dehydrate(context: DehydrationContext): State {
+    return {
+      tag: 'delete-members',
+      members: this.members.map(member => context.getMemberRef(member)),
+      joints: this.joints.map(joint => context.getJointRef(joint)),
+    };
+  }
+
+  static rehydrate(
+    context: RehydrationContext,
+    rawState: DehydratedEditCommand,
+    bridge: BridgeModel,
+    selectedElements: SelectedElements,
+  ): DeleteMembersCommand {
+    const state = rawState as State;
+    const members = state.members.map(member => context.rehydrateMemberRef(member));
+    const joints = state.joints.map(joint => context.rehydrateJointRef(joint));
+    return new DeleteMembersCommand(members, joints, bridge, selectedElements);
+  }
 }
+
+type State = {
+  tag: EditCommandTag;
+  members: ContextElementRef[];
+  joints: ContextElementRef[];
+};

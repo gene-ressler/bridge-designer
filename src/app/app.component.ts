@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, ViewChild, ViewEncapsulation } from '@angular/core';
 import { jqxGridModule } from 'jqwidgets-ng/jqxgrid';
 import { jqxMenuModule } from 'jqwidgets-ng/jqxmenu';
 import { jqxRibbonModule } from 'jqwidgets-ng/jqxribbon';
@@ -25,6 +25,9 @@ import { CostReportDialogComponent } from './features/costs/cost-report-dialog/c
 import { DesignIterationDialogComponent } from './features/iterations/design-iteration-dialog/design-iteration-dialog.component';
 import { DesignConditionsService } from './shared/services/design-conditions.service';
 import { WelcomeDialogComponent } from './features/welcome/welcome-dialog/welcome-dialog.component';
+import { SessionStateService } from './shared/services/session-state.service';
+import { UndoManagerSessionStateService } from './features/drafting/shared/undo-manager-session-state.service';
+import { HelpDialogComponent } from './features/help/help-dialog/help-dialog.component';
 
 // ¯\_(ツ)_/¯
 
@@ -35,6 +38,7 @@ import { WelcomeDialogComponent } from './features/welcome/welcome-dialog/welcom
     CostReportDialogComponent,
     DesignIterationDialogComponent,
     DraftingPanelComponent,
+    HelpDialogComponent,
     LoadTestReportDialogComponent,
     MemberTableComponent,
     MenusComponent,
@@ -68,8 +72,29 @@ export class AppComponent implements AfterViewInit {
 
   constructor(
     private readonly eventBrokerService: EventBrokerService,
+    private readonly sessionStateService: SessionStateService,
+    _undoManagerSessionStateService: UndoManagerSessionStateService, // Instantiate only.
     _workflowManagementService: WorkflowManagementService, // Instantiate only.
   ) {}
+
+  /** Shows the drafting panel or hides it under a gray facade. */
+  private showDraftingPanel(value: boolean): void {
+    const coverStyle = this.draftingAreaCover.nativeElement.style;
+    const toggleTools = (value: boolean) =>
+      this.eventBrokerService.toolsToggle.next({ origin: EventOrigin.APP, data: value });
+    if (value) {
+      coverStyle.display = 'none';
+      toggleTools(true);
+    } else {
+      coverStyle.display = 'block';
+      toggleTools(false); // Ignores former user intent, but currently never happens. Cover can't be replaced.
+    }
+  }
+
+  @HostListener('window:beforeunload')
+  handleBeforUnload(): void {
+    this.sessionStateService.saveState();
+  }
 
   ngAfterViewInit(): void {
     // Toggle rulers visibility.
@@ -81,15 +106,14 @@ export class AppComponent implements AfterViewInit {
     });
     // Cancel the cover over the drafting area when the user loads a bridge.
     this.eventBrokerService.loadBridgeRequest.subscribe(eventInfo => {
-      const style = this.draftingAreaCover.nativeElement.style;
-      const toggleTools = (value: boolean) => this.eventBrokerService.toolsToggle.next({origin: EventOrigin.APP, data: value});
-      if (eventInfo.data.bridge.designConditions !== DesignConditionsService.PLACEHOLDER_CONDITIONS) {
-        style.display = 'none';
-        toggleTools(true);
-      } else {
-        style.display = 'block';
-        toggleTools(false); // Ignores former user intent, but currently never happens. Cover can't be replaced.
-      }
+      this.showDraftingPanel(eventInfo.data.bridge.designConditions !== DesignConditionsService.PLACEHOLDER_CONDITIONS);
     });
+    // Omit the welcome sequence and send a completion event if we're rehydrating.
+    if (this.sessionStateService.isRehydrating) {
+      this.showDraftingPanel(true);
+      this.sessionStateService.notifyComplete();
+    } else {
+      this.showDraftingPanel(false);
+    }
   }
 }

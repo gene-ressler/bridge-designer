@@ -1,0 +1,49 @@
+<jqxWindow
+  #dialog
+  [resizable]="true"
+  [draggable]="true"
+  [isModal]="false"
+  [autoOpen]="false"
+  [width]="1024"
+  [maxWidth]="4096"
+  [height]="800"
+  [maxHeight]="4096"
+>
+  <div class="header">Bridge Designer help</div>
+  <!-- Margin un-hides jqxWindow resize drag area under scrollbar. -->
+  <div style="margin-right: 4px">
+    <jqxSplitter
+      [width]="'calc(100% - 2px)'"
+      [height]="'calc(100% - 2px)'"
+      [panels]="[
+        { size: 320, min: 200, collapsible: true },
+        { size: 1024 - 320, min: 200, collapsible: false },
+      ]"
+    >
+      <div>
+        <jqxToolbar
+          #toolBar
+          [width]="'100%'"
+          [height]="38"
+          [tools]="tools"
+          [initTools]="initTools"
+        ></jqxToolbar>
+        <jqxTabs
+          #tabs
+          [width]="'100%'"
+          [height]="'calc(100% - 32px)'"
+        >
+          <ul>
+            <li>Contents</li>
+            <li>Search</li>
+          </ul>
+          <div style="height:100%;">
+            <help-nav-tree style="height:100%" [(selectedTopicName)]="currentTopicName"></help-nav-tree>
+          </div>
+          <div>Search</div>
+        </jqxTabs>
+      </div>
+      <help-topic [(visibleTopicName)]="currentTopicName"></help-topic>
+    </jqxSplitter>
+  </div>
+</jqxWindow>

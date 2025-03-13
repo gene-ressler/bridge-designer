@@ -1,5 +1,8 @@
 import { EditCommand, EditEffect } from '../../../shared/classes/editing';
 import { DraftingPanelState } from '../../../shared/services/persistence.service';
+import { DehydrationContext } from './dehydration-context';
+import { DehydratedEditCommand } from './dehydration-context';
+import { EditCommandTag } from './dehydration-context';
 
 export class MoveLabelsCommand extends EditCommand {
   constructor(
@@ -7,7 +10,7 @@ export class MoveLabelsCommand extends EditCommand {
     private readonly yFrom: number,
     private readonly yTo: number,
   ) {
-    super(`Move labels to height ${yTo.toFixed(1)}`);
+    super(`Move labels to height ${yTo.toFixed(2)}`);
   }
 
   override get effectsMask(): number {
@@ -21,4 +24,23 @@ export class MoveLabelsCommand extends EditCommand {
   public override undo(): void {
     this.draftingPanelState.yLabels = this.yFrom;
   }
+
+  override dehydrate(_context: DehydrationContext): State {
+    return {
+      tag: 'move-labels',
+      yFrom: this.yFrom,
+      yTo: this.yTo,
+    };
+  }
+
+  static rehydrate(rawState: DehydratedEditCommand, draftingPanelState: DraftingPanelState): MoveLabelsCommand {
+    const state = rawState as State;
+    return new MoveLabelsCommand(draftingPanelState, state.yFrom, state.yTo);
+  }
 }
+
+type State = {
+  tag: EditCommandTag;
+  yFrom: number;
+  yTo: number;
+};

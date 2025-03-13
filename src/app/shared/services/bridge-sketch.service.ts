@@ -11,7 +11,7 @@ export class BridgeSketchService {
 
   constructor(private readonly bridgeSketchDataService: BridgeSketchDataService) {}
 
-  public getSketchList(conditions: DesignConditions) {
+  public getSketchList(conditions: DesignConditions): BridgeSketchModel[] {
     const key = conditions.tagGeometryOnly;
     const models = this.cache.get(key);
     if (models) {
@@ -20,6 +20,11 @@ export class BridgeSketchService {
     const newModels = this.createModelList(conditions);
     this.cache.set(key, newModels);
     return newModels;
+  }
+
+  /** Returns sketch for given conditions and sketch name or absent if none found. */
+  public getSketch(conditions: DesignConditions, name: string): BridgeSketchModel {
+    return this.getSketchList(conditions).find(sketch => sketch.name === name) || BridgeSketchModel.ABSENT;
   }
 
   private createModelList(conditions: DesignConditions): BridgeSketchModel[] {
@@ -193,7 +198,7 @@ export class BridgeSketchService {
 
     // p1 and p2 are used to find a parabolic arc
     const p1 = joints[abutmentArchJointsIndex];
-    const p2 = joints[(firstDeckJoint + lastDeckJoint) / 2];
+    const p2 = joints[Math.trunc((firstDeckJoint + lastDeckJoint) / 2)];
     const p3 = joints[abutmentArchJointsIndex + 1];
 
     const xMid = 0.5 * (p1.x + p3.x);
@@ -270,7 +275,7 @@ export class BridgeSketchService {
 
     // p1 and p2 are used to find a parabolic arc
     const p1 = joints[abutmentArchJointsIndex];
-    const p2 = joints[(firstDeckJoint + lastDeckJoint) / 2];
+    const p2 = joints[Math.trunc((firstDeckJoint + lastDeckJoint) / 2)];
     const p3 = joints[abutmentArchJointsIndex + 1];
 
     const xMid = 0.5 * (p1.x + p3.x);
@@ -331,7 +336,7 @@ export class BridgeSketchService {
 
     // p1 and p2 are used to find a parabolic arc
     const p1 = joints[abutmentArchJointsIndex];
-    const p2 = joints[(firstDeckJoint + lastDeckJoint) / 2];
+    const p2 = joints[Math.trunc((firstDeckJoint + lastDeckJoint) / 2)];
     const p3 = joints[abutmentArchJointsIndex + 1];
 
     const xMid = 0.5 * (p1.x + p3.x);
@@ -348,7 +353,7 @@ export class BridgeSketchService {
     // Add joints on the parabola, one beneath each deck joint
     const firstArchJoint = joints.length;
     let archJointLeftOfHinge = 0;
-    const hinge = Math.floor((firstDeckJoint + lastDeckJoint) / 2);
+    const hinge = Math.trunc((firstDeckJoint + lastDeckJoint) / 2);
 
     for (let i: number = firstDeckJoint + 1; i < lastDeckJoint; i++) {
       if (i === hinge) {
@@ -418,7 +423,7 @@ export class BridgeSketchService {
 
     // p1 and p2 are used to find a parabolic arc
     const p1 = joints[abutmentArchJointsIndex];
-    const p2 = joints[(firstDeckJoint + lastDeckJoint) / 2];
+    const p2 = joints[Math.trunc((firstDeckJoint + lastDeckJoint) / 2)];
     const p3 = joints[abutmentArchJointsIndex + 1];
 
     const xMid = 0.5 * (p1.x + p3.x);
@@ -435,7 +440,7 @@ export class BridgeSketchService {
     // Add joints on the parabola, one beneath each deck joint
     const firstArchJoint = joints.length;
     for (let i: number = firstDeckJoint + 1; i < lastDeckJoint; i++) {
-      if (i !== Math.floor((firstDeckJoint + lastDeckJoint) / 2)) {
+      if (i !== Math.trunc((firstDeckJoint + lastDeckJoint) / 2)) {
         const x = joints[i].x - xMid;
         const y = a * x * x + b;
         joints.push(new Point2D(joints[i].x, BridgeSketchService.roundToGridIncrement(y)));
@@ -500,7 +505,7 @@ export class BridgeSketchService {
 
     // p1 and p2 are used to find a parabolic arc
     const p1 = joints[abutmentArchJointsIndex];
-    const p2 = joints[(firstDeckJoint + lastDeckJoint) / 2];
+    const p2 = joints[Math.trunc((firstDeckJoint + lastDeckJoint) / 2)];
     const p3 = joints[abutmentArchJointsIndex + 1];
 
     const xMid = 0.5 * (p1.x + p3.x);
@@ -532,7 +537,8 @@ export class BridgeSketchService {
 
     for (let i: number = firstArchJoint; i < lastArchJoint; i++) {
       // Skip the middle member to make the hinge
-      if (i !== Math.floor((firstArchJoint + lastArchJoint) / 2)) {
+      const iMiddle = Math.trunc((firstArchJoint + lastArchJoint) / 2);
+      if (i !== iMiddle) {
         members.push({ a: joints[i], b: joints[i + 1] });
       }
     }

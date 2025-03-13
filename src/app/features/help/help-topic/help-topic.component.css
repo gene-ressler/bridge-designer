@@ -1,0 +1,256 @@
+:host {
+  display: block;
+}
+
+.pane-content {
+  overflow: auto;
+  padding: 8px;
+  height: calc(100% - 16px);
+}
+
+.popup-content {
+  width: 600px;
+}
+
+/** Migrated from css written by a ~2010 JavaHelp tool called Helen. */
+p {
+  font-size: 12pt;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+h1 {
+  font-size: 16pt;
+  font-weight: bold;
+  margin-top: 0px;
+  margin-bottom: 5px;
+  margin-left: 0px;
+  margin-right: 0px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  background-color: #efefef;
+  border-style: solid;
+  border-width: 1px 1px 1px 1px;
+}
+
+h2 {
+  font-size: 14pt;
+  font-weight: bold;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+h3 {
+  font-size: 12pt;
+  font-weight: bold;
+  font-style: italic;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+h3 {
+  font-size: 12pt;
+  font-style: italic;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+ol {
+  font-size: 12pt;
+  margin-top: 5px;
+  margin-bottom: 0px;
+  margin-left: 30px;
+}
+
+li {
+  margin-top: 0px;
+  margin-bottom: 5px;
+}
+
+li p {
+  margin-top: 5px;
+  margin-bottom: 0px;
+}
+
+ul {
+  list-style-type: square;
+  margin-top: 5px;
+  margin-bottom: 0px;
+  margin-left: 30px;
+}
+
+table {
+  border-style: none;
+  border-color: silver;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+td {
+  border-style: none;
+  border-color: silver;
+  padding-left: 1px;
+  padding-right: 1px;
+  padding-top: 1px;
+  padding-bottom: 1px;
+}
+
+th {
+  border-style: none;
+  border-color: silver;
+  padding-left: 1px;
+  padding-right: 1px;
+  padding-top: 1px;
+  padding-bottom: 1px;
+}
+
+.btop {
+  border-top-width: 1px;
+  border-top-style: solid;
+  padding-top: 1px;
+}
+
+.brgt {
+  border-right-width: 1px;
+  border-right-style: solid;
+  padding-right: 1px;
+}
+
+.bbot {
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  padding-bottom: 1px;
+}
+
+.blft {
+  border-left-width: 1px;
+  border-left-style: solid;
+  padding-left: 10px;
+}
+
+.bbox {
+  border-width: 1px 1px 1px 1px;
+  border-style: solid;
+  padding: 1px;
+}
+
+.in1 {
+  padding-left: 20px;
+}
+
+.in2 {
+  padding-left: 40px;
+}
+
+.in3 {
+  padding-left: 60px;
+}
+
+.in4 {
+  padding-left: 80px;
+}
+
+.in5 {
+  padding-left: 100px;
+}
+
+.in6 {
+  padding-left: 120px;
+}
+
+.in7 {
+  padding-left: 140px;
+}
+
+.in8 {
+  padding-left: 160px;
+}
+
+.alpha {
+  list-style-type: lower-alpha;
+}
+
+.bu {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.c2b {
+  color: #0f6666;
+  font-weight: bold;
+}
+
+.f1b {
+  font-family: 'Symbol';
+  font-weight: bold;
+}
+
+.c5b {
+  color: #ff0000;
+  font-weight: bold;
+}
+
+.c14 {
+  color: #7f7f7f;
+}
+
+.f4c14 {
+  font-family: 'Impact';
+  color: #7f7f7f;
+}
+
+.u {
+  text-decoration: underline;
+}
+
+.c1b {
+  color: #0000ff;
+  font-weight: bold;
+}
+
+.f1 {
+  font-family: 'Symbol';
+}
+
+.b {
+  font-weight: bold;
+}
+
+.c5 {
+  color: #ff0000;
+}
+
+.c6b {
+  color: #ff00ff;
+  font-weight: bold;
+}
+
+.c14b {
+  color: #7f7f7f;
+  font-weight: bold;
+}
+
+.bi {
+  font-weight: bold;
+  font-style: italic;
+}
+
+.i {
+  font-style: italic;
+}
+
+map area {
+  cursor: pointer;
+}
+
+figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+figcaption {
+  font-style: italic;
+}

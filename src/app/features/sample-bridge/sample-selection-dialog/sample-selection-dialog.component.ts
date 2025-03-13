@@ -2,7 +2,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChil
 import { jqxListBoxComponent, jqxListBoxModule } from 'jqwidgets-ng/jqxlistbox';
 import { jqxWindowComponent, jqxWindowModule } from 'jqwidgets-ng/jqxwindow';
 import { jqxButtonModule } from 'jqwidgets-ng/jqxbuttons';
-import { BridgeService } from '../../../shared/services/bridge.service';
+import { BridgeService, BridgeServiceSessionStateKey } from '../../../shared/services/bridge.service';
 import { DesignBridgeRenderingService } from '../../../shared/services/design-bridge-rendering.service';
 import { DesignJointRenderingService } from '../../../shared/services/design-joint-rendering.service';
 import { DesignMemberRenderingService } from '../../../shared/services/design-member-rendering.service';
@@ -21,6 +21,7 @@ import { ViewportTransform2D } from '../../../shared/services/viewport-transform
   /** Component-level injections of stateful services. Root versions are hidden. */
   providers: [
     BridgeService,
+    { provide: BridgeServiceSessionStateKey, useValue: { key: undefined } },
     DesignBridgeRenderingService,
     DesignJointRenderingService,
     DesignMemberRenderingService,

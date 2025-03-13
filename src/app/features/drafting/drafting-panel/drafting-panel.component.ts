@@ -110,15 +110,21 @@ export class DraftingPanelComponent implements AfterViewInit {
   }
 
   addJointRequestHandler(joint: Joint): void {
-    this.undoManagerService.do(
-      new AddJointCommand(joint, this.bridgeService.bridge, this.selectedElementsService.selectedElements),
+    const command = AddJointCommand.create(
+      joint,
+      this.bridgeService.bridge,
+      this.selectedElementsService.selectedElements,
     );
+    this.undoManagerService.do(command);
   }
 
   addMemberRequestHandler(member: Member): void {
-    this.undoManagerService.do(
-      new AddMemberCommand(member, this.bridgeService.bridge, this.selectedElementsService.selectedElements),
+    const command = AddMemberCommand.create(
+      member,
+      this.bridgeService.bridge,
+      this.selectedElementsService.selectedElements,
     );
+    this.undoManagerService.do(command);
   }
 
   deleteRequestHandler(element: Joint | Member): void {
@@ -156,7 +162,7 @@ export class DraftingPanelComponent implements AfterViewInit {
       return;
     }
     const selectedElements = this.selectedElementsService.selectedElements;
-    const command = new MoveJointCommand(joint, newLocation, bridge, selectedElements);
+    const command = MoveJointCommand.create(joint, newLocation, bridge, selectedElements);
     this.undoManagerService.do(command);
   }
 

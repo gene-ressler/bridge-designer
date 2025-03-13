@@ -75,7 +75,7 @@ export class SaveSet {
   }
 
   /** Returns a new save set that refers directly to given bridge and drafting panel state. */
-  public static shallowCopy(bridge: BridgeModel, draftingPanelState: DraftingPanelState) {
+  public static create(bridge: BridgeModel, draftingPanelState: DraftingPanelState) {
     return new SaveSet(bridge, draftingPanelState);
   }
 

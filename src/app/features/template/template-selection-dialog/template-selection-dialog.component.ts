@@ -2,7 +2,11 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChil
 import { jqxListBoxComponent, jqxListBoxModule } from 'jqwidgets-ng/jqxlistbox';
 import { jqxWindowComponent, jqxWindowModule } from 'jqwidgets-ng/jqxwindow';
 import { Graphics } from '../../../shared/classes/graphics';
-import { BridgeService, RootBridgeService } from '../../../shared/services/bridge.service';
+import {
+  BridgeService,
+  BridgeServiceSessionStateKey,
+  RootBridgeService,
+} from '../../../shared/services/bridge.service';
 import { EventBrokerService, EventInfo, EventOrigin } from '../../../shared/services/event-broker.service';
 import { ViewportTransform2D } from '../../../shared/services/viewport-transform.service';
 import { jqxButtonComponent, jqxButtonModule } from 'jqwidgets-ng/jqxbuttons';
@@ -20,10 +24,11 @@ import { BridgeSketchModel } from '../../../shared/classes/bridge-sketch.model';
   /** Component-level injections of stateful services. Root versions are hidden. */
   providers: [
     BridgeService,
+    { provide: BridgeServiceSessionStateKey, useValue: { key: undefined } },
     CartoonJointRenderingService,
     CartoonRenderingService,
     CartoonSiteRenderingService,
-    CartoonSketchRenderingService, 
+    CartoonSketchRenderingService,
     ViewportTransform2D,
   ],
   templateUrl: './template-selection-dialog.component.html',
@@ -72,7 +77,7 @@ export class TemplateSelectionDialogComponent implements AfterViewInit {
     // Transfer design (root injector) bridge to our local instance.
     const rootBridgeService = this.rootBridgeService.instance;
     this.bridgeService.setBridge(rootBridgeService.bridge, rootBridgeService.draftingPanelState);
- 
+
     // Load the right list of sketches and set up the list box if it's changed.
     this.templateSketches = this.bridgeSketchService.getSketchList(this.bridgeService.designConditions);
     if (this.templateList.source() !== this.templateSketches) {

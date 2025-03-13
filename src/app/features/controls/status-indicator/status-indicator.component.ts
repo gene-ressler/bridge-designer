@@ -29,6 +29,7 @@ export class StatusIndicatorComponent implements AfterViewInit {
     this.eventBrokerService.analysisCompletion.subscribe(eventInfo => {
       this.setIcon(eventInfo.data);
     });
+    this.eventBrokerService.loadBridgeCompletion.subscribe(_eventInfo => this.setIcon(AnalysisStatus.NONE));
     this.eventBrokerService.editCommandCompletion.subscribe(_eventInfo => {
       if (this.analysisValidityService.isLastAnalysisValid) {
         this.setIcon(this.analysisService.status);

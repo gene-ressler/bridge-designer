@@ -60,7 +60,7 @@ export class WorkflowManagementService {
       uiStateService.disable(eventBrokerService.undoRequest, eventInfo.data.doneCount === 0);
       uiStateService.disable(eventBrokerService.redoRequest, eventInfo.data.undoneCount === 0);
       if (eventInfo.data.effectsMask & EditEffect.MEMBERS) {
-        handleMemberChanges();
+        disableMemberSizeIncrementWidgets();
       }
     });
 
@@ -101,11 +101,21 @@ export class WorkflowManagementService {
     eventBrokerService.selectedElementsChange.subscribe(_eventInfo => {
       const selectedMembers = selectedElementsService.selectedElements.selectedMembers;
       uiStateService.disable(eventBrokerService.deleteSelectionRequest, selectedMembers.size === 0);
-      handleMemberChanges();
+      eventBrokerService.loadInventorySelectorRequest.next({
+        origin: EventOrigin.SERVICE,
+        data: bridgeService.getUsefulStockId(selectedMembers),
+      });
+      disableMemberSizeIncrementWidgets();
     });
 
-    /** En/disables member size increment and adjusts the stock ID selector. */
-    function handleMemberChanges(): void {
+    // Session state restoration completion.
+    eventBrokerService.sessionStateRestoreComplete.subscribe(_eventInfo => {
+      uiStateService.disable(eventBrokerService.undoRequest, undoManagerService.done.length === 0);
+      uiStateService.disable(eventBrokerService.redoRequest, undoManagerService.undone.length === 0);
+    });
+
+    /** En/disables member size increment. */
+    function disableMemberSizeIncrementWidgets(): void {
       const selectedMembers = selectedElementsService.selectedElements.selectedMembers;
       const allowedShapeChanges = bridgeService.getAllowedShapeChangeMask(selectedMembers);
       uiStateService.disable(
@@ -116,10 +126,6 @@ export class WorkflowManagementService {
         eventBrokerService.memberSizeIncreaseRequest,
         (allowedShapeChanges & AllowedShapeChangeMask.INCREASE_SIZE) === 0,
       );
-      eventBrokerService.loadInventorySelectorRequest.next({
-        origin: EventOrigin.SERVICE,
-        data: bridgeService.getUsefulStockId(selectedMembers),
-      });
     }
 
     /** Executes a member size change command with given increment. */

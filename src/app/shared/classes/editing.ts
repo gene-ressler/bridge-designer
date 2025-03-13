@@ -1,3 +1,6 @@
+import { DehydratedEditCommand } from '../../features/controls/edit-command/dehydration-context';
+import { DehydrationContext as EditCommandDehydrationContext } from '../../features/controls/edit-command/dehydration-context';
+
 export interface Editable {
   index: number;
   swapContents(other: Editable): void;
@@ -14,6 +17,7 @@ export abstract class EditCommand {
   constructor(private _description: string) {}
 
   abstract get effectsMask(): number;
+  abstract dehydrate(context: EditCommandDehydrationContext): DehydratedEditCommand;
 
   public get description(): string {
     return this._description;
@@ -30,7 +34,11 @@ export abstract class EditCommand {
 export class EditCommandPlaceholder extends EditCommand {
   override get effectsMask(): number {
     return EditEffect.NONE;
-  }  
+  }
+
+  override dehydrate(_context: EditCommandDehydrationContext): DehydratedEditCommand {
+    return { tag: 'placeholder' };
+  }
 }
 
 export class EditableUtility {

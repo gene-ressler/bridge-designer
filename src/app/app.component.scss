@@ -18,7 +18,7 @@
   display: grid;
   grid-template-columns: min-content 1fr min-content;
   grid-template-rows: min-content min-content 1fr min-content;
-  height: 98vh; // Needed to avoid scrollbar in Chrome. Why?
+  height: calc(100vh - 16px); // -16 px needed to avoid scrollbar. Why?
 }
 
 .menus {

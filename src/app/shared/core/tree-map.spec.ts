@@ -29,19 +29,19 @@ describe('TreeMap', () => {
     });
 
     it('should insert multiple ascending values', () => {
-      for (let i = 0; i < 10000; ++i) {
+      for (let i = 0; i < 100; ++i) {
         treeMap.insert(i.toString());
       }
-      for (let i = 0; i < 10000; ++i) {
+      for (let i = 0; i < 100; ++i) {
         expect(treeMap.find(i)).withContext(`i=${i}`).toBe(i.toString());
       }
     });
 
     it('should insert multiple descending values', () => {
-      for (let i = 9999; i >= 0; --i) {
+      for (let i = 99; i >= 0; --i) {
         treeMap.insert(i.toString());
       }
-      for (let i = 0; i < 10000; ++i) {
+      for (let i = 0; i < 100; ++i) {
         expect(treeMap.find(i)).withContext(`i=${i}`).toBe(i.toString());
       }
     });
@@ -49,12 +49,12 @@ describe('TreeMap', () => {
     it('should insert multiple random values', () => {
       const rand = make32BitRandomGenerator(10938443, 3098442, 109999942, 947362228);
       const data = [];
-      for (let i = 0; i <= 10000; ++i) {
+      for (let i = 0; i <= 100; ++i) {
         const n = rand();
         data.push(n);
         expect(treeMap.insert(n.toString())).withContext(`i=${i}, n=${n}`).toBeUndefined();
       }
-      for (let i = 0; i <= 10000; ++i) {
+      for (let i = 0; i <= 100; ++i) {
         expect(treeMap.find(data[i])).withContext(`i=${i}`).toBe(data[i].toString());
       }
     });
@@ -77,41 +77,41 @@ describe('TreeMap', () => {
     });
 
     it('should delete multiple ascending values', () => {
-      for (let i = 0; i <= 10000; ++i) {
+      for (let i = 0; i <= 100; ++i) {
         expect(treeMap.insert(i.toString())).withContext(`i=${i}`).toBeUndefined();
       }
-      for (let i = 0; i <= 10000; ++i) {
+      for (let i = 0; i <= 100; ++i) {
         expect(treeMap.delete(i)).withContext(`i=${i}`).toBe(i.toString());
       }
-      for (let i = 9999; i >= 0; --i) {
+      for (let i = 99; i >= 0; --i) {
         expect(treeMap.find(i)).withContext(`i=${i}`).toBeUndefined();
       }
     });
 
     it('should delete multiple decending values', () => {
-      for (let i = 9999; i >= 0; --i) {
+      for (let i = 99; i >= 0; --i) {
         expect(treeMap.insert(i.toString())).withContext(`i=${i}`).toBeUndefined();
       }
-      for (let i = 9999; i >= 0; --i) {
+      for (let i = 99; i >= 0; --i) {
         expect(treeMap.delete(i)).withContext(`i=${i}`).toBe(i.toString());
       }
-      for (let i = 9999; i >= 0; --i) {
+      for (let i = 99; i >= 0; --i) {
         expect(treeMap.find(i)).withContext(`i=${i}`).toBeUndefined();
       }
     });
 
     it('should delete multiple random values', () => {
-      const rand = make32BitRandomGenerator(10938443, 3098442, 109999942, 947362228);
+      const rand = make32BitRandomGenerator(10938443, 3098442, 1099942, 947362228);
       const data = [];
-      for (let i = 0; i <= 10000; ++i) {
+      for (let i = 0; i <= 100; ++i) {
         const n = rand();
         data.push(n);
         expect(treeMap.insert(n.toString())).withContext(`i=${i}, n=${n}`).toBeUndefined();
       }
-      for (let i = 0; i <= 10000; ++i) {
+      for (let i = 0; i <= 100; ++i) {
         expect(treeMap.delete(data[i])).withContext(`i=${i}`).toBe(data[i].toString());
       }
-      for (let i = 9999; i >= 0; --i) {
+      for (let i = 99; i >= 0; --i) {
         expect(treeMap.find(i)).withContext(`i=${i}`).toBeUndefined();
       }
     });

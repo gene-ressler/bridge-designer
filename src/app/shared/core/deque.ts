@@ -72,8 +72,8 @@ export class Deque<T> {
     return list;
   }
  
-  /** Iterates over current deque contents. Not mutation safe. */
-  [Symbol.iterator]() {
+  /** Iterates over current deque contents. Not safe for mutations during iteration. */
+  [Symbol.iterator](): Iterator<T> {
     const left = this.left;
     const right = this.right;
     // Negative i points to left[-1-i]. Non-negative points to right[i]; 
@@ -92,6 +92,14 @@ export class Deque<T> {
         return { value: undefined as T, done: true };
       },
     };
+  }
+
+  public map<U>(f: (item: T) => U): U[] {
+    const result: U[] = [];
+    for (const item of this) {
+      result.push(f(item));
+    }
+    return result;
   }
 }
 
