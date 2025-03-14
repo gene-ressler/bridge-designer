@@ -241,7 +241,7 @@ export class DesignMemberRenderingService {
     const savedFillStyle = ctx.fillStyle;
 
     const x = (a.x + b.x) * 0.5;
-    const y = (a.y + b.y) * 0.5;
+    const y = (a.y + b.y) * 0.5 + 1; // +1 centers on horizontal-ish members.
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.font = '9px';

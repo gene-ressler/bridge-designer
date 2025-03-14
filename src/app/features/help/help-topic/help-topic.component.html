@@ -1,4 +1,4 @@
-<div [class]="containerType">
+<div #topicContainer [class]="containerType">
   <ng-container *ngTemplateOutlet="visibleTopic"></ng-container>
 </div>
 
@@ -534,11 +534,10 @@
     bridge structures. These are defined primarily by the geometry of their vertical and diagonal members.
   </p>
 </ng-template>
-<!-- edited -->
 <ng-template topic-name="hlp_compressive_strength">
   <h1>Compressive strength</h1>
   <p>
-    The <span class="b">compressive strength</span> of a member is the internal force at which a member becomes
+    The <span class="b">compressive strength</span> of a member is the internal force that causes it to become
     <topic-popup name="glos_unsafe">unsafe</topic-popup> in
     <topic-popup name="glos_compression">compression</topic-popup>. If the actual
     <topic-popup name="glos_member_force">member force</topic-popup> exceeds the compressive strength, then the member
@@ -549,59 +548,41 @@
     <topic-popup name="glos_buckling">buckling</topic-popup> failure mode.
   </p>
   <p>
-    Compressive strength is represented by the symbol
-    <img
-      src="img/help/str_pn.png"
-      alt="Compressive Strength"
-    />and is measured in units of force, such as kilonewtons (kN). Compressive strength can be calculated using the
-    following equations:
+    Compressive strength is represented by the symbol ϕP<sub>n</sub> and is measured in units of force, such as
+    <topic-popup name="glos_kilonewton">kilonewtons</topic-popup>, abbreviated kN. Compressive strength can be
+    calculated using the following equations:
   </p>
-  <p class="in1">
-    If
-    <img
-      src="img/help/str_llt2.png"
-      alt="Compressive Strength"
-    />then
-  </p>
+  <p class="in1">If <span class="bi">λ</span> ≤ 2.25, then</p>
   <p class="in2">
-    <img
-      src="img/help/str_c1.png"
-      alt="Compressive Strength"
-    />
+    <span class="bi">ϕP<sub>n</sub></span
+    > = <span class="bi">ϕ(0.66<sup>λ</sup>)F<sub>y</sub>A</span>
   </p>
-  <p class="in1">
-    If
-    <img
-      src="img/help/str_lgt2.png"
-      alt="Compressive Strength"
-    />then
-  </p>
+  <p class="in1">If <span class="bi">λ</span> &gt; 2.25, then</p>
   <p class="in2">
-    <img
-      src="img/help/str_c2.png"
-      alt="Compressive Strength"
-    />
+    <span class="bi">ϕP<sub>n</sub></span
+    > = <span class="bi">ϕ(0.88 F<sub>y</sub>A)</span> ⁄ <span class="bi">λ</span>
   </p>
   <p class="in1">where</p>
   <p class="in2">
-    <img
-      src="img/help/str_lamd.png"
-      alt="Compressive Strength"
-    />is a dimensionless parameter that differentiates between the inelastic ( <span class="f1">l</span> &lt;2.25) and
-    elastic ( <span class="f1">l</span> &gt;2.25) buckling failure modes.
+    <span class="bi">λ</span> = <span class="bi">(F<sub>y</sub>AL<sup>2</sup>)</span> ⁄ <span class="bi"
+      >(π<sup>2</sup>EI)</span
+    >
+    is a dimensionless parameter that differentiates between the inelastic (<span class="bi">λ</span> ≤ 2.25) and
+    elastic (<span class="bi">λ</span> &gt; 2.25) buckling failure modes.
   </p>
   <p class="in1">and</p>
   <p class="in2">
-    <span class="f1b">f</span> = 0.90 is the
+    <span class="bi">ϕ</span> = 0.90 is the
     <topic-popup name="glos_resistance_factor">resistance factor</topic-popup> for a member in compression
   </p>
-  <p class="in2"><span class="bi">Fy</span> is the <topic-popup name="glos_yield_stress">yield stress</topic-popup></p>
+  <p class="in2">
+    <span class="bi">F<sub>y</sub></span> is the <topic-popup name="glos_yield_stress">yield stress</topic-popup>
+  </p>
   <p class="in2">
     <span class="bi">A</span> is the <topic-popup name="hlp_crossxsection">cross-sectional area</topic-popup> of the
     member
   </p>
-  <p class="in3"></p>
-  <p class="in2"><span class="f1">p</span> is 3.14159...</p>
+  <p class="in2"><span class="bi">π</span> is 3.14159...</p>
   <p class="in2">
     <span class="bi">E</span> is the
     <topic-popup name="glos_modulus_of_elasticity">modulus of elasticity</topic-popup> of the material
@@ -614,19 +595,19 @@
   <p class="in2"><span class="bi">L</span> is the length of the member</p>
   <h2 class="btop">Notes and tips</h2>
   <p>
-    These equations are taken from the 1994 <topic-popup name="glos_aashto">AASHTO</topic-popup>
-    <span class="i">LRFD Bridge Design Specifications</span>.
+    These equations are taken from the 1994
+    <span class="i"><topic-popup name="glos_aashto">AASHTO</topic-popup>&nbsp;LRFD Bridge Design Specifications</span>.
   </p>
   <p>
-    To see a graph of compressive strength, as a function of member length, click the
-    <topic-popup name="hlp_member_details">Report Member Properties button.</topic-popup>
+    To see a graph of compressive strength, as a function of member length, see the
+    <topic-link name="hlp_member_details">member details tab</topic-link>.
   </p>
   <p>
-    To obtain the numerical values of <span class="bi">Fy</span> and <span class="bi">E</span> for a given
+    To obtain the numerical values of <span class="bi">F<sub>y</sub></span> and <span class="bi">E</span> for a given
     <topic-link name="hlp_materials">material</topic-link> and <span class="bi">A</span> and
     <span class="bi">I</span> for a given <topic-popup name="hlp_crossxsection">cross-section</topic-popup> and
     <topic-popup name="glos_member_size">member size</topic-popup>, click the
-    <topic-popup name="hlp_member_details">Report Member Properties button.</topic-popup>
+    <topic-link name="hlp_member_details">member details tab</topic-link>.
   </p>
   <p>
     The <span class="bd-emph">Bridge Designer</span> calculates the compressive strength of each member in your
@@ -635,7 +616,7 @@
   </p>
   <p>
     The compressive strength of a member is always less than its
-    <topic-link name="hlp_tensile_strength">tensile strength.</topic-link> If the member is relatively long and slender,
+    <topic-link name="hlp_tensile_strength">tensile strength</topic-link>. If the member is relatively long and slender,
     the difference can be quite substantial.
   </p>
   <p>
@@ -648,52 +629,61 @@
 <ng-template topic-name="hlp_cost">
   <h1>Cost of the design</h1>
   <p>
-    The <span class="bd-emph">Bridge Designer</span> automatically calculates the
-    <span class="b">cost of your bridge design</span> as you create it. This cost is continuously updated and displayed
-    on the <topic-link name="hlp_toolbars">Status Toolbar.</topic-link>
+    The <span class="bd-emph">Bridge Designer</span> automatically calculates the cost of your bridge design as you
+    create it. This cost is continuously updated and displayed on the
+    <topic-link name="hlp_toolbars">status toolbar</topic-link>.
   </p>
   <p>
-    The cost calculated by <span class="bd-emph">Bridge Designer</span> <span class="i">does not</span> accurately
-    represent the total cost of an actual bridge project. Rather, the cost calculation is intended to give you a general
-    appreciation for the competing factors that influence the cost of a typical engineering project, while also
-    facilitating the use of <span class="bd-emph">Bridge Designer</span> for educational design competitions.
+    The cost calculated by <span class="bd-emph">Bridge Designer</span><span class="i"> does not</span> accurately
+    represent the total cost of an actual bridge project. Rather, it is intended to give a general appreciation for
+    competing factors that influence the cost of a typical engineering project: a learning tool.
   </p>
   <p>
-    As it is calculated by <span class="bd-emph">Bridge Designer</span>, the total cost of your bridge design consists
-    of two major components--the <topic-popup name="glos_site_cost">site cost</topic-popup> and the
-    <span class="i">truss cost.</span> The site cost, in turn, is the sum of three components: (1) excavation cost, (2)
-    <topic-popup name="glos_deck">deck</topic-popup> cost, and (3) support cost The truss cost also includes three
-    components: (1) material cost, (2) connection cost, and (3) product cost. All of these cost components are described
-    below. The specific numerical cost factors for each are listed in the
-    <topic-link name="hlp_design_specifications">Design Specifications</topic-link>.
+    The total cost of your bridge design consists of two major components -
+    <topic-popup name="glos_site_cost">site cost </topic-popup> and truss cost. The site cost, in turn, is the sum of
+    three components:
+  </p>
+  <ol>
+    <li>excavation cost</li>
+    <li><topic-popup name="glos_deck">deck</topic-popup> cost</li>
+    <li>support cost</li>
+  </ol>
+  <p>The truss cost also includes three components:</p>
+  <ol>
+    <li>material cost</li>
+    <li>connection cost</li>
+    <li>product cost</li>
+  </ol>
+  <p>
+    All of these cost components are described below. The specific numerical cost factors for each are listed in the
+    <topic-link name="hlp_design_specifications">design specifications</topic-link>.
   </p>
   <h2>Site Cost</h2>
   <p>
     The <span class="i">site cost</span> consists of all costs associated with your selection of the
-    <topic-link name="hlp_select_project">site configuration</topic-link>--the deck height,
+    <topic-link name="hlp_select_project">site configuration</topic-link> - the deck height,
     <topic-popup name="glos_span">span</topic-popup> length, and support configuration of your bridge.
   </p>
   <p><span class="i">Excavation Cost</span></p>
   <p>
-    When you select the deck height, you determine the amount of soil that must be excavated in order to achieve the
-    correct highway elevation. The lower the deck, the more excavation is required. As in real-world construction,
-    excavation is priced by the cubic yard or cubic meter. The
-    <span class="bd-emph">Bridge Designer</span> determines the required volume of soil excavation, based on the
-    selected deck elevation.
+    When you select the deck height, you determine the amount of soil that must be excavated to achieve the correct
+    highway elevation. The lower the deck, the more excavation is required. As in real-world construction, excavation is
+    priced by the cubic yard or cubic meter. The
+    <span class="bd-emph">Bridge Designer</span> determines the required volume of soil excavation based on the selected
+    deck elevation.
   </p>
   <p><span class="i">Deck Cost</span></p>
   <p>
     Your selection of the deck height also determines the overall span length of the bridge. A higher deck results in a
-    longer span, which increases not only the truss cost, but the cost of the reinforced
+    longer span, which increases both the truss cost and the cost of the reinforced
     <topic-popup name="glos_concrete">concrete</topic-popup> deck.
   </p>
   <p>
-    In the <span class="bd-emph">Bridge Designer</span>, the you can also select the material that the deck is made
-    of--either medium-strength or high-strength concrete. Medium-strength concrete costs less than high-strength
-    concrete; however, its lower strength requires the use of a thicker deck. A thicker medium-strength concrete deck
-    weighs more than a thinner high-strength concrete deck and thus will increase the loading on the truss. Increased
-    loading will cause the truss cost to increase. Thus a cheaper deck will tend to result in a more expensive truss,
-    and vice versa.
+    In the <span class="bd-emph">Bridge Designer</span>, you can also select the material that the deck is made of -
+    either medium-strength or high-strength concrete. Medium-strength concrete costs less than high-strength concrete,
+    but its lower strength requires the deck to be thicker. This thicker deck weighs more than a thinner high-strength
+    concrete deck and thus will increase the loading on the truss. Increased loading will cause the truss cost to
+    increase. The result: a cheaper deck tends to require a more expensive truss and vice versa.
   </p>
   <p>In either case, the cost of the deck is specified as a lump-sum cost for each 4-meter deck panel.</p>
   <p><span class="i">Support Cost</span></p>
@@ -707,28 +697,36 @@
     length, because longer spans weigh more than shorter spans and thus transmit greater
     <topic-popup name="glos_loads">loads</topic-popup> to the supports. In general,
     <topic-popup name="glos_standard_abutments">standard abutments</topic-popup> cost less than
-    <topic-popup name="glos_arch_abutments">arch abutments</topic-popup>, for a given span length. The costs of arch
+    <topic-popup name="glos_arch_abutments">arch abutments</topic-popup> for a given span length. The costs of arch
     abutments and piers also vary significantly with height. Higher abutments and piers use more material than shorter
-    ones; thus the higher supports cost more. Cable anchorages have a single lump-sum cost.
+    ones, so they cost more. Cable anchorages have a single lump-sum cost.
   </p>
   <h2>Truss Cost</h2>
   <p>
     The <span class="i">truss cost</span> consists of all costs associated with the structural steel
     <topic-popup name="glos_members">members</topic-popup> and
-    <topic-popup name="glos_connections">connections</topic-popup> that make up the two main trusses--the principal
+    <topic-popup name="glos_connections">connections</topic-popup> that make up the two main trusses - the principal
     load-carrying elements of the bridge.
   </p>
   <p><span class="i">Material cost</span></p>
   <p>
     Structural steel is normally priced by weight (or mass); e.g., dollars per pound or dollars per kilogram. Thus the
-    cost of a structure depends, in part, on the total weight (or mass) of material used to build it. The
-    <span class="bd-emph">Bridge Designer</span> calculates the material cost by (1) determining the total mass of the
-    three available <topic-link name="hlp_materials">materials</topic-link>--carbon steel, high-strength steel, and
-    quenched and tempered steel--in your <topic-popup name="glos_structural_model">structural model</topic-popup>, (2)
-    multiplying the mass of each material type by the corresponding unit cost, in dollars per kilogram, and (3) adding
-    these together to get the total material cost. As noted in the Design Specifications, each of the three different
-    types of steel has a different unit cost. Carbon steel is least expensive; quenched and tempered steel is most
-    expensive. For a given material, hollow tubes are more expensive (per kilogram) than solid bars.
+    cost of a structure depends, in part, on the total weight of material used to build it. The
+    <span class="bd-emph">Bridge Designer</span> calculates the material cost by
+  </p>
+  <ol>
+    <li>
+      determining the total mass of the three available <topic-link name="hlp_materials">materials</topic-link> - carbon
+      steel, high-strength steel, and quenched and tempered steel--in your
+      <topic-popup name="glos_structural_model">structural model</topic-popup>
+    </li>
+    <li>multiplying the mass of each material type by the corresponding unit cost, in dollars per kilogram</li>
+    <li>adding these together to get the total material cost.</li>
+  </ol>
+  <p>
+    As noted in the <topic-link name="hlp_design_specifications">design specifications</topic-link>, each of the three
+    different types of steel has a different unit cost. Carbon steel is least expensive; quenched and tempered steel is
+    most expensive. For a given material, hollow tubes are more expensive (per kilogram) than solid bars.
   </p>
   <p><span class="i">Connection cost</span></p>
   <p>
@@ -753,20 +751,20 @@
   <p>
     To see the <span class="i">cost factors</span> (cost per kilogram, cost per joint, cost per product, and site cost)
     and the actual cost calculations for your current design, click the
-    <topic-popup name="hlp_report_cost">Report Cost Calculations button.</topic-popup> The
-    <topic-link name="hlp_setup_wizard">Site Design Wizard</topic-link> also displays detailed calculations for each
+    <topic-popup name="hlp_report_cost">report cost calculations button</topic-popup>. The
+    <topic-link name="hlp_setup_wizard">site design wizard</topic-link> also displays detailed calculations for each
     component of the site cost.
   </p>
   <h2>Minimizing Total Cost</h2>
   <p>
     As you attempt to minimize the total cost of your bridge design, you will find that you can
     <span class="i">never</span> minimize the site cost, material cost, connection cost, and product cost
-    simultaneously. Minimizing the total cost is always a compromise between these four competing cost factors.
+    simultaneously. Minimizing the total cost is always a compromise among these four competing factors.
   </p>
   <p>
     To minimize the <span class="i">site cost</span>, you would simply select the site configuration that costs the
     least. But the least expensive site configuration requires a simply supported truss spanning a full 44 meters. This
-    configuration will require a relatively heavy truss--one with a high
+    configuration will require a relatively heavy truss - one with a high
     <span class="i">material cost.</span>
   </p>
   <p>
@@ -777,10 +775,10 @@
     <span class="i">product cost</span> will be quite high.
   </p>
   <p>
-    To minimize the <span class="i">connection cost</span>, you must use the least possible number of joints in your
-    structural model. But if you minimize the number of joints, you will inevitably have a few
-    <span class="i">very long</span> members in your structural model. If a long member is subjected to compressive
-    loading, it will require a very large member size to keep it from failing. (As a member gets longer, its
+    To minimize the <span class="i">connection cost</span>, you must use the smallest possible number of joints. But if
+    you minimize the number of joints, you will inevitably have a few <span class="i">very long</span> members in your
+    structural model. If a long member is subjected to compressive loading, it will require a very large member size to
+    keep it from failing. (As a member gets longer, its
     <topic-link name="hlp_compressive_strength">compressive strength</topic-link> decreases significantly.) Thus
     minimizing the connection cost usually results in a high <span class="i">material cost</span>.
   </p>
@@ -788,15 +786,16 @@
     To minimize the <span class="i">product cost</span>, you would need to use a <span class="i">single</span> material,
     cross-section, and size for every member in your structural model. But your single member size would have to be
     large enough to ensure that the most heavily loaded member in the structure does not fail. As a result, many of the
-    other members would be much stronger (and therefore much heavier) than they really need to be, and your
+    other members would be much stronger - and therefore much heavier - than they really need to be, and your
     <span class="i">material cost</span> would be extremely high.
   </p>
   <p>
-    Clearly there is a tradeoff between the site cost, material cost, connection cost, and product cost. Minimizing one
+    Clearly there are tradeoffs among site cost, material cost, connection cost, and product cost. Minimizing one
     <span class="i">always</span> increases one or more of the others. Your task as the designer is to find the best
-    compromise between the four.
+    compromise.
   </p>
 </ng-template>
+<!-- edited -->
 <ng-template topic-name="hlp_crossxsection">
   <h2>Cross-Section</h2>
   <p>

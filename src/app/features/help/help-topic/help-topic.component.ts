@@ -1,6 +1,7 @@
 import {
   AfterViewInit,
   Component,
+  ElementRef,
   EventEmitter,
   Input,
   OnChanges,
@@ -31,12 +32,13 @@ export class HelpTopicComponent implements AfterViewInit, OnChanges {
   @Output() visibleTopicNameChange: EventEmitter<string> = new EventEmitter<string>();
 
   @ViewChild('defaultTopic', { static: true }) visibleTopic: TemplateRef<any> | null = null;
+  @ViewChild('topicContainer') topicContainer!: ElementRef<HTMLDivElement>;
 
   @ViewChildren(TopicNameDirective) topicNames!: QueryList<TopicNameDirective>;
 
   constructor(private readonly helpEventService: HelpEventService) {}
 
-  public goToTopic(topicName: string): void {
+  public goToTopic(topicName: string, scrollTop?: number): void {
     if (!this.topicNames) {
       return;
     }
@@ -47,6 +49,15 @@ export class HelpTopicComponent implements AfterViewInit, OnChanges {
     this.visibleTopicName = topicName;
     this.visibleTopic = directive.templateRef;
     this.visibleTopicNameChange.emit(topicName);
+    if (scrollTop !== undefined) {
+      setTimeout(() => {
+        this.topicContainer.nativeElement.scrollTop = scrollTop;
+      });
+    }
+  }
+
+  public get scrollTop(): number {
+    return this.topicContainer.nativeElement.scrollTop;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -58,6 +69,8 @@ export class HelpTopicComponent implements AfterViewInit, OnChanges {
 
   ngAfterViewInit(): void {
     this.goToTopic(this.visibleTopicName);
-    this.helpEventService.goToTopicRequest.subscribe(topicName => this.goToTopic(topicName));
+    this.helpEventService.goToTopicRequest.subscribe(({ topicName, scrollTop }) =>
+      this.goToTopic(topicName, scrollTop),
+    );
   }
 }

@@ -10,11 +10,12 @@ import { HelpEventService } from '../help-event.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HelpTopicLinkComponent {
-  @Input({required: true, }) name!: string;
+  @Input({ required: true }) name!: string;
 
   constructor(private readonly helpEventService: HelpEventService) {}
 
-  handleClick(_event: any) {
-    this.helpEventService.goToTopicRequest.next(this.name);
+  handlePointerDown(event: any) {
+    this.helpEventService.goToTopicRequest.next({ topicName: this.name, scrollTop: 0 });
+    event.stopPropagation();
   }
 }

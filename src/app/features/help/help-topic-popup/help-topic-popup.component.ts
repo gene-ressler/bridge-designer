@@ -36,7 +36,7 @@ export class HelpPopupTopicComponent implements AfterViewInit {
     const helpPaneRect = document.querySelector('.pane-content')!.getBoundingClientRect();
     const linkRect = this.link.nativeElement.parentElement!.getBoundingClientRect();
     const openPopup = document.querySelector('.open-popup') as HTMLElement;
-    const popupWidth = 636;
+    const popupWidth = 640;
     if (!this.isPopupDescendent) {
       this.hidePopup(openPopup);
     }

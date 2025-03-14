@@ -36,13 +36,14 @@ export class HelpDialogComponent implements AfterViewInit {
   public static readonly DEFAULT_TOPIC_ID = 'hlp_how_to';
 
   @ViewChild('dialog') dialog!: jqxWindowComponent;
+  @ViewChild('helpTopic') helpTopic!: HelpTopicComponent;
   @ViewChild('navTree') navTree!: jqxTreeComponent;
   @ViewChild('toolBar') toolBar!: jqxToolBarComponent;
 
   _currentTopicName: string = HelpDialogComponent.DEFAULT_TOPIC_ID;
   tools: string = 'button button';
-  private backTopicStack: string[] = [];
-  private forwardTopicStack: string[] = [];
+  private backTopicStack: { topicName: string; scrollTop: number }[] = [];
+  private forwardTopicStack: { topicName: string; scrollTop: number }[] = [];
   private isInternalGoTo: boolean = false;
 
   constructor(
@@ -66,7 +67,7 @@ export class HelpDialogComponent implements AfterViewInit {
   // Listen in on the 2-way binding to maintain stacks.
   set currentTopicName(value: string) {
     if (value !== this._currentTopicName && !this.isInternalGoTo) {
-      this.backTopicStack.push(this._currentTopicName);
+      this.backTopicStack.push({ topicName: this._currentTopicName, scrollTop: this.helpTopic.scrollTop });
       this.forwardTopicStack.length = 0;
       this.enableAndDisableButtons();
     }
@@ -78,27 +79,27 @@ export class HelpDialogComponent implements AfterViewInit {
   }
 
   private goBack() {
-    const topicName = this.backTopicStack.pop();
-    if (topicName) {
-      this.forwardTopicStack.push(this._currentTopicName);
-      this.goToInternal(topicName);
+    const top = this.backTopicStack.pop();
+    if (top) {
+      this.forwardTopicStack.push({ topicName: this._currentTopicName, scrollTop: this.helpTopic.scrollTop });
+      this.goToInternal(top.topicName, top.scrollTop);
       this.enableAndDisableButtons();
     }
   }
 
   private goForward() {
-    const topicName = this.forwardTopicStack.pop();
-    if (topicName) {
-      this.backTopicStack.push(this._currentTopicName);
-      this.goToInternal(topicName);
+    const top = this.forwardTopicStack.pop();
+    if (top) {
+      this.backTopicStack.push({ topicName: this._currentTopicName, scrollTop: this.helpTopic.scrollTop });
+      this.goToInternal(top.topicName, top.scrollTop);
       this.enableAndDisableButtons();
     }
   }
 
   /** Go to a topic without handling the resulting change event. */
-  private goToInternal(topicName: string) {
+  private goToInternal(topicName: string, scrollTop: number) {
     this.isInternalGoTo = true;
-    this.helpEventService.goToTopicRequest.next(topicName);
+    this.helpEventService.goToTopicRequest.next({ topicName, scrollTop });
     this.isInternalGoTo = false;
   }
 
@@ -111,7 +112,7 @@ export class HelpDialogComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     this.eventBrokerService.helpRequest.subscribe(eventInfo => {
       if (eventInfo.data) {
-        this.goToInternal(eventInfo.data);
+        this.goToInternal(eventInfo.data, 0);
       }
       this.dialog.open();
     });
