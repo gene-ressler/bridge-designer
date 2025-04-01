@@ -137,7 +137,7 @@ export class HotElementService {
 
   private render(ctx: CanvasRenderingContext2D, element: HotElement): void {
     if (element === undefined) {
-      return; // nothing to rendder
+      return; // nothing to render
     }
     if (element instanceof Joint) {
       this.designJointRenderingService.renderHot(ctx, element, this.elementSelectionService.isJointSelected(element));

@@ -5,16 +5,14 @@ import { DehydratedEditCommand } from './dehydration-context';
 import { EditCommandTag } from './dehydration-context';
 
 export class MoveLabelsCommand extends EditCommand {
+  public override readonly effectsMask: number = EditEffect.LABELS;
+
   constructor(
     private readonly draftingPanelState: DraftingPanelState,
     private readonly yFrom: number,
     private readonly yTo: number,
   ) {
     super(`Move labels to height ${yTo.toFixed(2)}`);
-  }
-
-  override get effectsMask(): number {
-    return EditEffect.LABELS;
   }
 
   public override do(): void {

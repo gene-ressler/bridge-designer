@@ -3,7 +3,6 @@ import { Subject } from 'rxjs';
 import { EventInfo, EventOrigin } from '../../../shared/services/event-broker.service';
 import { jqxToggleButtonComponent } from 'jqwidgets-ng/jqxtogglebutton';
 import { jqxMenuComponent } from 'jqwidgets-ng/jqxmenu';
-import { Utility } from '../../../shared/classes/utility';
 import { jqxButtonComponent } from 'jqwidgets-ng/jqxbuttons';
 
 export const enum ModifierMask {
@@ -23,7 +22,6 @@ export class UiStateService {
   private readonly plainMenuItemInfosById: { [id: string]: [Subject<EventInfo>, any] } = {};
   private readonly widgetDisablersBySubject = new Map<Subject<any>, ((disable: boolean) => void)[]>();
   private readonly keyInfosByKey: { [key: string]: [boolean, Subject<EventInfo>, any] } = {};
-  private _menu: jqxMenuComponent | undefined;
 
   constructor() {
     addEventListener('keydown', (event: KeyboardEvent): void => {
@@ -36,11 +34,6 @@ export class UiStateService {
       event.preventDefault();
       info[1].next({ origin: EventOrigin.TOOLBAR, data: info[2] });
     });
-  }
-
-  /** Registers a menu where we'll disable/re-enable items by their associated subjects. */
-  public registerForDisablement(menu: jqxMenuComponent): void {
-    this._menu = menu;
   }
 
   public handleMenuItemClicked(id: string): void {
@@ -65,10 +58,10 @@ export class UiStateService {
     }
   }
 
-  public registerSelectMenuItems(itemIds: string[], subject: Subject<EventInfo>): void {
-    this.addWidgetDisabler(subject, disable => itemIds.forEach(id => this.menu.disable(id, disable)));
+  public registerSelectMenuItems(menu: jqxMenuComponent, itemIds: string[], subject: Subject<EventInfo>): void {
+    this.addWidgetDisabler(subject, disable => itemIds.forEach(id => menu.disable(id, disable)));
     itemIds.forEach((id, index) => (this.selectMenuItemInfosById[id] = [index, subject]));
-    const menuItems = itemIds.map(UiStateService.queryMenuItem);
+    const menuItems = itemIds.map(UiStateService.queryMenuMark);
     subject.subscribe((eventInfo: EventInfo) =>
       menuItems.forEach((menuItem, menuItemIndex) =>
         UiStateService.setMenuItemCheck(menuItem, eventInfo.data === menuItemIndex),
@@ -115,9 +108,9 @@ export class UiStateService {
     });
   }
 
-  public registerToggleMenuItem(itemId: string, subject: Subject<EventInfo>): void {
-    this.addWidgetDisabler(subject, disable => this.menu.disable(itemId, disable));
-    const menuItem = UiStateService.queryMenuItem(itemId);
+  public registerToggleMenuItem(menu: jqxMenuComponent, itemId: string, subject: Subject<EventInfo>): void {
+    this.addWidgetDisabler(subject, disable => menu.disable(itemId, disable));
+    const menuItem = UiStateService.queryMenuMark(itemId);
     this.toggleMenuItemInfosById[itemId] = [menuItem, subject];
     subject.subscribe((eventInfo: EventInfo) => {
       if (eventInfo.origin != EventOrigin.MENU) {
@@ -154,8 +147,8 @@ export class UiStateService {
     });
   }
 
-  public registerPlainMenuEntry(itemId: string, subject: Subject<EventInfo>, data?: any): void {
-    this.addWidgetDisabler(subject, disable => this.menu.disable(itemId, disable));
+  public registerPlainMenuEntry(menu: jqxMenuComponent, itemId: string, subject: Subject<EventInfo>, data?: any): void {
+    this.addWidgetDisabler(subject, disable => menu.disable(itemId, disable));
     this.plainMenuItemInfosById[itemId] = [subject, data];
   }
 
@@ -187,10 +180,6 @@ export class UiStateService {
     this.widgetDisablersBySubject.get(subject)?.forEach(disabler => disabler(value));
   }
 
-  private get menu(): jqxMenuComponent {
-    return Utility.assertNotUndefined(this._menu);
-  }
-
   /** Adds a disabler for given subject. Useful for disabling widgets that don't drive send messages themselves. */
   public addWidgetDisabler(subject: Subject<any>, disabler: (disable: boolean) => void): void {
     let disablers: ((disable: boolean) => void)[] | undefined = this.widgetDisablersBySubject.get(subject);
@@ -209,7 +198,9 @@ export class UiStateService {
     return menuItem.textContent === '✔';
   }
 
-  private static queryMenuItem(id: string): HTMLSpanElement {
+  // Another way through the jqxMenu object, but it's undocumented:
+  // (menu.widgetObject as any).menuElements[id].element.children.item(0) as HTMLSpanElement 
+  private static queryMenuMark(id: string): HTMLSpanElement {
     return document.querySelector(`li#${id} > span.menu-mark`) as HTMLSpanElement;
   }
 }

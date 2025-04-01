@@ -3,16 +3,14 @@ import { EditCommand, EditEffect } from '../../../shared/classes/editing';
 import { Point2DInterface } from '../../../shared/classes/graphics';
 import { Joint } from '../../../shared/classes/joint.model';
 import { SelectedElements } from '../../drafting/shared/selected-elements-service';
-import {
-  ContextElementRef,
-  RehydrationContext,
-  DehydrationContext,
-} from './dehydration-context';
+import { ContextElementRef, RehydrationContext, DehydrationContext } from './dehydration-context';
 import { MemberSplitter, DehydratedMemberSplitter } from './member-splitter';
 import { DehydratedEditCommand } from './dehydration-context';
 import { EditCommandTag } from './dehydration-context';
 
 export class MoveJointCommand extends EditCommand {
+  private _effectsMask: number = NaN;
+
   private constructor(
     private readonly joint: Joint,
     private readonly toJoint: Joint,
@@ -37,7 +35,13 @@ export class MoveJointCommand extends EditCommand {
   }
 
   override get effectsMask(): number {
-    return this.memberSplitter.hasSplit ? EditEffect.MEMBERS | EditEffect.JOINTS : EditEffect.JOINTS;
+    if (isNaN(this._effectsMask)) {
+      this._effectsMask =
+        this.memberSplitter.hasSplit || this.bridge.members.some(member => member.hasJoint(this.joint))
+          ? EditEffect.JOINTS | EditEffect.MEMBERS
+          : EditEffect.JOINTS;
+    }
+    return this._effectsMask;
   }
 
   // TODO: Handle member intersecting peir.

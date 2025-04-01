@@ -18,62 +18,61 @@ export class MenusComponent implements AfterViewInit {
   constructor(
     private readonly uiStateService: UiStateService,
     private readonly eventBrokerService: EventBrokerService,
-  ) {
-    
-  }
+  ) {}
 
   handleItemClick(event: any): void {
     const liElement = event.args as HTMLElement;
     this.uiStateService.handleMenuItemClicked(liElement.id);
   }
 
+  // prettier-ignore
   ngAfterViewInit(): void {
     // Can't disable items in HTML :-(
     ['loadTestResults', 'redo', 'sizedown', 'sizeup', 'undo'].forEach(id => this.mainMenu.disable(id, true));
-    this.uiStateService.registerForDisablement(this.mainMenu);
 
     const gridGroup = ['coarseGrid', 'mediumGrid', 'fineGrid'];
-    this.uiStateService.registerSelectMenuItems(gridGroup, this.eventBrokerService.gridDensitySelection);
+    this.uiStateService.registerSelectMenuItems(this.mainMenu,gridGroup, this.eventBrokerService.gridDensitySelection);
 
     const draftingGroup = ['drawingBoard', 'loadTest'];
-    this.uiStateService.registerSelectMenuItems(draftingGroup, this.eventBrokerService.designModeSelection);
+    this.uiStateService.registerSelectMenuItems(this.mainMenu,draftingGroup, this.eventBrokerService.designModeSelection);
 
     const toolsGroup = ['joints', 'members', 'select', 'erase'];
-    this.uiStateService.registerSelectMenuItems(toolsGroup, this.eventBrokerService.editModeSelection);
+    this.uiStateService.registerSelectMenuItems(this.mainMenu, toolsGroup, this.eventBrokerService.editModeSelection);
 
-    this.uiStateService.registerPlainMenuEntry('back', this.eventBrokerService.designIterationBackRequest);
-    this.uiStateService.registerPlainMenuEntry('costCalculations', this.eventBrokerService.costReportRequest);
-    this.uiStateService.registerPlainMenuEntry('delete', this.eventBrokerService.deleteSelectionRequest);
-    this.uiStateService.registerPlainMenuEntry('designWindow', this.eventBrokerService.helpRequest, 'hlp_bridge_design_window');
-    this.uiStateService.registerPlainMenuEntry('forward', this.eventBrokerService.designIterationForwardRequest);
-    this.uiStateService.registerPlainMenuEntry('howTo', this.eventBrokerService.helpRequest, 'hlp_how_to');
-    this.uiStateService.registerPlainMenuEntry('loadSample', this.eventBrokerService.loadSampleRequest);
-    this.uiStateService.registerPlainMenuEntry('loadTemplate', this.eventBrokerService.loadTemplateRequest);
-    this.uiStateService.registerPlainMenuEntry('loadTestResults', this.eventBrokerService.analysisReportRequest);
-    this.uiStateService.registerPlainMenuEntry('new', this.eventBrokerService.newDesignRequest);
+    this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'back', this.eventBrokerService.designIterationBackRequest);
+    this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'costCalculations', this.eventBrokerService.costReportRequest);
+    this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'delete', this.eventBrokerService.deleteSelectionRequest);
+    this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'designWindow', this.eventBrokerService.helpRequest, 'hlp_bridge_design_window');
+    this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'forward', this.eventBrokerService.designIterationForwardRequest);
+    this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'howTo', this.eventBrokerService.helpRequest, 'hlp_how_to');
+    this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'loadSample', this.eventBrokerService.loadSampleRequest);
+    this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'loadTemplate', this.eventBrokerService.loadTemplateRequest);
+    this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'loadTestResults', this.eventBrokerService.analysisReportRequest);
+    this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'new', this.eventBrokerService.newDesignRequest);
     // TODO: Make this actually open a bridge file.
-    this.uiStateService.registerPlainMenuEntry('open', this.eventBrokerService.memberEditRequest);
-    this.uiStateService.registerPlainMenuEntry('redo', this.eventBrokerService.redoRequest);
-    this.uiStateService.registerPlainMenuEntry('selectAll', this.eventBrokerService.selectAllRequest);
-    this.uiStateService.registerPlainMenuEntry('sizedown', this.eventBrokerService.memberSizeDecreaseRequest);
-    this.uiStateService.registerPlainMenuEntry('sizeup', this.eventBrokerService.memberSizeIncreaseRequest);
-    this.uiStateService.registerPlainMenuEntry('tip', this.eventBrokerService.tipRequest);
-    this.uiStateService.registerPlainMenuEntry('undo', this.eventBrokerService.undoRequest);
+    this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'open', this.eventBrokerService.memberEditRequest);
+    this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'redo', this.eventBrokerService.redoRequest);
+    this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'selectAll', this.eventBrokerService.selectAllRequest);
+    this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'sizedown', this.eventBrokerService.memberSizeDecreaseRequest);
+    this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'sizeup', this.eventBrokerService.memberSizeIncreaseRequest);
+    this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'tip', this.eventBrokerService.tipRequest);
+    this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'undo', this.eventBrokerService.undoRequest);
 
-    this.uiStateService.registerToggleMenuItem('animation', this.eventBrokerService.animationToggle);
-    this.uiStateService.registerToggleMenuItem('animationControls', this.eventBrokerService.animationControlsToggle);
-    this.uiStateService.registerToggleMenuItem('autoCorrect', this.eventBrokerService.autoCorrectToggle);
-    this.uiStateService.registerToggleMenuItem('guides', this.eventBrokerService.guidesToggle);
-    this.uiStateService.registerToggleMenuItem('legacyGraphics', this.eventBrokerService.legacyGraphicsToggle);
-    this.uiStateService.registerToggleMenuItem('memberList', this.eventBrokerService.memberTableToggle);
-    this.uiStateService.registerToggleMenuItem('memberNumbers', this.eventBrokerService.memberNumbersToggle);
-    this.uiStateService.registerToggleMenuItem('rulers', this.eventBrokerService.rulersToggle);
-    this.uiStateService.registerToggleMenuItem('session', this.eventBrokerService.sessionStateEnableToggle);
-    this.uiStateService.registerToggleMenuItem('template', this.eventBrokerService.templateToggle);
-    this.uiStateService.registerToggleMenuItem('titleBlock', this.eventBrokerService.titleBlockToggle);
-    this.uiStateService.registerToggleMenuItem('tools', this.eventBrokerService.toolsToggle);
+    this.uiStateService.registerToggleMenuItem(this.mainMenu, 'animation', this.eventBrokerService.animationToggle);
+    this.uiStateService.registerToggleMenuItem(this.mainMenu, 'animationControls', this.eventBrokerService.animationControlsToggle);
+    this.uiStateService.registerToggleMenuItem(this.mainMenu, 'autoCorrect', this.eventBrokerService.autoCorrectToggle);
+    this.uiStateService.registerToggleMenuItem(this.mainMenu, 'guides', this.eventBrokerService.guidesToggle);
+    this.uiStateService.registerToggleMenuItem(this.mainMenu, 'legacyGraphics', this.eventBrokerService.legacyGraphicsToggle);
+    this.uiStateService.registerToggleMenuItem(this.mainMenu, 'memberList', this.eventBrokerService.memberTableToggle);
+    this.uiStateService.registerToggleMenuItem(this.mainMenu, 'memberNumbers', this.eventBrokerService.memberNumbersToggle);
+    this.uiStateService.registerToggleMenuItem(this.mainMenu, 'rulers', this.eventBrokerService.rulersToggle);
+    this.uiStateService.registerToggleMenuItem(this.mainMenu, 'session', this.eventBrokerService.sessionStateEnableToggle);
+    this.uiStateService.registerToggleMenuItem(this.mainMenu, 'template', this.eventBrokerService.templateToggle);
+    this.uiStateService.registerToggleMenuItem(this.mainMenu, 'titleBlock', this.eventBrokerService.titleBlockToggle);
+    this.uiStateService.registerToggleMenuItem(this.mainMenu, 'tools', this.eventBrokerService.toolsToggle);
 
     this.uiStateService.registerKey('Delete', 0, this.eventBrokerService.deleteSelectionRequest);
+    this.uiStateService.registerKey('a', ModifierMask.CTRL, this.eventBrokerService.selectAllRequest);
     this.uiStateService.registerKey('y', ModifierMask.CTRL, this.eventBrokerService.redoRequest);
     this.uiStateService.registerKey('z', ModifierMask.CTRL, this.eventBrokerService.undoRequest);
   }

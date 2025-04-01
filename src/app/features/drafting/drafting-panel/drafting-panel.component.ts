@@ -79,7 +79,7 @@ export class DraftingPanelComponent implements AfterViewInit {
     this.eventBrokerService.draftingPanelInvalidation.next({ origin: EventOrigin.DRAFTING_PANEL, data: 'viewport' });
   }
 
-  /** Renders sthe panel, optionally with draggable elements missing e,g, because they're being dragged. */
+  /** Renders the panel, optionally with draggable elements missing, e.g. because they're being dragged. */
   render(draggable?: Draggable | undefined): void {
     this.designRenderingService.render(this.ctx);
     if (!(draggable instanceof Labels)) {

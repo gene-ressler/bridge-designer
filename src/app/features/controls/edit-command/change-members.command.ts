@@ -13,16 +13,14 @@ import { DehydratedEditCommand } from './dehydration-context';
 import { EditCommandTag } from './dehydration-context';
 
 export class ChangeMembersCommand extends EditCommand {
+  public override readonly effectsMask: number = EditEffect.MEMBERS;
+
   private constructor(
     description: string,
     private readonly members: Member[],
     private readonly updatedMembers: Member[],
   ) {
     super(description);
-  }
-
-  override get effectsMask(): number {
-    return EditEffect.MEMBERS;
   }
 
   /** Returns a command that updates selected items of the bridge members list to a new material. */

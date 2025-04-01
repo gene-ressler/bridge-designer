@@ -16,7 +16,7 @@ export const enum EditEffect {
 export abstract class EditCommand {
   constructor(private _description: string) {}
 
-  abstract get effectsMask(): number;
+  abstract readonly effectsMask: number;
   abstract dehydrate(context: EditCommandDehydrationContext): DehydratedEditCommand;
 
   public get description(): string {

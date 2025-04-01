@@ -23,6 +23,7 @@ import { EraseModeService } from './erase-mode.service';
 import { Point2D } from '../../../shared/classes/graphics';
 import { StandardCursor } from '../../../shared/classes/widget-helper';
 import { Draggable, HotElementDragService } from '../shared/hot-element-drag.service';
+import { ContextMenuComponent } from '../context-menu/context-menu.component';
 
 @Component({
   selector: 'cursor-overlay',
@@ -30,6 +31,7 @@ import { Draggable, HotElementDragService } from '../shared/hot-element-drag.ser
   templateUrl: './cursor-overlay.component.html',
   styleUrl: './cursor-overlay.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [ContextMenuComponent],
 })
 export class CursorOverlayComponent implements AfterViewInit {
   @Input({ transform: numberAttribute }) width: number = screen.availWidth;
@@ -42,6 +44,7 @@ export class CursorOverlayComponent implements AfterViewInit {
   @Output() moveJointRequest = new EventEmitter<{ joint: Joint; newLocation: Point2D }>();
 
   @ViewChild('cursorLayer') cursorLayer!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('contextMenu') contextMenu!: ContextMenuComponent;
 
   private readonly dragInputEventDelegator: InputEventDelegator = new InputEventDelegator();
   private readonly modalInputEventDelegator: InputEventDelegator = new InputEventDelegator();
@@ -55,8 +58,7 @@ export class CursorOverlayComponent implements AfterViewInit {
     private readonly membersModeService: MembersModeService,
     private readonly jointCursorService: JointCursorService,
     private readonly selectModeService: SelectModeService,
-  ) {
-  }
+  ) {}
 
   get canvas(): HTMLCanvasElement {
     return this.cursorLayer.nativeElement;
@@ -72,45 +74,33 @@ export class CursorOverlayComponent implements AfterViewInit {
 
   /** Sets up and initializes selection state and cursors for placing joints. */
   public setJointsMode(): void {
-    this.eventBrokerService.selectNoneRequest.next({origin: EventOrigin.CURSOR_OVERLAY });
-    this.hotElementService.clearRenderedHotElement(this.ctx);   
-    this.modalInputEventDelegator.handlerSet = this.jointsModeService.initialize(
-      this.ctx,
-      this.addJointRequest,
-    );
+    this.eventBrokerService.selectNoneRequest.next({ origin: EventOrigin.CURSOR_OVERLAY });
+    this.hotElementService.clearRenderedHotElement(this.ctx);
+    this.modalInputEventDelegator.handlerSet = this.jointsModeService.initialize(this.ctx, this.addJointRequest);
     this.hotElementService.defaultCursor = StandardCursor.CROSSHAIR;
   }
 
   /** Sets up and initializes selection state and cursors for placing members. */
   public setMembersMode(): void {
-    this.eventBrokerService.selectNoneRequest.next({origin: EventOrigin.CURSOR_OVERLAY });
+    this.eventBrokerService.selectNoneRequest.next({ origin: EventOrigin.CURSOR_OVERLAY });
     this.jointCursorService.clear(this.ctx);
-    this.modalInputEventDelegator.handlerSet = this.membersModeService.initialize(
-      this.ctx,
-      this.addMemberRequest,
-    );
-    this.hotElementService.defaultCursor = {cursor: 'img/pencil.svg', orgX: 0, orgY: 31 };
+    this.modalInputEventDelegator.handlerSet = this.membersModeService.initialize(this.ctx, this.addMemberRequest);
+    this.hotElementService.defaultCursor = { cursor: 'img/pencil.svg', orgX: 0, orgY: 31 };
   }
 
   /** Sets up and initializes selection state and cursors for selecting joints and members. */
   public setSelectMode(): void {
     this.jointCursorService.clear(this.ctx);
-    this.modalInputEventDelegator.handlerSet = this.selectModeService.initialize(
-      this.ctx,
-      this.moveJointRequest,
-    );
+    this.modalInputEventDelegator.handlerSet = this.selectModeService.initialize(this.ctx, this.moveJointRequest);
     this.hotElementService.defaultCursor = StandardCursor.ARROW;
   }
 
   /** Sets up and initializes selection state and cursors for erasing joints and members. */
   public setEraseMode(): void {
-    this.eventBrokerService.selectNoneRequest.next({origin: EventOrigin.CURSOR_OVERLAY });
+    this.eventBrokerService.selectNoneRequest.next({ origin: EventOrigin.CURSOR_OVERLAY });
     this.jointCursorService.clear(this.ctx);
-    this.modalInputEventDelegator.handlerSet = this.eraseModeService.initialize(
-      this.ctx,
-      this.deleteRequest,
-    );
-    this.hotElementService.defaultCursor = {cursor: 'img/pencilud.svg', orgX: 2, orgY: 33 };
+    this.modalInputEventDelegator.handlerSet = this.eraseModeService.initialize(this.ctx, this.deleteRequest);
+    this.hotElementService.defaultCursor = { cursor: 'img/pencilud.svg', orgX: 2, orgY: 33 };
   }
 
   /** Translates UI selector element (menu and toolbar buttons) index to respective mode. */
@@ -137,6 +127,9 @@ export class CursorOverlayComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    const cursorLayer = this.cursorLayer.nativeElement;
+    // Parent of parent is the wrapper div, which is the view boundary.
+    this.contextMenu.attachToHost(cursorLayer, cursorLayer.parentElement!.parentElement as HTMLElement);
     // IMPORTANT: Order of delegator registration determines listener invocation order.
     this.dragInputEventDelegator.register(this.canvas);
     this.modalInputEventDelegator.register(this.canvas);
@@ -145,5 +138,11 @@ export class CursorOverlayComponent implements AfterViewInit {
     this.eventBrokerService.editModeSelection.subscribe((eventInfo: EventInfo) =>
       this.setCursorModeByControlSelectedIndex(eventInfo.data),
     );
+    // Clear the hot element if the viewport changes size, since this makes the cursor layer invalid.
+    this.eventBrokerService.draftingPanelInvalidation.subscribe(eventInfo => {
+      if (eventInfo.data === 'viewport') {
+        this.hotElementService.clearRenderedHotElement(this.ctx);
+      }
+    });
   }
 }

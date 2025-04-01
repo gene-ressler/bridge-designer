@@ -106,6 +106,10 @@ export class BridgeService {
     return this.bridge.members.filter(member => member.hasJoint(joint));
   }
 
+  public hasAnyMembers(joint: Joint): boolean {
+    return this.bridge.members.some(member => member.hasJoint(joint));
+  }
+
   /** Returns the stock (or one of them if more than one) used for the most members in the bridge, else EMPTY if none. */
   public getMostCommonStockId(): StockId {
     const countsByStock = new Map<string, [StockId, number]>();

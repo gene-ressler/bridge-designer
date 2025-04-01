@@ -1,0 +1,24 @@
+<jqxMenu
+  #menu
+  [mode]="'popup'"
+  [autoOpenPopup]="false"
+  [width]="menuWidth"
+  [height]="menuHeight"
+  (onItemclick)="handleItemClick($event)"
+>
+  <!-- prettier-ignore -->
+  <ul>
+    <li id="jointsCm"><span class="menu-mark">✔</span><img class="menu-icon" src="img/joint.png"><a href="#">Joints</a></li>
+    <li id="membersCm"><span class="menu-mark"></span><img class="menu-icon" src="img/member.png"><a href="#">Members</a></li>
+    <li id="selectCm"><span class="menu-mark"></span><img class="menu-icon" src="img/arrow.png"><a href="#">Select</a></li>
+    <li id="eraseCm"><span class="menu-mark"></span><img class="menu-icon" src="img/eraser.png"><a href="#">Erase</a></li>
+    <li type='separator'></li>
+    <li id="selectAllCm"><span class="menu-mark"></span><img class="menu-icon" src="img/selectall.png"><a href="#">Select all</a></li>
+    <li type='separator'></li>
+    <li id="memberListCm"><span class="menu-mark">✔</span><img class="menu-icon" src="img/memtable.png"><a href="#">Member list</a></li>
+    <li type='separator'></li>
+    <li id="coarseGridCm"><span class="menu-mark">✔</span><img class="menu-icon" src="img/coarsegrid.png"><a href="#">Coarse grid</a></li>
+    <li id="mediumGridCm"><span class="menu-mark"></span><img class="menu-icon" src="img/mediumgrid.png"><a href="#">Medium grid</a></li>
+    <li id="fineGridCm"><span class="menu-mark"></span><img class="menu-icon" src="img/finegrid.png"><a href="#">Fine grid</a></li>
+  </ul>
+</jqxMenu>

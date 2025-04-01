@@ -63,7 +63,7 @@ export class HelpPopupTopicComponent {
     if (!this.popup) {
       this.renderPopup = true;
       // TODO: Better way to accomplish this?
-      // First evaluates the ngIf body. Second renders the template.
+      // First evaluates the ngIf body to bind all templates. Second renders one of them.
       this.changeDetector.detectChanges();
       this.changeDetector.detectChanges();
     }
@@ -85,7 +85,7 @@ export class HelpPopupTopicComponent {
   private pruneVisiblesPopups(leaf: HTMLDivElement): void {
     const popupAncestorPath = new Set<Element>();
     let root: HTMLElement | null = leaf;
-    while (root && root.tagName !== 'HELP-TOPIC') {
+    while (root && !root.classList.contains('pane-content')) {
       if (root.classList.contains('popup')) {
         popupAncestorPath.add(root);
       }

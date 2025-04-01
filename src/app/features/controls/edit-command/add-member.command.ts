@@ -14,6 +14,7 @@ import { EditCommandTag } from './dehydration-context';
 
 export class AddMemberCommand extends EditCommand {
   private members: Member[] = [];
+  public override readonly effectsMask: number = EditEffect.MEMBERS;
 
   /** Constructs an add member command object. Even the description is empty because there are variants. */
   private constructor(
@@ -44,10 +45,6 @@ export class AddMemberCommand extends EditCommand {
     });
     command.members.push(new Member(-1, a, member.b, member.material, member.shape));
     return command;
-  }
-
-  override get effectsMask(): number {
-    return EditEffect.MEMBERS;
   }
 
   // TODO: Handle too many members.
