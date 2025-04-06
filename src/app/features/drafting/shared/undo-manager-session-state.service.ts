@@ -18,6 +18,7 @@ import {
   RehydrationContext,
 } from '../../controls/edit-command/dehydration-context';
 import { InventoryService } from '../../../shared/services/inventory.service';
+import { Utility } from '../../../shared/classes/utility';
 
 /** Logic for dehydrating and rehdrating the undo manager. Keeps it free of knowledge about commands and bridges. */
 @Injectable({ providedIn: 'root' })
@@ -36,7 +37,7 @@ export class UndoManagerSessionStateService {
     );
   }
 
-  /** From given dehydrated state, returns a rehydrated edit command for the "done" stack. Factory pattern. */
+  /** From given dehydrated state, returns a rehydrated edit command. Factory pattern. */
   private rehydrateEditCommand(context: RehydrationContext, editCommand: DehydratedEditCommand): EditCommand {
     switch (editCommand.tag) {
       case 'add-joint':
@@ -78,8 +79,10 @@ export class UndoManagerSessionStateService {
         );
       case 'move-labels':
         return MoveLabelsCommand.rehydrate(editCommand, this.bridgeService.draftingPanelState);
-      default:
+      case 'placeholder':
         return new EditCommandPlaceholder('Cancel');
+      default:
+        return Utility.assertNever(editCommand.tag);
     }
   }
 

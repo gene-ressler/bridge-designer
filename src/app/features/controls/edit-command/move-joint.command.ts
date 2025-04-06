@@ -30,7 +30,7 @@ export class MoveJointCommand extends EditCommand {
       joint,
       new Joint(joint.index, newLocation.x, newLocation.y, false),
       bridge,
-      MemberSplitter.create(joint, bridge.members, selectedElements.selectedMembers),
+      MemberSplitter.createForMove(bridge.joints, bridge.members, selectedElements.selectedMembers),
     );
   }
 
@@ -44,10 +44,18 @@ export class MoveJointCommand extends EditCommand {
     return this._effectsMask;
   }
 
-  // TODO: Handle member intersecting peir.
   public override do(): void {
-    this.bridge.joints[this.toJoint.index].swapContents(this.toJoint);
-    this.memberSplitter.do();
+    // Move the joint.
+    const bridgeJoint = this.bridge.joints[this.toJoint.index];
+    const toJoint = this.toJoint;
+    bridgeJoint.swapContents(toJoint);
+    // Split, but undo the move if splitting fails (e.g. for too many members).
+    try {
+      this.memberSplitter.do();
+    } catch (error) {
+      bridgeJoint.swapContents(toJoint);
+      throw error;
+    }
   }
 
   public override undo(): void {
@@ -76,7 +84,7 @@ export class MoveJointCommand extends EditCommand {
       context.rehydrateJointRef(state.joint),
       toJoint,
       bridge,
-      MemberSplitter.rehydrate(context, state.splitter, toJoint, bridge, selectedElements),
+      MemberSplitter.rehydrate(context, state.splitter, bridge.joints, bridge.members, selectedElements),
     );
   }
 }

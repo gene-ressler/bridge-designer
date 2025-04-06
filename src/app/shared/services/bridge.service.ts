@@ -110,6 +110,10 @@ export class BridgeService {
     return this.bridge.members.some(member => member.hasJoint(joint));
   }
 
+  public getMemberWithJoints(a: Joint, b: Joint): Member | undefined {
+    return this.bridge.members.find(member => member.hasJoints(a, b));
+  }
+
   /** Returns the stock (or one of them if more than one) used for the most members in the bridge, else EMPTY if none. */
   public getMostCommonStockId(): StockId {
     const countsByStock = new Map<string, [StockId, number]>();
@@ -246,6 +250,28 @@ export class BridgeService {
     return result;
   }
 
+  /** Returns whether a member with given end points would intersect the high peir, if the conditions have one. */
+  public isMemberIntersectingHighPier(a: Point2DInterface, b: Point2DInterface): boolean {
+    if (!this.designConditions.isHiPier || a.x === b.x) {
+      return false;
+    }
+    const pierTop = this.bridge.joints[this.designConditions.pierJointIndex];
+    if ((a.x < pierTop.x && b.x < pierTop.x) || (a.x > pierTop.x && b.x > pierTop.x)) {
+      return false;
+    }
+    const m = (b.y - a.y) / (b.x - a.x);
+    const yIntersect = a.y + m * (pierTop.x - a.x);
+    return yIntersect < pierTop.y - 0.01; // 1cm grace
+  }
+
+  /** Returns whether any member connected to a joint about to be moved would intersect the high pier. */
+  public isMovedJointIntersectingHighPier(joint: Joint, newLocation: Point2DInterface): boolean {
+    return this.findMembersWithJoint(joint)
+      .map(member => member.getOtherJoint(joint))
+      .some(otherJoint => this.isMemberIntersectingHighPier(newLocation, otherJoint));
+  }
+
+  /** Returns whether the given member passes the slenderness check. */
   public isMemberPassingSlendernessCheck(member: Member): boolean {
     return member.slenderness <= this.designConditions.allowableSlenderness;
   }

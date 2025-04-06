@@ -57,7 +57,7 @@ export class SessionStateService {
   /** Sends "rehydration complete" event. */
   public notifyComplete(): void {
     this.loadAccumulatorFromStorage();
-    this.eventBrokerService.sessionStateRestoreComplete.next({ origin: EventOrigin.SERVICE, data: undefined });
+    this.eventBrokerService.sessionStateRestoreCompletion.next({ origin: EventOrigin.SERVICE, data: undefined });
   }
 
   /** Sends notification on enabled toggle status. */

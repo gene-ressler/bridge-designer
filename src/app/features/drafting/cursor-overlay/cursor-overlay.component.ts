@@ -20,10 +20,11 @@ import { MembersModeService } from './members-mode.service';
 import { JointsModeService } from './joints-mode.service';
 import { SelectModeService } from './select-mode.service';
 import { EraseModeService } from './erase-mode.service';
-import { Point2D } from '../../../shared/classes/graphics';
+import { Graphics, Point2D } from '../../../shared/classes/graphics';
 import { StandardCursor } from '../../../shared/classes/widget-helper';
 import { Draggable, HotElementDragService } from '../shared/hot-element-drag.service';
 import { ContextMenuComponent } from '../context-menu/context-menu.component';
+import { ContextWidgetService } from './context-widget.service';
 
 @Component({
   selector: 'cursor-overlay',
@@ -50,6 +51,7 @@ export class CursorOverlayComponent implements AfterViewInit {
   private readonly modalInputEventDelegator: InputEventDelegator = new InputEventDelegator();
 
   constructor(
+    private readonly contextWidgetService: ContextWidgetService,
     private readonly eraseModeService: EraseModeService,
     private readonly eventBrokerService: EventBrokerService,
     private readonly hotElementDragService: HotElementDragService,
@@ -65,11 +67,7 @@ export class CursorOverlayComponent implements AfterViewInit {
   }
 
   get ctx(): CanvasRenderingContext2D {
-    const ctx = this.canvas.getContext('2d');
-    if (ctx === null) {
-      throw new Error('Get canvas 2d context failed');
-    }
-    return ctx;
+    return Graphics.getContext(this.cursorLayer);
   }
 
   /** Sets up and initializes selection state and cursors for placing joints. */
@@ -121,6 +119,7 @@ export class CursorOverlayComponent implements AfterViewInit {
     }
   }
 
+  /** Grabs key focus for joint moves via arrow keys. */
   @HostListener('pointerdown')
   pointerDownListener(): void {
     this.canvas.focus();
@@ -128,8 +127,11 @@ export class CursorOverlayComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     const cursorLayer = this.cursorLayer.nativeElement;
-    // Parent of parent is the wrapper div, which is the view boundary.
-    this.contextMenu.attachToHost(cursorLayer, cursorLayer.parentElement!.parentElement as HTMLElement);
+    this.contextWidgetService.listenForContextMenuClicks(
+      this.contextMenu,
+      cursorLayer,
+      cursorLayer.parentElement!.parentElement as HTMLElement,
+    );
     // IMPORTANT: Order of delegator registration determines listener invocation order.
     this.dragInputEventDelegator.register(this.canvas);
     this.modalInputEventDelegator.register(this.canvas);
@@ -138,11 +140,9 @@ export class CursorOverlayComponent implements AfterViewInit {
     this.eventBrokerService.editModeSelection.subscribe((eventInfo: EventInfo) =>
       this.setCursorModeByControlSelectedIndex(eventInfo.data),
     );
-    // Clear the hot element if the viewport changes size, since this makes the cursor layer invalid.
-    this.eventBrokerService.draftingPanelInvalidation.subscribe(eventInfo => {
-      if (eventInfo.data === 'viewport') {
-        this.hotElementService.clearRenderedHotElement(this.ctx);
-      }
-    });
+    // Clear the hot element prior to viewport changes, since this makes the cursor layer invalid.
+    this.eventBrokerService.draftingViewportPendingChange.subscribe(_eventInfo =>
+      this.hotElementService.clearRenderedHotElement(this.ctx),
+    );
   }
 }

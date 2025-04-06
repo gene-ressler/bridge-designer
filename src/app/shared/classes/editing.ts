@@ -32,10 +32,7 @@ export abstract class EditCommand {
 }
 
 export class EditCommandPlaceholder extends EditCommand {
-  override get effectsMask(): number {
-    return EditEffect.NONE;
-  }
-
+  override readonly effectsMask: number = EditEffect.NONE;
   override dehydrate(_context: EditCommandDehydrationContext): DehydratedEditCommand {
     return { tag: 'placeholder' };
   }

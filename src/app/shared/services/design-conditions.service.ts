@@ -60,7 +60,8 @@ export type SiteCostsModel = {
 export class DesignConditions {
   public static readonly ANCHOR_OFFSET = 8;
   public static readonly GAP_DEPTH = 24;
-  public static readonly MAX_MEMBER_COUNT = 200;
+  public static readonly MAX_JOINT_COUNT = 50;
+  public static readonly MAX_MEMBER_COUNT = 120;
   public static readonly PANEL_SIZE_WORLD = 4;
 
   private static readonly ANCHORAGE_COST = 6000;
@@ -230,7 +231,7 @@ export class DesignConditions {
     }
 
     // Slenderness limit.
-    this.allowableSlenderness = isLeftCable || isRightCable ? 1e100 : DesignConditions.MAX_SLENDERNESS;
+    this.allowableSlenderness = isLeftCable || isRightCable ? Number.POSITIVE_INFINITY : DesignConditions.MAX_SLENDERNESS;
 
     // Cost calculations.
     this.excavationVolume = DesignConditions.getExcavationVolume(this.deckElevation);

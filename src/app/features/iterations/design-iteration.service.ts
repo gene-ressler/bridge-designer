@@ -96,7 +96,7 @@ export class DesignIterationService {
       () => this.dehydrate(),
       state => this.rehydrate(state),
     );
-    eventBrokerService.sessionStateRestoreComplete.subscribe(_eventInfo => {
+    eventBrokerService.sessionStateRestoreCompletion.subscribe(_eventInfo => {
       if (this.iterations.length > 0) {
         this.sendChangeEvent();
       }

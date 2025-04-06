@@ -70,7 +70,7 @@ export class WorkflowManagementService {
         eventBrokerService.loadInventorySelectorRequest.next({
           origin: EventOrigin.SERVICE,
           data: bridgeService.getUsefulStockId(selectedMembers),
-        });  
+        });
       }
     });
 
@@ -110,16 +110,20 @@ export class WorkflowManagementService {
     // Selected elements change.
     eventBrokerService.selectedElementsChange.subscribe(_eventInfo => {
       const selectedMembers = selectedElementsService.selectedElements.selectedMembers;
+      const selectedJoints = selectedElementsService.selectedElements.selectedJoints;
       eventBrokerService.loadInventorySelectorRequest.next({
         origin: EventOrigin.SERVICE,
         data: bridgeService.getUsefulStockId(selectedMembers),
       });
-      uiStateService.disable(eventBrokerService.deleteSelectionRequest, selectedMembers.size === 0);
+      uiStateService.disable(
+        eventBrokerService.deleteSelectionRequest,
+        selectedMembers.size === 0 && selectedJoints.size === 0,
+      );
       disableMemberSizeIncrementWidgets();
     });
 
     // Session state restoration completion.
-    eventBrokerService.sessionStateRestoreComplete.subscribe(_eventInfo => {
+    eventBrokerService.sessionStateRestoreCompletion.subscribe(_eventInfo => {
       uiStateService.disable(eventBrokerService.undoRequest, undoManagerService.done.length === 0);
       uiStateService.disable(eventBrokerService.redoRequest, undoManagerService.undone.length === 0);
     });

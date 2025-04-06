@@ -6,7 +6,6 @@ import {
   ElementRef,
   ViewChild,
 } from '@angular/core';
-import { jqxNotificationComponent, jqxNotificationModule } from 'jqwidgets-ng/jqxnotification';
 import { BridgeModel } from '../../../shared/classes/bridge.model';
 import { EditCommand } from '../../../shared/classes/editing';
 import { Geometry, Graphics, Point2D } from '../../../shared/classes/graphics';
@@ -32,13 +31,17 @@ import { GuideKnob, GuidesService } from '../shared/guides.service';
 import { Labels, LabelsService } from '../shared/labels.service';
 import { Draggable } from '../shared/hot-element-drag.service';
 import { DraftingPanelState } from '../../../shared/services/persistence.service';
+import { Utility } from '../../../shared/classes/utility';
+import { ToastComponent } from '../../toast/toast/toast.component';
+import { ToastError } from '../../toast/toast/toast-error';
+import { DesignConditions } from '../../../shared/services/design-conditions.service';
 
 @Component({
   selector: 'drafting-panel',
   standalone: true,
   templateUrl: './drafting-panel.component.html',
   styleUrl: './drafting-panel.component.scss',
-  imports: [jqxNotificationModule, CursorOverlayComponent, FormsModule, ToolSelectorComponent],
+  imports: [CursorOverlayComponent, FormsModule, ToastComponent, ToolSelectorComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DraftingPanelComponent implements AfterViewInit {
@@ -48,7 +51,6 @@ export class DraftingPanelComponent implements AfterViewInit {
   @ViewChild('draftingPanel') draftingPanel!: ElementRef<HTMLCanvasElement>;
   @ViewChild('cursorLayer') cursorLayer!: ElementRef<CursorOverlayComponent>;
   @ViewChild('titleBlock') titleBlock!: ElementRef<HTMLDivElement>;
-  @ViewChild('moveJointError') moveJointError!: jqxNotificationComponent;
 
   constructor(
     readonly bridgeService: BridgeService,
@@ -68,10 +70,8 @@ export class DraftingPanelComponent implements AfterViewInit {
   }
 
   handleResize(): void {
-    const parent = this.draftingPanel.nativeElement.parentElement;
-    if (!parent) {
-      throw new Error('missing parent in setViewport');
-    }
+    this.eventBrokerService.draftingViewportPendingChange.next({ origin: EventOrigin.DRAFTING_PANEL });
+    const parent = Utility.assertNotNull(this.draftingPanel.nativeElement.parentElement);
     const w = parent.clientWidth;
     const h = parent.clientHeight;
     this.viewportTransform.setViewport(0, h - 1, w - 1, 1 - h);
@@ -110,6 +110,12 @@ export class DraftingPanelComponent implements AfterViewInit {
   }
 
   addJointRequestHandler(joint: Joint): void {
+    if (this.bridgeService.bridge.joints.length >= DesignConditions.MAX_JOINT_COUNT) {
+      throw new ToastError('tooManyJointsError');
+    }
+    if (this.bridgeService.findJointAt(joint)) {
+      throw new ToastError('duplicateJointError');
+    }
     const command = AddJointCommand.create(
       joint,
       this.bridgeService.bridge,
@@ -119,6 +125,12 @@ export class DraftingPanelComponent implements AfterViewInit {
   }
 
   addMemberRequestHandler(member: Member): void {
+    if (this.bridgeService.getMemberWithJoints(member.a, member.b)) {
+      throw new ToastError('duplicateMemberError');
+    }
+    if (this.bridgeService.isMemberIntersectingHighPier(member.a, member.b)) {
+      throw new ToastError('highPierError');
+    }
     const command = AddMemberCommand.create(
       member,
       this.bridgeService.bridge,
@@ -157,13 +169,12 @@ export class DraftingPanelComponent implements AfterViewInit {
 
   moveJointRequestHandler({ joint, newLocation }: { joint: Joint; newLocation: Point2D }): void {
     if (Geometry.areColocated2D(newLocation, joint)) {
-      return;
+      throw new ToastError('moveJointError');
+    }
+    if (this.bridgeService.isMovedJointIntersectingHighPier(joint, newLocation)) {
+      throw new ToastError('highPierError');
     }
     const bridge = this.bridgeService.bridge;
-    if (this.bridgeService.findJointAt(newLocation)) {
-      this.moveJointError.open();
-      return;
-    }
     const selectedElements = this.selectedElementsService.selectedElements;
     const command = MoveJointCommand.create(joint, newLocation, bridge, selectedElements);
     this.undoManagerService.do(command);

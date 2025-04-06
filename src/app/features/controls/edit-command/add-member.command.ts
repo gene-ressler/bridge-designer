@@ -3,12 +3,10 @@ import { EditableUtility, EditCommand, EditEffect } from '../../../shared/classe
 import { Geometry } from '../../../shared/classes/graphics';
 import { Joint } from '../../../shared/classes/joint.model';
 import { Member } from '../../../shared/classes/member.model';
+import { DesignConditions } from '../../../shared/services/design-conditions.service';
 import { SelectedElements } from '../../drafting/shared/selected-elements-service';
-import {
-  ContextElementRef,
-  RehydrationContext,
-  DehydrationContext,
-} from './dehydration-context';
+import { ToastError } from '../../toast/toast/toast-error';
+import { ContextElementRef, RehydrationContext, DehydrationContext } from './dehydration-context';
 import { DehydratedEditCommand } from './dehydration-context';
 import { EditCommandTag } from './dehydration-context';
 
@@ -47,9 +45,10 @@ export class AddMemberCommand extends EditCommand {
     return command;
   }
 
-  // TODO: Handle too many members.
-  // TODO: Handle member intersecting pier.
   public override do(): void {
+    if (this.bridge.members.length + this.members.length > DesignConditions.MAX_MEMBER_COUNT) {
+      throw new ToastError('tooManyMembersError');
+    }
     this.members.forEach((member, index) => (member.index = index + this.bridge.members.length));
     EditableUtility.merge(this.bridge.members, this.members, this.selectedElements.selectedMembers);
   }

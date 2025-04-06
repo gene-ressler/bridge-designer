@@ -57,7 +57,7 @@ export class ToolSelectorComponent implements AfterViewInit {
     this.eventBrokerService.sessionStateSaveRequest.subscribe(_eventInfo =>
       this.sessionStateService.recordState(ToolSelectorComponent.SESSION_STATE_KEY, this.dehydrated),
     );
-    this.eventBrokerService.sessionStateRestoreComplete.subscribe(_eventInfo => {
+    this.eventBrokerService.sessionStateRestoreCompletion.subscribe(_eventInfo => {
       const state = this.sessionStateService.getSavedState(ToolSelectorComponent.SESSION_STATE_KEY) as State;
       this.rehydrate(state);
     });

@@ -27,21 +27,32 @@ export class ContextMenuComponent implements AfterViewInit {
     this.uiStateService.handleMenuItemClicked(liElement.id);
   }
 
+  public open(x: number, y: number, bounds?: HTMLElement) {
+    if (bounds) {
+      const wrapperRect = bounds.getBoundingClientRect();
+      if (wrapperRect.right < x + this.menuWidth) {
+        x = wrapperRect.right - this.menuWidth;
+      }
+      if (wrapperRect.bottom < y + this.menuHeight) {
+        y = wrapperRect.bottom - this.menuHeight;
+      }
+    }
+    this.menu.open(x, y);
+  }
+
   public attachToHost(host: HTMLElement, bounds: HTMLElement = host) {
     host.addEventListener('contextmenu', (event: MouseEvent) => {
-      if (event.buttons === 1 << 1) {
-        let x = event.clientX;
-        let y = event.clientY;
-        const wrapperRect = bounds.getBoundingClientRect();
-        if (wrapperRect.right < x + this.menuWidth) {
-          x = wrapperRect.right - this.menuWidth;
-        }
-        if (wrapperRect.bottom < y + this.menuHeight) {
-          y = wrapperRect.bottom - this.menuHeight;
-        }
-        this.menu.open(x, y);
-        event.preventDefault();
+      let x = event.clientX;
+      let y = event.clientY;
+      const wrapperRect = bounds.getBoundingClientRect();
+      if (wrapperRect.right < x + this.menuWidth) {
+        x = wrapperRect.right - this.menuWidth;
       }
+      if (wrapperRect.bottom < y + this.menuHeight) {
+        y = wrapperRect.bottom - this.menuHeight;
+      }
+      this.menu.open(x, y);
+      event.preventDefault();
     });
   }
 

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { AnalysisStatus } from './analysis.service';
+import { ToastErrorKind } from '../../features/toast/toast/toast-error';
 
 /** Origin of an event. For breaking event cycles. */
 export const enum EventOrigin {
@@ -56,6 +57,7 @@ export class EventBrokerService {
   public readonly designIterationChange = new Subject<EventInfo>();
   public readonly designModeSelection = new Subject<EventInfo>();
   public readonly draftingPanelInvalidation = new Subject<EventInfo>();
+  public readonly draftingViewportPendingChange = new Subject<EventInfo>();
   public readonly editCommandCompletion = new Subject<EventInfo>();
   public readonly editModeSelection = new Subject<EventInfo>();
   public readonly gridDensitySelection = new Subject<EventInfo>();
@@ -86,11 +88,12 @@ export class EventBrokerService {
   public readonly sessionStateEnableToggle = new Subject<EventInfo>();
   public readonly sessionStateSaveRequest = new Subject<TypedEventInfo<void>>();
   public readonly sessionStateSaveEssentialRequest = new Subject<TypedEventInfo<void>>();
-  public readonly sessionStateRestoreComplete = new Subject<TypedEventInfo<void>>();
+  public readonly sessionStateRestoreCompletion = new Subject<TypedEventInfo<void>>();
   public readonly slendernessFailDialogOpenRequest = new Subject<EventInfo>();
   public readonly templateToggle = new Subject<EventInfo>();
   public readonly tipRequest = new Subject<EventInfo>();
   public readonly titleBlockToggle = new Subject<EventInfo>();
+  public readonly toastRequest = new Subject<TypedEventInfo<ToastErrorKind>>();
   public readonly toolsToggle = new Subject<EventInfo>();
   public readonly undoRequest = new Subject<EventInfo>();
   public readonly unstableBridgeDialogOpenRequest = new Subject<EventInfo>();

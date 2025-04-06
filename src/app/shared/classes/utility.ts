@@ -77,6 +77,10 @@ export class Utility {
     return value;
   }
 
+  public static assertNever(value: never): never {
+    throw new Error(`Value isn't never: ${value}`);
+  }
+
   /** Returns a function that collapses any number of calls to a single callback after given delay has passed. */
   public static throttle(f: () => any, delayMs: number = 100) {
     let timeout: any;

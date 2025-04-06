@@ -1199,7 +1199,6 @@
     professional civil engineer.
   </p>
 </ng-template>
-<!-- edited -->
 <ng-template topic-name="hlp_draw_joint">
   <h1>Draw joints</h1>
   <p>
@@ -1207,61 +1206,64 @@
       ><img
         alt=""
         src="img/help/gotodp.png"
-    /></topic-link>
-    <span class="b">How to design a bridge</span>
+      />
+      <span class="b"> How to design a bridge</span></topic-link
+    >
   </p>
   <p>
     <topic-link name="hlp_truss_configuration"
       ><img
         alt=""
         src="img/help/goback.png"
-    /></topic-link>
-    <span class="b">Go back one step</span>
+      />
+      <span class="b"> Go back one step</span></topic-link
+    >
   </p>
   <p>
     <topic-link name="hlp_draw_member"
       ><img
         alt=""
         src="img/help/gofwd.png"
-    /></topic-link>
-    <span class="b">Go forward one step</span>
+      />
+      <span class="b"> Go forward one step</span></topic-link
+    >
   </p>
   <p class="btop">
     To create a <topic-popup name="glos_structural_model">structural model</topic-popup>, you must first draw the
-    <topic-popup name="glos_joints">joints</topic-popup>--the
-    <topic-popup name="glos_connections">connections</topic-popup> at which the structural
+    <topic-popup name="glos_joints">joints</topic-popup>. These are the
+    <topic-popup name="glos_connections">connections</topic-popup> where the structural
     <topic-popup name="glos_members">members</topic-popup> will be joined together.
   </p>
   <h2>To draw a joint:</h2>
   <ol>
     <li>
-      Select the <topic-popup name="hlp_joint_tool">Joint tool</topic-popup> from the
-      <topic-popup name="hlp_design_tools">Design Tools palette.</topic-popup>
+      Select the <topic-popup name="hlp_joint_tool">joint tool</topic-popup> from the
+      <topic-popup name="hlp_design_tools">design tools palette</topic-popup>.
     </li>
     <li>
       Position the mouse pointer at the location on the
-      <topic-link name="hlp_drawing_board">Drawing Board</topic-link> where you want to add a joint.
+      <topic-link name="hlp_drawing_board">drawing board</topic-link> where you want to add a joint.
     </li>
     <li>Click the left mouse button to create the new joint.</li>
   </ol>
   <h2 class="btop">Notes and tips</h2>
-  <p>To draw a joint, you must be in the <topic-link name="hlp_drawing_board">Drawing Board Mode</topic-link>.</p>
+  <p>To draw a joint, you must be in the <topic-link name="hlp_drawing_board">drawing board mode</topic-link>.</p>
   <p>
-    Joints can only be placed on the <topic-popup name="glos_snap_points">snap points</topic-popup> on the Drawing
-    Board. Joints cannot be placed outside the maximum and minimum elevation restrictions noted in the
-    <topic-link name="hlp_design_specifications">Design Specifications.</topic-link>
+    Joints can only be placed on the <topic-popup name="glos_snap_points">snap points</topic-popup> of the drawing
+    board. Joints cannot be placed outside the maximum and minimum elevation restrictions noted in the
+    <topic-link name="hlp_design_specifications">design specifications.</topic-link>
   </p>
   <p>Two joints cannot be placed at the same location.</p>
   <p>
     If you accidentally place a joint in the wrong location, you can click the
-    <topic-popup name="hlp_undo">Undo button</topic-popup> to remove it. You can also
-    <topic-link name="hlp_delete_joint">delete the joint</topic-link>, or you can
-    <topic-link name="hlp_move_joint">move the joint</topic-link> to a new location.
+    <topic-popup name="hlp_undo">undo button</topic-popup> to remove it. You can also
+    <topic-link name="hlp_delete_joint">delete a joint</topic-link>, or you can
+    <topic-link name="hlp_move_joint">move a joint</topic-link> to a new location.
   </p>
   <p>
     When you start a new design, a series of joints will be created automatically by the
-    <topic-link name="hlp_setup_wizard">Design Project Setup Wizard</topic-link>. These joints cannot be moved or
-    deleted.
+    <topic-link name="hlp_setup_wizard">project setup wizard</topic-link>. These joints support the deck. They can't be
+    moved or deleted.
   </p>
   <p>
     Movable joints have a black outline and a <span class="i">light grey</span> center; immovable joints have a grey
@@ -1269,14 +1271,15 @@
   </p>
   <p>
     The joints you create cannot be attached to the <topic-popup name="glos_abutment">abutments</topic-popup> or
-    <topic-popup name="glos_pier">piers</topic-popup>. (In other words, you cannot create any additional supports.) The
-    only supports permitted in your design are those created automatically by the Design Project Setup Wizard
+    <topic-popup name="glos_pier">piers</topic-popup>. In other words, you can't create any additional supports. The
+    only supports permitted are those created automatically by the
+    <topic-link name="hlp_setup_wizard">project setup wizard</topic-link>.
   </p>
   <p>
     For site configurations with a high <topic-popup name="glos_pier">pier</topic-popup>, joints cannot be drawn on the
     pier.
   </p>
-  <p>Your structural model can have no more than 50 joints.</p>
+  <p>Your structural model is limited to 50 joints.</p>
 </ng-template>
 <ng-template topic-name="hlp_draw_member">
   <h1>Draw members</h1>
@@ -1285,37 +1288,42 @@
       ><img
         alt=""
         src="img/help/gotodp.png"
-    /></topic-link>
-    <span class="b">How to design a bridge</span>
+      />
+      <span class="b"> How to design a bridge</span></topic-link
+    >
   </p>
   <p>
     <topic-link name="hlp_draw_joint"
       ><img
         alt=""
         src="img/help/goback.png"
-    /></topic-link>
-    <span class="b">Go back one step</span>
+      />
+      <span class="b"> Go back one step</span></topic-link
+    >
   </p>
   <p>
     <topic-link name="hlp_run_load_test"
       ><img
         alt=""
         src="img/help/gofwd.png"
-    /></topic-link>
-    <span class="b">Go forward one step</span>
+      />
+      <span class="b"> Go forward one step</span></topic-link
+    >
   </p>
   <p class="btop">
-    Once you have drawn the <topic-popup name="glos_joints">joints</topic-popup> that will connect your truss together,
-    you can draw the <topic-popup name="glos_members">members</topic-popup> that make up the structure itself. Members
-    must be drawn from joint to joint.
+    Once you have drawn the <topic-popup name="glos_joints">joints</topic-popup> that will connect your truss, you can
+    draw the <topic-popup name="glos_members">members</topic-popup> that make up the structure itself. Members must be
+    drawn from joint to joint.
   </p>
   <h2>To draw a member:</h2>
   <ol>
     <li>
-      Select the <topic-popup name="hlp_member_tool">Member tool</topic-popup> from the
-      <topic-popup name="hlp_design_tools">Design Tools palette.</topic-popup>
+      Select the <topic-popup name="hlp_member_tool">member tool</topic-popup> from the
+      <topic-popup name="hlp_design_tools">design tools palette.</topic-popup>
     </li>
-    <li>Position the mouse pointer over a joint.</li>
+    <li>
+      Position the mouse pointer over a joint. It will appear to &quot;pop&quot; to show it's ready to be connected.
+    </li>
     <li>Click the left mouse button, and hold it down.</li>
     <li>
       Drag the mouse pointer to another joint, and release the button. A new member will be created from the first joint
@@ -1323,24 +1331,27 @@
     </li>
   </ol>
   <h2 class="btop">Notes and tips</h2>
-  <p>To draw a member, you must be in the <topic-link name="hlp_drawing_board">Drawing Board Mode</topic-link>.</p>
+  <p>To draw a member, you must be in the <topic-link name="hlp_drawing_board">drawing board mode</topic-link>.</p>
   <p>
     When you create a new member, the
     <topic-popup name="glos_member_properties">member properties</topic-popup> currently displayed in the
-    <topic-popup name="hlp_member_properties">Member Properties lists</topic-popup> are automatically assigned to the
-    new member. These properties can be changed later. (See
-    <topic-link name="hlp_change_member_properties">Change the Properties of a Member</topic-link> for more
-    information.)
+    <topic-popup name="hlp_member_properties">member properties lists</topic-popup> are automatically assigned to the
+    new member. These can be changed later. See
+    <topic-link name="hlp_change_member_properties">change the properties of a member</topic-link> for more information.
   </p>
   <p>
     When you create new members, their <topic-popup name="glos_member_numbers">member numbers</topic-popup> are assigned
     automatically. To display the member numbers, click the
-    <topic-popup name="hlp_view_member_numbers">View Member Numbers button.</topic-popup>
+    <topic-popup name="hlp_view_member_numbers">view member numbers button</topic-popup>.
   </p>
   <p>Two members cannot be drawn between the same pair of joints.</p>
   <p>
+    If you attempt to draw a member that crosses over one or more joints between its ends, two or more members will
+    automatically be created. They'll all have the same properties.
+  </p>
+  <p>
     If you accidentally draw a member in the wrong location, you can click the
-    <topic-popup name="hlp_undo">Undo button</topic-popup> to remove it, or you can
+    <topic-popup name="hlp_undo">undo button</topic-popup> to remove it, or you can
     <topic-link name="hlp_delete_member">delete the member.</topic-link>
   </p>
   <p>
@@ -1354,106 +1365,107 @@
 <ng-template topic-name="hlp_setup_wizard">
   <h1>Setup wizard</h1>
   <p>
-    The <span class="b">Design Project Setup Wizard</span> is automatically displayed every time you start up the
-    <span class="bd-emph">Bridge Designer</span> and choose to create a new bridge design.
+    The <span class="b">project setup wizard</span> is automatically displayed every time you start up the
+    <span class="bd-emph">Bridge Designer</span> and choose to create a new design.
   </p>
   <p>
-    To display the Wizard after the software is already running, click the
-    <topic-popup name="hlp_new_design">New Design button.</topic-popup>
+    To display the wizard at any time, click the
+    <topic-popup name="hlp_new_design">new design button.</topic-popup>
   </p>
   <p>
-    The Design Project Setup Wizard will erase the <topic-link name="hlp_drawing_board">Drawing Board,</topic-link> then
-    set it up for a new design. The Wizard will prompt you to:
+    The project setup wizard will erase the <topic-link name="hlp_drawing_board">drawing board,</topic-link> then set it
+    up for a new design. It will prompt you to:
   </p>
   <ol>
     <li>Read and understand the <topic-link name="hlp_design_specifications">design requirement</topic-link>.</li>
     <li>
-      Enter a <topic-link name="hlp_local_contest">Local Contest Code</topic-link>, if you are participating in a local
-      bridge design contest.
+      Enter a <topic-link name="hlp_local_contest">local contest code</topic-link>. This is optional. You can skip it
+      unless you're participating in a local bridge design contest.
     </li>
     <li>
       <topic-link name="hlp_select_project">Select the deck elevation and support configuration</topic-link> of the
       bridge.
     </li>
     <li>Select the deck material and truck loading to be used for you design.</li>
-    <li>Select a standard truss <topic-popup name="glos_template">template</topic-popup> (optional).</li>
     <li>
-      Enter the designer's name and a unique project identification name or number into the
-      <topic-popup name="hlp_titleblock">Title Block.</topic-popup>
+      Optinally select a standard truss <topic-popup name="glos_template">template</topic-popup> to guide your design.
+    </li>
+    <li>
+      Enter the designer's name and a project identification name or number into the
+      <topic-popup name="hlp_titleblock">title block.</topic-popup>
     </li>
   </ol>
   <p>
-    For each step of the site design, click the Next button to advance to the next prompt. Click the Back button to
-    return to a previous prompt and change your selections, as required. Click the Finish button to accept all of your
-    selections and return to the Drawing Board. Click the Cancel button to reject all of your selections and return to
-    the Drawing Board.
+    For each step of the site design, click the Next button to advance. Click the Back button to return to a previous
+    page and change your selections. Click the Finish button to accept all of your selections and return to the drawing
+    board. Click the Cancel button to reject all of your selections and return to the drawing board.
   </p>
   <p>
-    When you click the Finish button, the Wizard will automatically create the
-    <topic-popup name="glos_joints">joints</topic-popup> that support the bridge deck (see Design
-    <topic-link name="hlp_design_specifications">Specification 3.g</topic-link> for more information), as well as any
-    additional supports that are required for the site configuration you have selected.
+    When you click the Finish button, the wizard will automatically create the
+    <topic-popup name="glos_joints">joints</topic-popup> that support the bridge deck. See
+    <topic-link name="hlp_design_specifications">design specification 3.g</topic-link> for more information. It will
+    also create any additional supports for the site configuration you've selected.
   </p>
   <h2 class="btop">Notes and tips</h2>
   <p>
-    Selection of the deck elevation, support configuration, and deck material will determine the
+    The deck elevation, support configuration, and deck material you choose will determine the
     <topic-link name="hlp_cost">site cost</topic-link> of your project. The
-    <topic-popup name="glos_site_cost">site cost</topic-popup> is displayed at the bottom of the Site Design Wizard and
-    is automatically updated with each change of deck elevation or support configuration.
+    <topic-popup name="glos_site_cost">cost</topic-popup> is displayed at the bottom of the setup wizard and is
+    automatically updated with each change of deck elevation or support configuration.
   </p>
   <p>
-    To see how the currently displayed site cost is calculated, click the down arrow
+    To see details showing how the site cost is calculated, click the down arrow
     <img
       src="img/help/dropdown.png"
-      alt="Notes and tips"
+      alt="Dropdown arrow"
     />
-    near the lower right-hand corner of the Design Project Setup Wizard
+    near the lower right-hand corner of the project setup wizard.
   </p>
   <p>
-    Once you have selected the deck elevation and support configuration, you can click the Finish button at any time.
-    Selecting a template and entering information in the Title Block are optional.
+    Once you've selected the deck elevation and support configuration, you can click Finish button at any time. The rest
+    of the setup is optional.
   </p>
 </ng-template>
 <ng-template topic-name="hlp_drawing_board_button">
   <h1>Drawing board button</h1>
   <p>
     <img
-      alt="Drawing Board button"
+      alt="Drawing board button"
       src="img/help/btndb.png"
     />
-    Click the <span class="b">Drawing Board button</span> to return to the
-    <topic-link name="hlp_drawing_board">Drawing Board Mode</topic-link> after a
+    Click the <span class="b">drawing board button</span> to return to
+    <topic-link name="hlp_drawing_board">drawing board mode</topic-link> after a
     <topic-link name="hlp_run_load_test">load test.</topic-link>
   </p>
   <h2 class="btop">Notes and tips</h2>
   <p>
-    The Drawing Board button is located on the <topic-link name="hlp_toolbars">Main Toolbar.</topic-link> It can also be
-    accessed from the <topic-link name="hlp_menu_bar">Test menu</topic-link>.
+    The drawing board button is located on the <topic-link name="hlp_toolbars">main toolbar</topic-link>. It can also be
+    accessed from the <topic-link name="hlp_menu_bar">test menu</topic-link>.
   </p>
   <p>
-    The Drawing Board button and the <topic-popup name="hlp_load_test2">Load Test button</topic-popup> work like "radio
-    buttons." Only one of the two can be depressed at any given time. When you click one, it remains depressed until you
-    click the other.
+    The drawing board button and <topic-popup name="hlp_load_test_button">load test button</topic-popup> work as a pair.
+    Only one can be pressed at a time.
   </p>
 </ng-template>
+<!-- edited -->
 <ng-template topic-name="hlp_erase">
   <h1>Erase a joint or member</h1>
   <h2>To erase a joint or member from your structural model:</h2>
   <ol>
     <li>
-      Click the <topic-popup name="hlp_erase_tool">Eraser tool</topic-popup> on the
-      <topic-popup name="hlp_design_tools">Design Tools palette.</topic-popup>
+      Click the <topic-popup name="hlp_erase_tool">eraser tool</topic-popup> on the
+      <topic-popup name="hlp_design_tools">design tools palette.</topic-popup>
     </li>
     <li>Click on the joint or member you want to erase.</li>
   </ol>
   <h2 class="btop">Notes and tips</h2>
   <p>
-    You must be in the <topic-link name="hlp_drawing_board">Drawing Board Mode</topic-link> to erase a joint or member.
+    You must be in the <topic-link name="hlp_drawing_board">drawing board mode</topic-link> to erase a joint or member.
   </p>
   <p>You can only erase one joint or member at a time.</p>
   <p>
     When you erase a joint, all <topic-popup name="glos_members">members</topic-popup> attached to that joint are also
-    deleted.
+    erased.
   </p>
   <p>
     You cannot erase the <topic-popup name="glos_joints">joints</topic-popup> that were created automatically by the
@@ -2194,7 +2206,7 @@
     <topic-link name="hlp_member_list">Member List.</topic-link>
   </p>
 </ng-template>
-<ng-template topic-name="hlp_load_test2">
+<ng-template topic-name="hlp_load_test_button">
   <h1>Load test button</h1>
   <p>
     <img
@@ -2221,12 +2233,12 @@
   <p>
     The <topic-popup name="glos_load_test">load test</topic-popup> <span class="b">animation</span> is a graphical
     simulation of your bridge undergoing the <topic-link name="hlp_run_load_test">load test</topic-link>. To initiate
-    the animation, click the <topic-popup name="hlp_load_test2">Load Test button</topic-popup>.
+    the animation, click the <topic-popup name="hlp_load_test_button">Load Test button</topic-popup>.
   </p>
   <p>
     As the animation begins, your bridge is subjected to its own weight--the weight of the steel structural elements,
-    the <topic-popup name="glos_concrete">concrete</topic-popup>&ngsp;<topic-popup name="glos_deck">deck</topic-popup>, and
-    the <topic-popup name="glos_asphalt">asphalt</topic-popup>&ngsp;
+    the <topic-popup name="glos_concrete">concrete</topic-popup>&ngsp;<topic-popup name="glos_deck">deck</topic-popup>,
+    and the <topic-popup name="glos_asphalt">asphalt</topic-popup>&ngsp;
     <topic-popup name="glos_wearing_surface">wearing surface</topic-popup>. Once the self-weight is applied, the
     <topic-popup name="hlp_aashto_h20x44">AASHTO H25 truck</topic-popup> moves across the bridge from left to right. As
     the <topic-popup name="glos_loads">loads</topic-popup> are applied, the bridge bends downward. The
@@ -2550,7 +2562,7 @@
   <p class="in1"><topic-popup name="hlp_erase_tool">Eraser tool</topic-popup></p>
   <p>Test</p>
   <p class="in1"><topic-popup name="hlp_drawing_board_button">Drawing board</topic-popup></p>
-  <p class="in1"><topic-popup name="hlp_load_test2">Load test</topic-popup></p>
+  <p class="in1"><topic-popup name="hlp_load_test_button">Load test</topic-popup></p>
   <p class="in1"><topic-popup name="hlp_show_animation">Show animation</topic-popup></p>
   <p class="in1"><topic-popup name="hlp_old_style_graphics">Use old-style graphics</topic-popup></p>
   <p class="in1"><topic-popup name="hlp_auto_correct_errors">Auto-correct errors</topic-popup></p>
@@ -2998,9 +3010,9 @@
   </p>
   <p class="btop">
     Once your <topic-popup name="glos_structural_model">structural model</topic-popup> has no
-    <topic-popup name="glos_unsafe">unsafe</topic-popup>&ngsp;<topic-popup name="glos_members">members</topic-popup>, your
-    design is <span class="i">successful</span>. However, your design is not <span class="i">optimum</span> until you
-    minimize its cost. The first step in optimizing your design is to minimize the cost of your
+    <topic-popup name="glos_unsafe">unsafe</topic-popup>&ngsp;<topic-popup name="glos_members">members</topic-popup>,
+    your design is <span class="i">successful</span>. However, your design is not <span class="i">optimum</span> until
+    you minimize its cost. The first step in optimizing your design is to minimize the cost of your
     <span class="i">current truss configuration</span> by optimizing the
     <topic-popup name="glos_member_properties">member properties</topic-popup>--
     <topic-link name="hlp_materials">material,</topic-link>
@@ -3545,7 +3557,7 @@
   </p>
   <h2>To load test your design:</h2>
   <ol>
-    <li>Click the <topic-popup name="hlp_load_test2">Load Test button</topic-popup>.</li>
+    <li>Click the <topic-popup name="hlp_load_test_button">Load Test button</topic-popup>.</li>
     <li>
       Sit back and watch. The <span class="bd-emph">Bridge Designer</span> will perform the load test, display the
       <topic-link name="hlp_load_test3">load test animation,</topic-link> and update the
@@ -4535,7 +4547,7 @@
   <p class="in1"><topic-popup name="hlp_save_file">Save file button</topic-popup></p>
   <p class="in1"><topic-popup name="hlp_print_drawing">Print button</topic-popup></p>
   <p class="in1"><topic-popup name="hlp_drawing_board_button">Drawing board button</topic-popup></p>
-  <p class="in1"><topic-popup name="hlp_load_test2">Load test button</topic-popup></p>
+  <p class="in1"><topic-popup name="hlp_load_test_button">Load test button</topic-popup></p>
   <p class="in1"><topic-popup name="hlp_select_all">Select all button</topic-popup></p>
   <p class="in1"><topic-popup name="hlp_delete">Delete button</topic-popup></p>
   <p class="in1"><topic-popup name="hlp_undo">Undo button</topic-popup></p>

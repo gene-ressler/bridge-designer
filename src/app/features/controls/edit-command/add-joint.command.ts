@@ -27,7 +27,7 @@ export class AddJointCommand extends EditCommand {
       joint,
       bridge,
       selectedElements,
-      MemberSplitter.create(joint, bridge.members, selectedElements.selectedMembers),
+      MemberSplitter.createForAdd(joint, bridge.members, selectedElements.selectedMembers),
     );
   }
 
@@ -36,11 +36,11 @@ export class AddJointCommand extends EditCommand {
     return this.memberSplitter.hasSplit ? EditEffect.MEMBERS | EditEffect.JOINTS : EditEffect.JOINTS;
   }
 
-  // TODO: Handle too many joints.
   public override do(): void {
+    // Splitting throws with no action if too many members.
+    this.memberSplitter.do();
     this.joint.index = this.bridge.joints.length; // Append.
     EditableUtility.merge(this.bridge.joints, [this.joint], this.selectedElements.selectedJoints);
-    this.memberSplitter.do();
   }
 
   public override undo(): void {
@@ -69,7 +69,7 @@ export class AddJointCommand extends EditCommand {
       joint,
       bridge,
       selectedElements,
-      MemberSplitter.rehydrate(context, state.splitter, joint, bridge, selectedElements),
+      MemberSplitter.rehydrate(context, state.splitter, joint, bridge.members, selectedElements),
     );
   }
 }

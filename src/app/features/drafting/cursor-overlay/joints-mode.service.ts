@@ -2,7 +2,6 @@ import { EventEmitter, Injectable } from '@angular/core';
 import { Joint } from '../../../shared/classes/joint.model';
 import { JointCursorService } from '../shared/joint-cursor.service';
 import { HotElementService } from '../shared/hot-element.service';
-import { BridgeService } from '../../../shared/services/bridge.service';
 import { Utility } from '../../../shared/classes/utility';
 import { HotElementDragService } from '../shared/hot-element-drag.service';
 import { GuideKnob } from '../shared/guides.service';
@@ -14,7 +13,6 @@ export class JointsModeService {
   private addJointRequest: EventEmitter<Joint> | undefined;
 
   constructor(
-    private readonly bridgeService: BridgeService,
     private readonly hotElementDragService: HotElementDragService,
     private readonly hotElementService: HotElementService,
     private readonly jointCursorService: JointCursorService,
@@ -44,9 +42,6 @@ export class JointsModeService {
     }
     // Adding the joint sets the index correctly.
     const locationWorld = this.jointCursorService.locationWorld;
-    if (this.bridgeService.findJointAt(locationWorld)) {
-      return;
-    }
     this.addJointRequest?.emit(new Joint(-1, locationWorld.x, locationWorld.y, false));
   }
 
