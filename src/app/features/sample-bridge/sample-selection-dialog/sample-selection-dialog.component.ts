@@ -13,11 +13,13 @@ import { Graphics } from '../../../shared/classes/graphics';
 import { SampleService, SAMPLE_BRIDGES } from '../sample.service';
 import { SelectedElementsService } from '../../drafting/shared/selected-elements-service';
 import { ViewportTransform2D } from '../../../shared/services/viewport-transform.service';
+import { DesignSketchRenderingService } from '../../../shared/services/design-sketch-rendering.service';
 
 @Component({
     selector: 'sample-selection-dialog',
     imports: [jqxListBoxModule, jqxWindowModule, jqxButtonModule],
     /** Component-level injections of stateful services. Root versions are hidden. */
+    // TODO: Bug. We see sketches in sample preview that shouldn't be there. Maybe missing a sketch provider?
     providers: [
         BridgeService,
         { provide: BridgeServiceSessionStateKey, useValue: { key: undefined } },
@@ -26,6 +28,7 @@ import { ViewportTransform2D } from '../../../shared/services/viewport-transform
         DesignMemberRenderingService,
         DesignRenderingService,
         DesignSiteRenderingService,
+        DesignSketchRenderingService,
         SelectedElementsService,
         ViewportTransform2D,
     ],

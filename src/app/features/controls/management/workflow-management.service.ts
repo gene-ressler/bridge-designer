@@ -102,11 +102,7 @@ export class WorkflowManagementService {
         origin: EventOrigin.SERVICE,
         data: bridgeService.getMostCommonStockId(),
       });
-      // TODO: This where to switch to master UI state mode "no bridge"
-      uiStateService.disable(
-        eventBrokerService.designModeSelection,
-        bridgeService.designConditions === DesignConditionsService.PLACEHOLDER_CONDITIONS,
-      );
+      disableDesignModeWidgets();
     });
 
     // Member size change requests.
@@ -132,7 +128,16 @@ export class WorkflowManagementService {
     eventBrokerService.sessionStateRestoreCompletion.subscribe(_eventInfo => {
       uiStateService.disable(eventBrokerService.undoRequest, undoManagerService.done.length === 0);
       uiStateService.disable(eventBrokerService.redoRequest, undoManagerService.undone.length === 0);
+      disableDesignModeWidgets();
     });
+
+    function disableDesignModeWidgets(): void {
+      // TODO: This where to switch to master UI state mode "no bridge"
+      uiStateService.disable(
+        eventBrokerService.designModeSelection,
+        bridgeService.designConditions === DesignConditionsService.PLACEHOLDER_CONDITIONS,
+      );
+    }
 
     /** En/disables member size increment. */
     function disableMemberSizeIncrementWidgets(): void {

@@ -19,6 +19,7 @@ import { AnalysisService } from '../../../shared/services/analysis.service';
 import { WidgetHelper } from '../../../shared/classes/widget-helper';
 import { Graphics } from '../../../shared/classes/graphics';
 import { DraftingPanelState } from '../../../shared/services/persistence.service';
+import { DesignSketchRenderingService } from '../../../shared/services/design-sketch-rendering.service';
 
 @Component({
     selector: 'design-iteration-dialog',
@@ -32,6 +33,7 @@ import { DraftingPanelState } from '../../../shared/services/persistence.service
         DesignMemberRenderingService,
         DesignRenderingService,
         DesignSiteRenderingService,
+        DesignSketchRenderingService,
         SelectedElementsService,
         ViewportTransform2D,
     ],
