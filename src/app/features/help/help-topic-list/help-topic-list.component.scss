@@ -1,0 +1,11 @@
+.container {
+  width: calc(100% - 8px);
+  height: calc(100% - 12px);
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+}
+
+.list {
+  flex-grow: 1;
+}

@@ -1,0 +1,13 @@
+<div class="container">
+  <div class="list">
+    <jqxListBox
+      style="border: none"
+      [displayMember]="'title'"
+      [valueMember]="'id'"
+      [source]="source"
+      [width]="'100%'"
+      [height]="'calc(100% - 2px)'"
+      (onSelect)="handleTopicSelect($event)"
+    ></jqxListBox>
+  </div>
+</div>

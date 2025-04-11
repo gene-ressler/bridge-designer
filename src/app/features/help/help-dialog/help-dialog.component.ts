@@ -11,6 +11,7 @@ import { jqxToolBarComponent, jqxToolBarModule } from 'jqwidgets-ng/jqxtoolbar';
 import { WidgetHelper } from '../../../shared/classes/widget-helper';
 import { HelpEventService } from '../help-event.service';
 import { HelpSearchComponent } from '../help-search/help-search.component';
+import { HelpTopicListComponent } from "../help-topic-list/help-topic-list.component";
 
 const enum Tools {
   BACK_TOPIC,
@@ -19,22 +20,24 @@ const enum Tools {
 
 export const enum HelpTab {
   CONTENTS,
+  TOPICS,
   SEARCH,
 }
 
 @Component({
     selector: 'help-dialog',
     imports: [
-        HelpNavTreeComponent,
-        HelpSearchComponent,
-        HelpTopicComponent,
-        jqxSplitterModule,
-        jqxTabsModule,
-        jqxToolBarModule,
-        jqxTreeModule,
-        jqxWindowModule,
-        jqxButtonModule,
-    ],
+    HelpNavTreeComponent,
+    HelpSearchComponent,
+    HelpTopicComponent,
+    jqxSplitterModule,
+    jqxTabsModule,
+    jqxToolBarModule,
+    jqxTreeModule,
+    jqxWindowModule,
+    jqxButtonModule,
+    HelpTopicListComponent
+],
     templateUrl: './help-dialog.component.html',
     styleUrl: './help-dialog.component.scss'
 })
@@ -92,7 +95,7 @@ export class HelpDialogComponent implements AfterViewInit {
     this.tabs.selectedItem(this.tabIndex === undefined ? HelpTab.CONTENTS : this.tabIndex);
   }
 
-  handleSearchSelect(topicName: string) {
+  handleTopicSelect(topicName: string) {
     this.currentTopicName = topicName;
   }
 

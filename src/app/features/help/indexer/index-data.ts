@@ -1,4 +1,4 @@
-export type HelpIndexData = {
+type HelpIndexData = {
   id: string,
   title: string,
   text: string,

@@ -142,7 +142,7 @@ class Indexer(HTMLParser):
 def quote(s):
     return f"`{s}`" if "'" in s else f"'{s}'"
 
-PREAMBLE = """export type HelpIndexData = {
+PREAMBLE = """type HelpIndexData = {
   id: string,
   title: string,
   text: string,

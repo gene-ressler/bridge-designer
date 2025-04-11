@@ -50,7 +50,6 @@ export class HelpSearchComponent {
 
   handleSearchResultsSelect(event: any) {
     const topic: string = event.args.item.originalItem.topic;
-    console.log(topic);
     if (topic.length) {
       this.onSelect.emit(topic);
     }

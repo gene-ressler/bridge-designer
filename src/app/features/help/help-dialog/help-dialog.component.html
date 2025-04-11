@@ -37,6 +37,7 @@
         >
           <ul>
             <li>Contents</li>
+            <li>Topics</li>
             <li>Search</li>
           </ul>
           <div style="height: 100%">
@@ -46,9 +47,12 @@
             ></help-nav-tree>
           </div>
           <div>
+            <help-topic-list (onSelect)="handleTopicSelect($event)"></help-topic-list>
+          </div>
+          <div style="height: 100%">
             <help-search
               #helpSearch
-              (onSelect)="handleSearchSelect($event)"
+              (onSelect)="handleTopicSelect($event)"
             ></help-search>
           </div>
         </jqxTabs>
