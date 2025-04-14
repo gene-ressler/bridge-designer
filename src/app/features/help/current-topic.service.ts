@@ -19,9 +19,10 @@ export class CurrentTopicService {
 
   /** Broadcast notification subject for current topic changes. */
   public readonly currentTopicIdChange = new Subject<TopicLocation>();
+  /** Settable callback for fetching current scroll top just before going to a new topic. */
+  public scrollTopCallback: () => number = () => 0;
 
   private _currentTopicId: string = CurrentTopicService.DEFAULT_TOPIC_ID;
-  public scrollTopCallback: () => number = () => 0;
   private backTopicStack: TopicLocation[] = [];
   private forwardTopicStack: TopicLocation[] = [];
 
@@ -42,7 +43,7 @@ export class CurrentTopicService {
 
   /**
    * Goes to a specific topic, stacking the current one and its scrolltop
-   * beforehand. Broadcasts a notification of the change.
+   * beforehand (optionally). Broadcasts a notification of the change.
    */
   public goToTopicId(id: string, options?: { scrollTop?: number; stack?: TopicLocation[] | null }): void {
     if (id === this._currentTopicId) {

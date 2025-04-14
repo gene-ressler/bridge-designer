@@ -24,7 +24,6 @@ import { UnstableBridgeDialogComponent } from './features/testing/unstable-bridg
 import { LoadTestReportDialogComponent } from './features/testing/load-test-report-dialog/load-test-report-dialog.component';
 import { CostReportDialogComponent } from './features/costs/cost-report-dialog/cost-report-dialog.component';
 import { DesignIterationDialogComponent } from './features/iterations/design-iteration-dialog/design-iteration-dialog.component';
-import { DesignConditionsService } from './shared/services/design-conditions.service';
 import { WelcomeDialogComponent } from './features/welcome/welcome-dialog/welcome-dialog.component';
 import { SessionStateService } from './shared/services/session-state.service';
 import { UndoManagerSessionStateService } from './features/drafting/shared/undo-manager-session-state.service';
@@ -32,44 +31,46 @@ import { HelpDialogComponent } from './features/help/help-dialog/help-dialog.com
 import { SlendernessFailDialogComponent } from './features/testing/slenderness-fail-dialog/slenderness-fail-dialog.component';
 import { MemberEditDialogComponent } from './features/drafting/member-edit-dialog/member-edit-dialog.component';
 import { AboutDialogComponent } from './features/about/about-dialog/about-dialog.component';
+import { FlyThruPaneComponent } from './features/fly-thru/fly-thru-pane/fly-thru-pane.component';
 
 // ¯\_(ツ)_/¯
 
 @Component({
-    selector: 'app-root',
-    imports: [
-        AboutDialogComponent,
-        CostReportDialogComponent,
-        DesignIterationDialogComponent,
-        DraftingPanelComponent,
-        HelpDialogComponent,
-        LoadTestReportDialogComponent,
-        MemberEditDialogComponent,
-        MemberTableComponent,
-        MenusComponent,
-        RulerComponent,
-        SampleSelectionDialogComponent,
-        SetupWizardComponent,
-        SlendernessFailDialogComponent,
-        TemplateSelectionDialogComponent,
-        TipDialogComponent,
-        ToolbarAComponent,
-        ToolbarBComponent,
-        UnstableBridgeDialogComponent,
-        WelcomeDialogComponent,
-        jqxDropDownButtonModule,
-        jqxDropDownListModule,
-        jqxGridModule,
-        jqxMenuModule,
-        jqxRibbonModule,
-        jqxToolBarModule,
-        jqxTreeModule,
-        jqxButtonModule, // don't reorder
-        jqxButtonGroupModule,
-    ],
-    templateUrl: './app.component.html',
-    styleUrls: ['./app.component.scss'],
-    encapsulation: ViewEncapsulation.None
+  selector: 'app-root',
+  imports: [
+    AboutDialogComponent,
+    CostReportDialogComponent,
+    DesignIterationDialogComponent,
+    DraftingPanelComponent,
+    FlyThruPaneComponent,
+    HelpDialogComponent,
+    LoadTestReportDialogComponent,
+    MemberEditDialogComponent,
+    MemberTableComponent,
+    MenusComponent,
+    RulerComponent,
+    SampleSelectionDialogComponent,
+    SetupWizardComponent,
+    SlendernessFailDialogComponent,
+    TemplateSelectionDialogComponent,
+    TipDialogComponent,
+    ToolbarAComponent,
+    ToolbarBComponent,
+    UnstableBridgeDialogComponent,
+    WelcomeDialogComponent,
+    jqxDropDownButtonModule,
+    jqxDropDownListModule,
+    jqxGridModule,
+    jqxMenuModule,
+    jqxRibbonModule,
+    jqxToolBarModule,
+    jqxTreeModule,
+    jqxButtonModule, // don't reorder
+    jqxButtonGroupModule,
+  ],
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class AppComponent implements AfterViewInit {
   @ViewChild('leftRuler') leftRuler!: RulerComponent;
@@ -85,16 +86,16 @@ export class AppComponent implements AfterViewInit {
   ) {}
 
   /** Shows the drafting panel or hides it under a gray facade. */
-  private removeDraftingPanelCover(value: boolean): void {
+  private showDraftingPanelCover(value: boolean): void {
     const coverStyle = this.draftingAreaCover.nativeElement.style;
     const toggleTools = (value: boolean) =>
       this.eventBrokerService.toolsToggle.next({ origin: EventOrigin.APP, data: value });
     if (value) {
+      coverStyle.display = 'block';
+      toggleTools(false); // Ignores user set visibility, but currently never happens. Cover can't be replaced.
+    } else {
       coverStyle.display = 'none';
       toggleTools(true);
-    } else {
-      coverStyle.display = 'block';
-      toggleTools(false); // Ignores former user intent, but currently never happens. Cover can't be replaced.
     }
   }
 
@@ -111,19 +112,17 @@ export class AppComponent implements AfterViewInit {
     this.eventBrokerService.memberTableToggle.subscribe(info => {
       this.memberTable.visible = info.data;
     });
-    // Cancel the cover over the drafting area when the user loads a bridge.
-    this.eventBrokerService.loadBridgeRequest.subscribe(eventInfo => {
-      this.removeDraftingPanelCover(eventInfo.data.bridge.designConditions !== DesignConditionsService.PLACEHOLDER_CONDITIONS);
-    });
-    // Update the UI to match state of session manager.
-    this.sessionStateService.notifyEnabled();
+    this.eventBrokerService.uiModeRequest.subscribe(eventInfo =>
+      this.showDraftingPanelCover(eventInfo.data === 'initial'),
+    );
+    // Let everyone know if session management is enabled.
+    this.sessionStateService.restoreSessionManagementEnabled();
     // Manage the welcome sequence if there is one. Send a completion event if we're rehydrating.
     // Not a clean place to handle this, but it's simplest.
     if (this.sessionStateService.hasRestoredState) {
-      this.removeDraftingPanelCover(true);
-      this.sessionStateService.notifyComplete();
+      this.sessionStateService.notifyRestoreComplete();
     } else {
-      this.removeDraftingPanelCover(false);
+      this.eventBrokerService.uiModeRequest.next({ origin: EventOrigin.APP, data: 'initial' });
       this.eventBrokerService.tipRequest.next({ origin: EventOrigin.APP, data: 'startup' });
     }
   }

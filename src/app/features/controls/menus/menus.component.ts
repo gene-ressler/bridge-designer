@@ -60,6 +60,8 @@ export class MenusComponent implements AfterViewInit {
     this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'tip', this.eventBrokerService.tipRequest);
     this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'topics', this.eventBrokerService.helpRequest, {topic: 'glos_aashto', tab: HelpTab.TOPICS});
     this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'undo', this.eventBrokerService.undoRequest);
+    this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'whatsNew', this.eventBrokerService.helpRequest, {topic: 'hlp_whats_new'});
+    
 
     this.uiStateService.registerToggleMenuItem(this.mainMenu, 'animation', this.eventBrokerService.animationToggle);
     this.uiStateService.registerToggleMenuItem(this.mainMenu, 'animationControls', this.eventBrokerService.animationControlsToggle);

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { AnalysisStatus } from './analysis.service';
 import { ToastErrorKind } from '../../features/toast/toast/toast-error';
+import { UiMode } from '../../features/controls/management/ui-state.service';
 
 /** Origin of an event. For breaking event cycles. */
 export const enum EventOrigin {
@@ -24,9 +25,9 @@ export const enum EventOrigin {
 }
 
 export type EventInfo = { origin: EventOrigin; data?: any };
-export type TypedEventInfo<T> = { origin: EventOrigin, data: T };
+export type TypedEventInfo<T> = { origin: EventOrigin; data: T };
 
-/** 
+/**
  * Event subject container. Suffixes connote following conventions.
  *
  *  o xxxRequest: Some service or component is being asked to do something.
@@ -37,7 +38,7 @@ export type TypedEventInfo<T> = { origin: EventOrigin, data: T };
  *    - Handled by associated selector groups (e.g. buttons and menu items) plus anyone else interested.
  *  o xxxToggle: A UI toggle widget has been clicked.
  *    - Handled by asssociated toggles (e.g. button and menu item) plus anyone else interested.
- *  o xxxInvalidation: Graphic entity xxx requires rendering, e.g. because 
+ *  o xxxInvalidation: Graphic entity xxx requires rendering, e.g. because
  *    the underlying model has changed.
  *    - Handled by the graphic entity.
  *  o xxxChange: A service or component's state changed. Other services need to know.
@@ -62,6 +63,7 @@ export class EventBrokerService {
   public readonly draftingViewportPendingChange = new Subject<EventInfo>();
   public readonly editCommandCompletion = new Subject<EventInfo>();
   public readonly editModeSelection = new Subject<EventInfo>();
+  public readonly uiModeRequest = new Subject<TypedEventInfo<UiMode>>();
   public readonly gridDensitySelection = new Subject<EventInfo>();
   public readonly gridDensityChange = new Subject<EventInfo>();
   public readonly guidesToggle = new Subject<EventInfo>();
@@ -100,4 +102,24 @@ export class EventBrokerService {
   public readonly undoRequest = new Subject<EventInfo>();
   public readonly unstableBridgeDialogOpenRequest = new Subject<EventInfo>();
   public readonly welcomeRequest = new Subject<EventInfo>();
+
+  public get namesBySubject(): Map<Subject<any>, string> {
+    const map = new Map<Subject<any>, string>();
+    for (const name in this) {
+      if (this[name] instanceof Subject) {
+        map.set(this[name], name);
+      }
+    }
+    return map;
+  }
+
+  public get subjectsByName(): Map<string, Subject<any>> {
+    const map = new Map<string, Subject<any>>();
+    for (const name in this) {
+      if (this[name] instanceof Subject) {
+        map.set(name, this[name]);
+      }
+    }
+    return map;
+  }
 }

@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
-import { EventInfo, EventOrigin } from '../../../shared/services/event-broker.service';
+import { EventBrokerService, EventInfo, EventOrigin } from '../../../shared/services/event-broker.service';
 import { jqxToggleButtonComponent } from 'jqwidgets-ng/jqxtogglebutton';
 import { jqxMenuComponent } from 'jqwidgets-ng/jqxmenu';
 import { jqxButtonComponent } from 'jqwidgets-ng/jqxbuttons';
+import { SessionStateService } from '../../../shared/services/session-state.service';
 
 export const enum ModifierMask {
   ALT = 0x1,
@@ -12,20 +13,34 @@ export const enum ModifierMask {
   SHIFT = 0x8,
 }
 
-// TODO: Global overrides for animation and no-bridge states.
+export type UiMode = 'initial' | 'drafting' | 'animation' | 'unknown';
 
-/** Container for state and logic that sychronizes multiple UI elements having the same purpose. */
+type DisableOverride = { isDisabled: boolean; disabledModes: UiMode[] };
+
+/**
+ * Container for logic that sychronizes multiple UI elements having the same purpose.
+ *
+ * This class doesn't track the state of toggle and select subjects. It only toggles
+ * and selects the state of attached UI objects. When explicit state is needed, that
+ * must, it's recommended to have a separate service subscribe to the respective subject.
+ */
 @Injectable({ providedIn: 'root' })
 export class UiStateService {
   // Workaround for jqxMenu limitation: menu item click handlers aren't allowed, only the
-  // global itemclicked() handler. So can't hang this info on the DOM, which would be simpler.
+  // global itemclicked() handler. So can't hang this info there, which would be simpler.
   private readonly selectMenuItemInfosById: { [id: string]: [number, Subject<EventInfo>] } = {};
   private readonly toggleMenuItemInfosById: { [id: string]: [HTMLSpanElement, Subject<EventInfo>] } = {};
   private readonly plainMenuItemInfosById: { [id: string]: [Subject<EventInfo>, any] } = {};
   private readonly widgetDisablersBySubject = new Map<Subject<any>, ((disable: boolean) => void)[]>();
   private readonly keyInfosByKey: { [key: string]: [boolean, Subject<EventInfo>, any] } = {};
+  private readonly disableOverridesBySubject = new Map<Subject<any>, DisableOverride>();
+  private uiMode: UiMode = 'unknown';
 
-  constructor() {
+  constructor(
+    private readonly eventBrokerService: EventBrokerService,
+    sessionStateService: SessionStateService,
+  ) {
+    // Handle shortcut keystrokes.
     addEventListener('keydown', (event: KeyboardEvent): void => {
       let modifierMask = (+event.shiftKey << 3) | (+event.metaKey << 2) | (+event.ctrlKey << 1) | +event.altKey;
       const info = this.keyInfosByKey[`${event.key}|${modifierMask}`];
@@ -36,6 +51,44 @@ export class UiStateService {
       event.preventDefault();
       info[1].next({ origin: EventOrigin.TOOLBAR, data: info[2] });
     });
+    eventBrokerService.uiModeRequest.subscribe(eventInfo => {
+      this.uiMode = eventInfo.data;
+      for (const [subject, override] of this.disableOverridesBySubject) {
+        this.disableByOverride(subject, override);
+      }
+    });
+    // By-UI mode disablement setup. Must be complete before session state registration.
+    const initial: UiMode[] = ['initial'];
+    const initialAndAnimation: UiMode[] = ['initial', 'animation'];
+    const initialAndDrafting: UiMode[] = ['initial', 'drafting'];
+    this.addDisableOverrides(eventBrokerService.analysisReportRequest, initial);
+    this.addDisableOverrides(eventBrokerService.animationControlsToggle, initialAndDrafting);
+    this.addDisableOverrides(eventBrokerService.costReportRequest, initial);
+    this.addDisableOverrides(eventBrokerService.deleteSelectionRequest, initialAndAnimation);
+    this.addDisableOverrides(eventBrokerService.designIterationBackRequest, initialAndAnimation);
+    this.addDisableOverrides(eventBrokerService.designIterationForwardRequest, initialAndAnimation);
+    this.addDisableOverrides(eventBrokerService.designModeSelection, initial);
+    this.addDisableOverrides(eventBrokerService.gridDensitySelection, initialAndAnimation);
+    this.addDisableOverrides(eventBrokerService.guidesToggle, initialAndAnimation);
+    this.addDisableOverrides(eventBrokerService.inventorySelectionChange, initialAndAnimation);
+    this.addDisableOverrides(eventBrokerService.loadDesignIterationRequest, initialAndAnimation);
+    this.addDisableOverrides(eventBrokerService.loadTemplateRequest, initialAndAnimation);
+    this.addDisableOverrides(eventBrokerService.memberNumbersToggle, initialAndAnimation);
+    this.addDisableOverrides(eventBrokerService.memberSizeDecreaseRequest, initialAndAnimation);
+    this.addDisableOverrides(eventBrokerService.memberSizeIncreaseRequest, initialAndAnimation);
+    this.addDisableOverrides(eventBrokerService.memberTableToggle, initialAndAnimation);
+    this.addDisableOverrides(eventBrokerService.redoRequest, initialAndAnimation);
+    this.addDisableOverrides(eventBrokerService.rulersToggle, initialAndAnimation);
+    this.addDisableOverrides(eventBrokerService.selectAllRequest, initialAndAnimation);
+    this.addDisableOverrides(eventBrokerService.templateToggle, initialAndAnimation);
+    this.addDisableOverrides(eventBrokerService.titleBlockToggle, initialAndAnimation);
+    this.addDisableOverrides(eventBrokerService.toolsToggle, initialAndAnimation);
+    this.addDisableOverrides(eventBrokerService.undoRequest, initialAndAnimation);
+    sessionStateService.register(
+      'uistate.service',
+      () => this.dehydrate(),
+      (state: State) => this.rehydrate(state),
+    );
   }
 
   public handleMenuItemClicked(id: string): void {
@@ -64,11 +117,11 @@ export class UiStateService {
     this.addWidgetDisabler(subject, disable => itemIds.forEach(id => menu.disable(id, disable)));
     itemIds.forEach((id, index) => (this.selectMenuItemInfosById[id] = [index, subject]));
     const menuItems = itemIds.map(UiStateService.queryMenuMark);
-    subject.subscribe((eventInfo: EventInfo) =>
+    subject.subscribe((eventInfo: EventInfo) => {
       menuItems.forEach((menuItem, menuItemIndex) =>
         UiStateService.setMenuItemCheck(menuItem, eventInfo.data === menuItemIndex),
-      ),
-    );
+      );
+    });
   }
 
   public registerSelectToolbarButtons(
@@ -99,9 +152,9 @@ export class UiStateService {
   public registerSelectButtons(buttons: jqxToggleButtonComponent[], subject: Subject<EventInfo>): void {
     this.addWidgetDisabler(subject, disable => buttons.forEach(button => button.disabled(disable)));
     buttons.forEach((button, buttonIndex) =>
-      button.elementRef.nativeElement.addEventListener('mousedown', () =>
-        subject.next({ origin: EventOrigin.TOOLBAR, data: buttonIndex }),
-      ),
+      button.elementRef.nativeElement.addEventListener('mousedown', () => {
+        subject.next({ origin: EventOrigin.TOOLBAR, data: buttonIndex });
+      }),
     );
     subject.subscribe((eventInfo: EventInfo) => {
       buttons.forEach((button, buttonIndex) =>
@@ -179,10 +232,16 @@ export class UiStateService {
   }
 
   public disable(subject: Subject<any>, value: boolean = true): void {
-    this.widgetDisablersBySubject.get(subject)?.forEach(disabler => disabler(value));
+    const override = this.disableOverridesBySubject.get(subject);
+    if (override) {
+      override.isDisabled = value;
+      this.disableByOverride(subject, override);
+    } else {
+      this.widgetDisablersBySubject.get(subject)?.forEach(disabler => disabler(value));
+    }
   }
 
-  /** Adds a disabler for given subject. Useful for disabling widgets that don't drive send messages themselves. */
+  /** Adds a disabler for given subject. Useful for disabling widgets that don't  send messages themselves. */
   public addWidgetDisabler(subject: Subject<any>, disabler: (disable: boolean) => void): void {
     let disablers: ((disable: boolean) => void)[] | undefined = this.widgetDisablersBySubject.get(subject);
     if (!disablers) {
@@ -190,6 +249,25 @@ export class UiStateService {
       this.widgetDisablersBySubject.set(subject, disablers);
     }
     disablers.push(disabler.bind(this));
+  }
+
+  /**
+   * Adds overrides to disable/re-enable controls based on UI state.
+   *
+   * When the override is added, the provided initial disabled value must match actual widget state.
+   */
+  public addDisableOverrides(subject: Subject<any>, overrides: UiMode[], initialDisabled: boolean = false) {
+    this.disableOverridesBySubject.set(subject, { isDisabled: initialDisabled, disabledModes: overrides });
+  }
+
+  /** Dis/enables the subject based on override state. */
+  private disableByOverride(subject: Subject<any>, override: DisableOverride) {
+    this.setDisabled(subject, override.disabledModes.includes(this.uiMode) || override.isDisabled);
+  }
+
+  /** Hard sets the disabled state of UI widgets associated with a subject via disablers. */
+  private setDisabled(subject: Subject<any>, value: boolean): void {
+    this.widgetDisablersBySubject.get(subject)?.forEach(disabler => disabler(value));
   }
 
   private static setMenuItemCheck(menuItem: HTMLSpanElement, value: boolean): void {
@@ -201,8 +279,29 @@ export class UiStateService {
   }
 
   // Another way through the jqxMenu object, but it's undocumented:
-  // (menu.widgetObject as any).menuElements[id].element.children.item(0) as HTMLSpanElement 
+  // (menu.widgetObject as any).menuElements[id].element.children.item(0) as HTMLSpanElement
   private static queryMenuMark(id: string): HTMLSpanElement {
     return document.querySelector(`li#${id} > span.menu-mark`) as HTMLSpanElement;
   }
+
+  private dehydrate(): State {
+    const namesBySubject = this.eventBrokerService.namesBySubject;
+    const state: State = {};
+    this.disableOverridesBySubject.forEach((override, subject) => {
+      state[namesBySubject.get(subject)!] = override.isDisabled;
+    });
+    return state;
+  }
+
+  private rehydrate(state: State): void {
+    const subjectsByName = this.eventBrokerService.subjectsByName;
+    for (const subjectName in state) {
+      const subject = subjectsByName.get(subjectName)!;
+      const override = this.disableOverridesBySubject.get(subject)!;
+      override.isDisabled = state[subjectName];
+    }
+  }
 }
+
+/** Map from subject name to "is disabled" state of override. */
+type State = { [key: string]: boolean };

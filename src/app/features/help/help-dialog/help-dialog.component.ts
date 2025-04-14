@@ -76,6 +76,7 @@ export class HelpDialogComponent implements AfterViewInit {
     this.tabs.select(this.tabIndex === undefined ? HelpTab.CONTENTS : this.tabIndex);
   }
 
+  /** Works around failure of jqxListbox height calcs when in non-visible tabs. */
   handleTabSelected(event: any) {
     if (event.args.item === HelpTab.TOPICS) {
       setTimeout(() => this.topicList.refresh());

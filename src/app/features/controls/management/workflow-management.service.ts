@@ -5,7 +5,7 @@ import { BridgeService } from '../../../shared/services/bridge.service';
 import { SelectedElementsService } from '../../drafting/shared/selected-elements-service';
 import { ChangeMembersCommand } from '../edit-command/change-members.command';
 import { UndoManagerService } from '../../drafting/shared/undo-manager.service';
-import { UiStateService } from './ui-state.service';
+import { UiMode, UiStateService } from './ui-state.service';
 import { AnalysisValidityService } from './analysis-validity.service';
 import { AllowedShapeChangeMask, InventoryService, StockId } from '../../../shared/services/inventory.service';
 import { EditEffect } from '../../../shared/classes/editing';
@@ -27,6 +27,8 @@ export class WorkflowManagementService {
     uiStateService: UiStateService,
     undoManagerService: UndoManagerService,
   ) {
+    let showAnimation: boolean = true;
+
     // Alpha order by subject.
 
     // Analysis completion.
@@ -40,6 +42,17 @@ export class WorkflowManagementService {
         isValidTestResult = true;
       }
       uiStateService.disable(eventBrokerService.analysisReportRequest, !isValidTestResult);
+      if (isValidTestResult && showAnimation) {
+        eventBrokerService.uiModeRequest.next({ origin: EventOrigin.SERVICE, data: 'animation' });
+      } else {
+        // Toggle the design mode back to the drafting panel with no change to UI mode.
+        setTimeout(() => eventBrokerService.designModeSelection.next({ origin: EventOrigin.SERVICE, data: 0 }));
+      }
+    });
+
+    // Animation option to show or not.
+    eventBrokerService.animationToggle.subscribe(eventInfo => {
+      showAnimation = eventInfo.data;
     });
 
     // Design iterations change.
@@ -52,11 +65,14 @@ export class WorkflowManagementService {
     });
 
     // Design mode selection: drafting or test.
-    // TODO: If animation is disabled, set selector back to design immediately.
     eventBrokerService.designModeSelection.subscribe(eventInfo => {
-      if (eventInfo.data === 1) {
-        // Test mode.
-        analysisService.analyze({ populateBridgeMembers: true });
+      switch (eventInfo.data) {
+        case 0: // drafting
+          eventBrokerService.uiModeRequest.next({ origin: EventOrigin.SERVICE, data: 'drafting' });
+          break;
+        case 1: // test
+          analysisService.analyze({ populateBridgeMembers: true });
+          break;
       }
     });
 
@@ -98,11 +114,11 @@ export class WorkflowManagementService {
     eventBrokerService.loadBridgeCompletion.subscribe(_eventInfo => {
       uiStateService.disable(eventBrokerService.undoRequest);
       uiStateService.disable(eventBrokerService.redoRequest);
+      eventBrokerService.uiModeRequest.next({ origin: EventOrigin.SERVICE, data: 'drafting' });
       eventBrokerService.loadInventorySelectorRequest.next({
         origin: EventOrigin.SERVICE,
         data: bridgeService.getMostCommonStockId(),
       });
-      disableDesignModeWidgets();
     });
 
     // Member size change requests.
@@ -126,18 +142,15 @@ export class WorkflowManagementService {
 
     // Session state restoration completion.
     eventBrokerService.sessionStateRestoreCompletion.subscribe(_eventInfo => {
+      const uiMode: UiMode =
+        bridgeService.designConditions === DesignConditionsService.PLACEHOLDER_CONDITIONS ? 'initial' : 'drafting';
+      eventBrokerService.uiModeRequest.next({
+        origin: EventOrigin.APP,
+        data: uiMode,
+      });
       uiStateService.disable(eventBrokerService.undoRequest, undoManagerService.done.length === 0);
       uiStateService.disable(eventBrokerService.redoRequest, undoManagerService.undone.length === 0);
-      disableDesignModeWidgets();
     });
-
-    function disableDesignModeWidgets(): void {
-      // TODO: This where to switch to master UI state mode "no bridge"
-      uiStateService.disable(
-        eventBrokerService.designModeSelection,
-        bridgeService.designConditions === DesignConditionsService.PLACEHOLDER_CONDITIONS,
-      );
-    }
 
     /** En/disables member size increment. */
     function disableMemberSizeIncrementWidgets(): void {

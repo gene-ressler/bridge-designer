@@ -4,6 +4,7 @@ import { EventBrokerService, EventOrigin } from '../../services/event-broker.ser
 import { InventoryService, StockId } from '../../services/inventory.service';
 import { WidgetHelper } from '../../classes/widget-helper';
 import { SessionStateService } from '../../services/session-state.service';
+import { UiStateService } from '../../../features/controls/management/ui-state.service';
 
 @Component({
     selector: 'inventory-selector',
@@ -28,12 +29,19 @@ export class InventorySelectorComponent implements AfterViewInit {
     readonly inventoryService: InventoryService,
     private readonly eventBrokerService: EventBrokerService,
     private readonly sessionStateService: SessionStateService,
+    private readonly uiStateService: UiStateService,
   ) {}
 
   public load(stockId: StockId) {
     WidgetHelper.setDropdownListSelection(this.materialSelector, stockId.materialIndex);
     WidgetHelper.setDropdownListSelection(this.crossSectionSelector, stockId.sectionIndex);
     WidgetHelper.setDropdownListSelection(this.sizeSelector, stockId.sizeIndex);
+  }
+
+  public disable(value: boolean) {
+    this.materialSelector.disabled(value);
+    this.crossSectionSelector.disabled(value);
+    this.sizeSelector.disabled(value);
   }
 
   get crossSectionSelectorWidth(): number {
@@ -84,6 +92,7 @@ export class InventorySelectorComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     this.sessionStateService.register(this.sessionStateKey, () => this.dehydrate(), state => this.rehydrate(state));
     this.eventBrokerService.loadInventorySelectorRequest.subscribe(eventInfo => this.load(eventInfo.data));
+    this.uiStateService.addWidgetDisabler(this.eventBrokerService.inventorySelectionChange, disable => this.disable(disable));
   }
 
   dehydrate(): StockId {

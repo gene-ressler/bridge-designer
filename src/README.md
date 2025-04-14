@@ -80,6 +80,18 @@ features were not worth the cost of re-inventing the wheel:
 
 - [**jQWidgets**](https://www.jqwidgets.com/): The UI widget framework discussed above.
 - [**Orama (open source version)**](https://docs.orama.com/open-source): Full text search for Bridge Designer help.
-- [**three.js**](https://threejs.org/): A fairly thin abstraction layer over native WebGL.
+- Possible: [**three.js**](https://threejs.org/): An abstraction layer over native WebGL. Adds some useful functions.
 
 We thank the providers now and forever.
+
+# Master TODO
+
+- Animation
+- Auto-correct
+- Complete help edit
+- Dirty for save management
+- Legacy animation
+- Load and save
+- Member details
+- Printing, 2D
+- Printing, 3D

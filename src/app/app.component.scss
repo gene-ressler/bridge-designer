@@ -44,6 +44,13 @@
   z-index: 1000; // Member grid uses 520 for "no data" cover.
 }
 
+.fly-thru-pane {
+  grid-row: 3 / 5;
+  grid-column: 1 / span 3;
+  display: none;
+  z-index: 1000;
+}
+
 .drafting-panel {
   grid-row: 3;
   grid-column: 2;
