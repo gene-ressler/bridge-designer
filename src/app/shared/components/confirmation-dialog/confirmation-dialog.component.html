@@ -1,0 +1,46 @@
+<jqxWindow
+  #dialog
+  [isModal]="true"
+  [autoOpen]="false"
+  [width]="400"
+  [height]="200"
+>
+  <div
+    #header
+    class="header"
+    [innerHTML]="headerHtml"
+  ></div>
+  <div class="content">
+    <div class="textContent" [innerHTML]="contentHtml"></div>
+    <div class="buttons">
+      <div *ngIf="buttons.includes('ok')">
+        <jqxButton
+          [width]="buttonWidth"
+          (onClick)="handleButtonClick('ok')"
+          >OK</jqxButton
+        >
+      </div>
+      <div *ngIf="buttons.includes('yes')">
+        <jqxButton
+          [width]="buttonWidth"
+          (onClick)="handleButtonClick('yes')"
+          >Yes</jqxButton
+        >
+      </div>
+      <div *ngIf="buttons.includes('no')">
+        <jqxButton
+          [width]="buttonWidth"
+          (onClick)="handleButtonClick('no')"
+          >No</jqxButton
+        >
+      </div>
+      <div *ngIf="buttons.includes('cancel')">
+        <jqxButton
+          [width]="buttonWidth"
+          (onClick)="handleButtonClick('cancel')"
+          >Cancel</jqxButton
+        >
+      </div>
+    </div>
+  </div>
+</jqxWindow>

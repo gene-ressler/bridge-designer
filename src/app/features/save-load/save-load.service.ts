@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { UndoManagerService } from '../drafting/shared/undo-manager.service';
 import { BridgeService } from '../../shared/services/bridge.service';
 import { PersistenceService, SaveSet } from '../../shared/services/persistence.service';
 import { EventBrokerService, EventOrigin } from '../../shared/services/event-broker.service';
 import { ToastError } from '../toast/toast/toast-error';
 
+const DEFAULT_NAME = 'MyBridge.bdc';
 const PICKER_ID = 'bridge-design';
 const PICKER_DIR = 'documents';
 const PICKER_TYPES = [
@@ -16,55 +16,35 @@ const PICKER_TYPES = [
 
 @Injectable({ providedIn: 'root' })
 export class SaveLoadService {
-  private _currentFileHandle: FileSystemFileHandle | undefined;
-  private savedMark: any;
+  // TODO: Dehydrate-rehydrate as much as possible. Probably preferred name and saved mark.
+  private currentFileHandle: FileSystemFileHandle | undefined;
+  private preferredName: string = DEFAULT_NAME;
 
   constructor(
     private readonly bridgeService: BridgeService,
     private readonly eventBrokerService: EventBrokerService,
     private readonly persistenceService: PersistenceService,
-    private readonly undoManagerService: UndoManagerService,
-  ) {
-    eventBrokerService.saveBridgeFileRequest.subscribe(eventInfo => this.saveBridgeFile(eventInfo.data));
-    eventBrokerService.loadBridgeFileRequest.subscribe(_eventInfo => this.loadBridgeFile());
-    eventBrokerService.loadBridgeCompletion.subscribe(_eventInfo => this.markSave());
-    eventBrokerService.sessionStateRestoreCompletion.subscribe(_eventInfo => this.markSave());
-  }
-
-  // TODO: file read/write error handling.
-
-  public get currentFileName(): string | undefined {
-    return this._currentFileHandle?.getFile.name;
-  }
-
-  public get isUnsaved(): boolean {
-    return this.undoManagerService.stateToken !== this.savedMark;
-  }
+  ) {}
 
   public async saveBridgeFile(forceGetFile: boolean = false): Promise<void> {
     try {
-      if (forceGetFile || !this._currentFileHandle) {
-        this._currentFileHandle = await this.getSaveFile();
+      if (forceGetFile || !this.currentFileHandle) {
+        this.currentFileHandle = await this.getSaveFile();
+        const file = await this.currentFileHandle.getFile();
+        this.preferredNameAndWindowTitle = file.name;
       }
-      const stream = await this._currentFileHandle!.createWritable();
+      const stream = await this.currentFileHandle!.createWritable();
       const text = this.bridgeService.saveSetText;
       await stream.write(text);
       await stream.close();
+      this.eventBrokerService.toastRequest.next({ origin: EventOrigin.SERVICE, data: 'fileSaveSuccess' });
     } catch (error) {
       console.log('save:', error);
-      // Abort is a normal user cancel, so ignore it.
-      if (!(error instanceof DOMException) || error.name !== 'AbortError') {
-        throw new ToastError('fileWriteError');
-      }
-      throw error;
+      throw new ToastError(this.isUserCancel(error) ? 'noError' : 'fileWriteError');
     }
-    this.markSave();
   }
 
   public async loadBridgeFile(): Promise<void> {
-    if (this.isUnsaved) {
-      await this.saveBridgeFile();
-    }
     const text = await this.doLoad();
     const saveSet = SaveSet.createNew();
     this.persistenceService.parseSaveSetText(text, saveSet);
@@ -72,6 +52,11 @@ export class SaveLoadService {
       origin: EventOrigin.SERVICE,
       data: saveSet,
     });
+  }
+
+  private set preferredNameAndWindowTitle(fileName: string) {
+    this.preferredName = fileName;
+    document.title = fileName;
   }
 
   private async doLoad(): Promise<string> {
@@ -83,28 +68,25 @@ export class SaveLoadService {
     try {
       const [fileHandle]: FileSystemFileHandle[] = await (window as any).showOpenFilePicker(options);
       const file = await fileHandle.getFile();
+      this.preferredNameAndWindowTitle = file.name;
       return file.text();
     } catch (error) {
       console.log('load:', error);
-      // Abort is a normal user cancel, so ignore it.
-      if (!(error instanceof DOMException) || error.name !== 'AbortError') {
-        throw new ToastError('fileReadError');
-      }
-      throw error;
+      throw new ToastError(this.isUserCancel(error) ? 'noError' : 'fileReadError');
     }
+  }
+
+  private isUserCancel(error: any): boolean {
+    return error instanceof DOMException && error.name === 'AbortError';
   }
 
   private async getSaveFile(): Promise<FileSystemFileHandle> {
     const options = {
       id: PICKER_ID,
       startIn: PICKER_DIR,
-      suggestedName: this.currentFileName || 'MyDesign.bdc',
+      suggestedName: this.preferredName,
       types: PICKER_TYPES,
     };
     return await (window as any).showSaveFilePicker(options);
-  }
-
-  private markSave(): void {
-    this.savedMark = this.undoManagerService.stateToken;
   }
 }

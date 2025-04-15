@@ -8,9 +8,11 @@ export type ToastErrorKind =
   | 'duplicateJointError'
   | 'duplicateMemberError'
   | 'fileReadError'
+  | 'fileSaveSuccess'
   | 'fileWriteError'
   | 'highPierError'
   | 'moveJointError'
+  | 'noError' // silent cancellation
   | 'tooManyJointsError'
   | 'tooManyMembersError';
 

@@ -14,6 +14,8 @@ import { Utility } from '../../../shared/classes/utility';
 export class ToastComponent implements AfterViewInit {
   @ViewChildren(jqxNotificationComponent) notifications!: QueryList<jqxNotificationComponent>;
 
+  readonly autoCloseDelay = 6000; // ms
+
   constructor(private readonly eventBrokerService: EventBrokerService) {}
 
   public show(kind: ToastErrorKind): void {

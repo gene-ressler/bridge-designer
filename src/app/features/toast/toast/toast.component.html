@@ -2,6 +2,7 @@
   id="duplicateJointError"
   [template]="'error'"
   [position]="'bottom-left'"
+  [autoCloseDelay]="autoCloseDelay"
 >
   Oops... Can't have two joints in the same place.
 </jqxNotification>
@@ -9,6 +10,7 @@
   id="duplicateMemberError"
   [template]="'error'"
   [position]="'bottom-left'"
+  [autoCloseDelay]="autoCloseDelay"
 >
   Oops... Can't have two members with the same joints.
 </jqxNotification>
@@ -16,13 +18,23 @@
   id="fileReadError"
   [template]="'error'"
   [position]="'bottom-left'"
+  [autoCloseDelay]="autoCloseDelay"
 >
   Oops... Couldn't read that file.
+</jqxNotification>
+<jqxNotification
+  id="fileSaveSuccess"
+  [template]="'success'"
+  [position]="'bottom-left'"
+  [autoCloseDelay]="autoCloseDelay"
+>
+  Yay! Your design has been saved.
 </jqxNotification>
 <jqxNotification
   id="fileWriteError"
   [template]="'error'"
   [position]="'bottom-left'"
+  [autoCloseDelay]="autoCloseDelay"
 >
   Oops... Couldn't save that file.
 </jqxNotification>
@@ -30,6 +42,7 @@
   id="highPierError"
   [template]="'error'"
   [position]="'bottom-left'"
+  [autoCloseDelay]="autoCloseDelay"
 >
   Oops... Member can't pass through high pier.
 </jqxNotification>
@@ -37,6 +50,7 @@
   id="moveJointError"
   [template]="'error'"
   [position]="'bottom-left'"
+  [autoCloseDelay]="autoCloseDelay"
 >
   Oops... Can't move a joint onto another joint.
 </jqxNotification>
@@ -44,6 +58,7 @@
   id="tooManyJointsError"
   [template]="'error'"
   [position]="'bottom-left'"
+  [autoCloseDelay]="autoCloseDelay"
 >
   Oops... That makes too many joints.
 </jqxNotification>
@@ -51,6 +66,7 @@
   id="tooManyMembersError"
   [template]="'error'"
   [position]="'bottom-left'"
+  [autoCloseDelay]="autoCloseDelay"
 >
   Oops... That makes too many members.
 </jqxNotification>

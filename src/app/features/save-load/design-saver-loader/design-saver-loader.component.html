@@ -1,0 +1,7 @@
+<confirmation-dialog
+#saveBeforeLoadConfirmationDialog
+[headerHtml]="'Open bridge design'"
+[contentHtml]="'<p>You have unsaved changes. Save now?</p><p>Say <b>No</b> to discard your changes.</p></b>'"
+[buttons]="['yes', 'no', 'cancel']"
+(onButtonClick)="handleConfirmationButtonClick($event)"
+></confirmation-dialog>

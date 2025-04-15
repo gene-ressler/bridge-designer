@@ -1,0 +1,24 @@
+.header {
+  font-weight: bold;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+}
+
+.textContent {
+  flex-grow: 1;
+}
+
+.buttons {
+  flex-grow: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+}
+
+.buttons div {
+  margin-left: 8px;
+}
