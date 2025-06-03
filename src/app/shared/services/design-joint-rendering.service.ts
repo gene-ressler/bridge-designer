@@ -67,8 +67,8 @@ export class DesignJointRenderingService {
     index: number
   ): void {
     this.imagesLoader.invokeAfterLoaded(
-      (images: Map<string, HTMLImageElement>) => {
-        const sheet = images.get(JOINT_SHEET);
+      images => {
+        const sheet = images[JOINT_SHEET];
         if (!sheet) {
           return;
         }

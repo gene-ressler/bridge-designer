@@ -17,9 +17,9 @@ Ks 1 .54 0  # Specular color
 Ns 40.0  # Shininess
 
 newmtl White
-Kd .9 .9 .9  # Diffuse color
-Ka .9 .9 .9  # Ambient color
-Ks .9 .9 .9  # Specular color
+Kd 1 1 1  # Diffuse color
+Ka 1 1 1  # Ambient color
+Ks 1 1 1  # Specular color
 Ns 100.0  # Shininess
 
 newmtl DarkGray

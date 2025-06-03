@@ -1017,8 +1017,8 @@ export const HELP_INDEX_DATA: HelpIndexData[] = [
           'ed along joint joints created automatically bridge designer start new design cannot moved cannot mov' +
           'e one joint top another joint site configurations high pier joints cannot moved onto pier joint drag' +
           'ged mouse joint moves increments corresponding current resolution drawing grid joint moved keyboard ' +
-          'moves 0.25 meter increments regardless current grid resolution thus keyboard technique particularly ' +
-          'effective making small adjustments position joint'
+          'moves 0.25 meter increments regardless current grid resolution thus keyboard technique good making s' +
+          'mall adjustments position joint'
   },
   {
     id: 'hlp_multiple_selection',
@@ -1026,22 +1026,23 @@ export const HELP_INDEX_DATA: HelpIndexData[] = [
     text: 'use multiple selection change properties several members simultaneously delete several members simul' +
           'taneously five different ways multiple selection drag box click select tool design tools palette hol' +
           'ding left button mouse drag box around members want select release mouse button members entirely enc' +
-          'losed within box selected ctrl click drawing board click select tool design tools palette hold ctrl ' +
-          'key keyboard drawing board individually click members want select ctrl click member list hold ctrl k' +
-          'ey keyboard member list individually click members want select shift click member list block selecti' +
-          'on member list click one member start block. hold shift key keyboard member list click second member' +
-          ' complete block members listed first second inclusive selected click drag member list block selectio' +
-          'n member list click one member start block. drag release select desired block select click select bu' +
-          'tton main toolbar every member structural model selected notes tips selected members turn light blue' +
-          ' drawing board member list de select selected members click anywhere drawing board member de select ' +
-          'single member without de selecting remaining members multiple selection hold ctrl key click member w' +
-          'ant de select'
+          'losed within box selected drag left right members completely inside box selected drag right left mem' +
+          'bers either inside box touching selected ctrl click drawing board click select tool design tools pal' +
+          'ette hold ctrl key keyboard drawing board individually click members want select ctrl click member l' +
+          'ist hold ctrl key keyboard member list individually click members want select shift click member lis' +
+          't block selection member list click one member start block. hold shift key keyboard member list clic' +
+          'k second member complete block members listed first second inclusive selected click drag member list' +
+          ' block selection member list click one member start block. drag release select desired block select ' +
+          'click select button main toolbar every member structural model selected notes tips selected members ' +
+          'turn light blue drawing board member list de select selected members click anywhere drawing board me' +
+          'mber de select single member without de selecting remaining members multiple selection hold ctrl key' +
+          ' click member want de select'
   },
   {
     id: 'hlp_new_design',
     title: 'New design button',
-    text: 'click new design button start new bridge design click button design project setup wizard displayed n' +
-          'otes tips new design button located main toolbar also accessed file menu'
+    text: 'click new design button start new bridge design click button project setup wizard displayed notes ti' +
+          'ps new design button located main toolbar also accessed file menu'
   },
   {
     id: 'hlp_open_sample_design',
@@ -1201,8 +1202,8 @@ export const HELP_INDEX_DATA: HelpIndexData[] = [
     id: 'hlp_remember_my_work',
     title: 'Remember my work',
     text: 'bridge designer keep track work still even refresh close restart browser enable feature check rememb' +
-          'er work entry bottom edit menu best keep checked nearly time exception using computed shared login u' +
-          'ser name others computer unchecking box leave prevents seeing design'
+          'er work entry bottom edit menu best keep checked nearly time exception using shared login user id ot' +
+          'hers computer unchecking box leave prevents seeing design'
   },
   {
     id: 'hlp_report_cost',

@@ -95,8 +95,8 @@ export class GuidesService implements DraggableService {
     ctx.lineTo(this.viewportTransform.absWidthViewport + 1, yKnob);
     ctx.stroke();
     this.imagesLoader.invokeAfterLoaded(images => {
-      const horzontialKnob = Utility.assertNotUndefined(images.get(GuidesService.HORIZONTAL_GUIDE_KNOB));
-      const verticalKnob = Utility.assertNotUndefined(images.get(GuidesService.VERTICAL_GUILE_KNOB));
+      const horzontialKnob = Utility.assertNotUndefined(images[GuidesService.HORIZONTAL_GUIDE_KNOB]);
+      const verticalKnob = Utility.assertNotUndefined(images[GuidesService.VERTICAL_GUILE_KNOB]);
 
       const yHorizontalKnob = yKnob - GuidesService.KNOB_THICKNESS * 0.5;
       this.horizontalGuideKnobRect.x0 = 0;

@@ -1,15 +1,15 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { jqxToggleButtonComponent, jqxToggleButtonModule } from 'jqwidgets-ng/jqxtogglebutton';
 import { jqxWindowComponent, jqxWindowModule } from 'jqwidgets-ng/jqxwindow';
-import { UiStateService } from '../management/ui-state.service';
+import { UiMode, UiStateService } from '../management/ui-state.service';
 import { EventBrokerService, EventOrigin } from '../../../shared/services/event-broker.service';
 import { SessionStateService } from '../../../shared/services/session-state.service';
 @Component({
-    selector: 'tool-selector',
-    imports: [jqxToggleButtonModule, jqxWindowModule],
-    templateUrl: './tool-selector.component.html',
-    styleUrl: './tool-selector.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'tool-selector',
+  imports: [jqxToggleButtonModule, jqxWindowModule],
+  templateUrl: './tool-selector.component.html',
+  styleUrl: './tool-selector.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToolSelectorComponent implements AfterViewInit {
   private static readonly SESSION_STATE_KEY = 'toolSelector.component';
@@ -25,11 +25,23 @@ export class ToolSelectorComponent implements AfterViewInit {
   @ViewChild('selectButton') selectButton!: jqxToggleButtonComponent;
   @ViewChild('eraseButton') eraseButton!: jqxToggleButtonComponent;
 
+  private toolsToggleValue: boolean = true;
+  private uiMode: UiMode = 'unknown';
+  private isUserClose: boolean = true;
+
   constructor(
     private readonly eventBrokerService: EventBrokerService,
     private readonly uiStateService: UiStateService,
     private readonly sessionStateService: SessionStateService,
   ) {}
+
+  /** Adjusts UI when user closes with the X. */
+  handleClose(_event: any): void {
+    // Hack to miticate event containing no info on programmatic vs. user-based closes.
+    if (this.isUserClose) {
+      this.eventBrokerService.toolsToggle.next({origin: EventOrigin.TOOL_SELECTOR, data: false});
+    }
+  }
 
   /** Returns the index of the selected tool. Defaults to 0 (joints) if none selected. */
   private get selectedIndex(): number {
@@ -39,20 +51,32 @@ export class ToolSelectorComponent implements AfterViewInit {
     return 0;
   }
 
+  /** Sets visibility according to UI state. */
+  private setVisibility(): void {
+    if (this.uiMode === 'drafting' && this.toolsToggleValue) {
+      this.dialog.open();
+    } else {
+      this.isUserClose = false;
+      this.dialog.close();
+      this.isUserClose = true;
+    }
+  }
+
   ngAfterViewInit(): void {
     this.uiStateService.registerSelectButtons(
       [this.jointsButton, this.membersButton, this.selectButton, this.eraseButton],
       this.eventBrokerService.editModeSelection,
     );
     this.eventBrokerService.toolsToggle.subscribe(eventInfo => {
-      if (eventInfo.data) {
-        this.dialog.open();
-      } else {
-        this.dialog.close();
-      }
+      this.toolsToggleValue = eventInfo.data;
+      this.setVisibility();
+    });
+    this.eventBrokerService.uiModeRequest.subscribe(eventInfo => {
+      this.uiMode = eventInfo.data;
+      this.setVisibility();
     });
     // Split the usual registration in order to wait until the app view is hydrated for restoring selected tool.
-    // This ensures all listeners are subscribed. Their AfterViewInit methods are complete. 
+    // This ensures all listeners are subscribed. Their AfterViewInit methods are complete.
     this.eventBrokerService.sessionStateSaveRequest.subscribe(_eventInfo =>
       this.sessionStateService.recordState(ToolSelectorComponent.SESSION_STATE_KEY, this.dehydrated),
     );

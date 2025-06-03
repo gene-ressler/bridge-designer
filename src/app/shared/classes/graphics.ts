@@ -272,7 +272,7 @@ export class Geometry {
     result.y = a.y - b.y;
   }
 
-  public static scale2D(result: Vector2DInterface, s: number) {
+  public static scale2D(result: Vector2DInterface, s: number): void {
     result.x *= s;
     result.y *= s;
   }
@@ -454,7 +454,7 @@ export class Geometry {
   }
 
   /** Returns whether point p is on open segment a--b. */
-  public static isPointOnSegment(p: Point2DInterface, a: Point2DInterface, b: Point2DInterface) {
+  public static isPointOnSegment(p: Point2DInterface, a: Point2DInterface, b: Point2DInterface): boolean {
     return (
       !this.areColocated2D(p, a) &&
       !this.areColocated2D(p, b) &&
@@ -462,6 +462,10 @@ export class Geometry {
       ((a.y <= p.y && p.y <= b.y) || (b.y <= p.y && p.y <= a.y)) &&
       Math.abs((p.x - a.x) * (b.y - a.y) - (p.y - a.y) * (b.x - a.x)) < Geometry.SMALL_SQUARED
     );
+  }
+
+  public static isPointInCanonicalRectangle(x: number, y: number, rect: Rectangle2DInterface) {
+    return rect.x0 <= x && x <= rect.x0 + rect.width && rect.y0 <= y && y <= rect.y0 + rect.height;
   }
 }
 

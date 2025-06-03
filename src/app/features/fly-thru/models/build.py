@@ -6,6 +6,7 @@ import sys
 
 class MaterialsLibrary:
     def __init__(self, mtl_file_name):
+        print(f"{mtl_file_name}:")
         self.file_name = mtl_file_name
         self.materials = {}
         self.name = "<no name>"
@@ -30,7 +31,7 @@ class MaterialsLibrary:
                     case ["Ts", value]:
                         self.add("ts", value)
                     case _:
-                        print(f"unknown value: {line}", file=sys.stderr)
+                        print(f"unknown value: {line}", file=sys.stderr, end='')
                         continue
 
     def add(self, tag, value):
@@ -70,6 +71,7 @@ class Processor:
         return self.material_lib and self.material_lib.get(name)
 
     def process(self, in_file, out_file):
+        print(f"{in_file.name} -> {out_file.name}:")
         material = {}
         for line in in_file:
             line = re.sub("#.*$", "", line)
@@ -119,47 +121,45 @@ class Processor:
             for i, index in enumerate(key):
                 populated[i] = populated[i] or index != None
         print(f"// Source: {in_file.name}", file=out_file)
-        prefix = Path(in_file.name).stem.upper()
+        print("// prettier-ignore", file=out_file)
+        prefix = Path(in_file.name).stem.replace("-", "_").upper()
+        print(f"export const {prefix}_MESH_DATA = {{", file=out_file)
         if populated[0]:
-            print("\n// prettier-ignore", file=out_file)
             print(
-                f"export const {prefix}_POSITIONS = new Float32Array([", file=out_file
+                f"  positions: new Float32Array([", file=out_file
             )
             for index, quad in enumerate(self.quad_index.keys()):
                 p = self.vertices[quad[0]]
-                print(f"  {p[0]}, {p[1]}, {p[2]}, // {index}", file=out_file)
-            print("]);", file=out_file)
+                print(f"    {p[0]}, {p[1]}, {p[2]}, // {index}", file=out_file)
+            print("  ]),", file=out_file)
         if populated[1]:
-            print("\n// prettier-ignore", file=out_file)
             print(
-                f"export const {prefix}_TEX_COORDS = new Float32Array([", file=out_file
+                f"  texCoords: new Float32Array([", file=out_file
             )
             for index, quad in enumerate(self.quad_index.keys()):
                 p = self.texcoords[quad[1]]
-                print(f"  {p[0]}, {p[1]}, {p[2]}, // {index}", file=out_file)
-            print("]);", file=out_file)
+                print(f"    {p[0]}, {p[1]}, {p[2]}, // {index}", file=out_file)
+            print("  ]),", file=out_file)
         if populated[2]:
-            print("\n// prettier-ignore", file=out_file)
-            print(f"export const {prefix}_NORMALS = new Float32Array([", file=out_file)
+            print(f"  normals: new Float32Array([", file=out_file)
             for index, quad in enumerate(self.quad_index.keys()):
                 p = self.normals[quad[2]]
-                print(f"  {p[0]}, {p[1]}, {p[2]}, // {index}", file=out_file)
-            print("]);", file=out_file)
+                print(f"    {p[0]}, {p[1]}, {p[2]}, // {index}", file=out_file)
+            print("  ]),", file=out_file)
         if populated[3]:
-            print("\n// prettier-ignore", file=out_file)
             print(
-                f"export const {prefix}_MATERIALS_REFS = new Uint16Array([",
+                f"  materialRefs: new Uint16Array([",
                 file=out_file,
             )
             for index, quad in enumerate(self.quad_index.keys()):
-                print(f"  {quad[3]}, // {index}", file=out_file)
-            print("]);", file=out_file)
-        print("\n// prettier-ignore", file=out_file)
-        print(f"export const {prefix}_INDICES = new Uint16Array([", file=out_file)
+                print(f"    {quad[3]}, // {index}", file=out_file)
+            print("  ]),", file=out_file)
+        print(f"  indices: new Uint16Array([", file=out_file)
         for face in self.faces[1:]:
             i = tuple(self.quad_index.get(f) - 1 for f in face)
-            print(f"  {i[0]}, {i[1]}, {i[2]},", file=out_file)
-        print("]);", file=out_file)
+            print(f"    {i[0]}, {i[1]}, {i[2]},", file=out_file)
+        print("  ]),", file=out_file)
+        print("};", file=out_file)
         if self.material_lib:
             self.material_lib.emit()
 

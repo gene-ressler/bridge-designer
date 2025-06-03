@@ -4,6 +4,8 @@ import { BridgeService } from '../../../shared/services/bridge.service';
 import { Utility } from '../../../shared/classes/utility';
 import { TerrainService } from '../models/terrain.service';
 import { InterpolationService } from './interpolation.service';
+import { OverlayHandlers } from './overlay-ui.service';
+import { HEAD_ICON, HOME_ICON, PAN_ICON, TRUCK_ICON, WALK_ICON } from './overlay-icons';
 
 export const enum ViewMode {
   FLYING,
@@ -16,8 +18,14 @@ export class ViewService {
   private static readonly MAX_TILT = 0.5 * Math.PI * 0.75;
   /** Height of driver's eye above road surface. */
   private static readonly DRIVER_EYE_HEIGHT = 2.4;
-  /* Distance from front axel (reference point) forward to driver's eye. */
+  /** Distance from front axel (reference point) forward to driver's eye. */
   private static readonly DRIVER_EYE_LEAD = 0.6;
+  /** Pixel to world linear travel rate ratio. */
+  private static readonly UI_RATE_LINEAR = 10.0 / 100.0;
+  /** Pixel to world rotation rate ratio. */
+  private static readonly UI_RATE_ROTATIONAL = (0.05 * 2.0 * Math.PI) / 100.0;
+  /** Pixel to world tilt rate ratio. */
+  private static readonly UI_RATE_TILT = (5.0 * 2.0 * Math.PI) / 100.0;
 
   private readonly up = vec3.fromValues(0, 1, 0);
   private readonly eye = vec3.create();
@@ -55,9 +63,9 @@ export class ViewService {
     vec3.set(this.center, xCenter, extent.y0 + 0.5 * extent.height, 0);
     this.eye[0] -= this.eye[2] * 0.1;
 
-    // TODO: Remove test setting.
+    // TODO: Remove these test setting.
     vec3.set(this.eye, 20, -3, 20);
-    vec3.set(this.center, 0, 5, 0);
+    vec3.set(this.center, 0, 1, 0);
 
     this.yEyeVelocity = 0;
 
@@ -159,5 +167,53 @@ export class ViewService {
       return mat4.lookAt(m, this.eyeDriver, this.centerDriver, this.up);
     }
     return mat4.lookAt(m, this.eye, this.center, this.up);
+  }
+
+  /** For given icon URL, returns a set of handlers for icon UI events. */
+  public getOverlayUiHandler(url: string): OverlayHandlers {
+    switch (url) {
+      case WALK_ICON:
+        return {
+          handlePointerDown: () => {
+            this.isMovingLaterally = false;
+          },
+          handlePointerDrag: (dx: number, dy: number) => {
+            this.xzEyeVelocity = dy * ViewService.UI_RATE_LINEAR;
+            this.thetaEyeRate = dx * ViewService.UI_RATE_ROTATIONAL;
+          },
+        };
+      case PAN_ICON:
+        return {
+          handlePointerDown: () => {
+            this.isMovingLaterally = true;
+          },
+          handlePointerDrag: (dx: number, dy: number) => {
+            this.xzEyeVelocity = dx * ViewService.UI_RATE_LINEAR;
+            this.yEyeVelocity = dy * ViewService.UI_RATE_LINEAR;
+          },
+        };
+      case HEAD_ICON:
+        return {
+          handlePointerDown: () => {
+            this.isMovingLaterally = false;
+          },
+          handlePointerDrag: (dx: number, dy: number) => {
+            this.phiEyeRate = dy * ViewService.UI_RATE_ROTATIONAL;
+            this.thetaEyeRate = dx * ViewService.UI_RATE_ROTATIONAL;
+          },
+        };
+      case HOME_ICON:
+        return {
+          handlePointerDown: () => this.resetView(),
+        };
+      case TRUCK_ICON:
+        return {
+          handlePointerDrag: (dx: number, dy: number) => {
+            this.phiDriverHead = Utility.clamp(dy * ViewService.UI_RATE_TILT, -45, 20);
+            this.thetaDriverHead = Utility.clamp(1.5 * dx * ViewService.UI_RATE_TILT, -100, 100);
+          },
+        };
+    }
+    throw new Error(`Unknown overlay url: {url}`);
   }
 }

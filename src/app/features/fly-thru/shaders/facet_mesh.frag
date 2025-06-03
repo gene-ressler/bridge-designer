@@ -16,7 +16,7 @@ struct MaterialSpec {
 };
 
 layout(std140) uniform MaterialConfig {
-  MaterialSpec specs[10];
+  MaterialSpec specs[11];
 } material;
 
 in vec3 vertex;

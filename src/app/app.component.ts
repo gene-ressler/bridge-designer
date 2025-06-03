@@ -89,16 +89,7 @@ export class AppComponent implements AfterViewInit {
 
   /** Shows the drafting panel or hides it under a gray facade. */
   private showDraftingPanelCover(value: boolean): void {
-    const coverStyle = this.draftingAreaCover.nativeElement.style;
-    const toggleTools = (value: boolean) =>
-      this.eventBrokerService.toolsToggle.next({ origin: EventOrigin.APP, data: value });
-    if (value) {
-      coverStyle.display = 'block';
-      toggleTools(false); // Ignores user set visibility, but currently never happens. Cover can't be replaced.
-    } else {
-      coverStyle.display = 'none';
-      toggleTools(true);
-    }
+    this.draftingAreaCover.nativeElement.style.display = value ? 'block' : 'none';
   }
 
   @HostListener('window:beforeunload')

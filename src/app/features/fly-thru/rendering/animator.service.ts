@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { RendererService } from './renderer.service';
+import { RenderingService } from './rendering.service';
 
 export type FrameRenderer = (clockMillis: number, elapsedMillis: number) => void;
 
@@ -22,8 +22,10 @@ export class AnimatorService {
   private clockBaseMillis: number | undefined;
   private lastClockMillis: number | undefined;
   private _state: AnimationState = AnimationState.STOPPED;
+  private frameTickMillis: number | undefined;
+  private frameCount: number = 0;
 
-  constructor(private readonly renderService: RendererService) {}
+  constructor(private readonly renderService: RenderingService) {}
 
   /** Returns the current state of animation. */
   public get state(): AnimationState {
@@ -39,6 +41,16 @@ export class AnimatorService {
     this._state = AnimationState.RUNNING;
     this.lastClockMillis = this.clockBaseMillis;
     const render = (nowMillis: number): void => {
+      ++this.frameCount;
+      if (!this.frameTickMillis) {
+        this.frameTickMillis = nowMillis;
+      } else {
+        if (nowMillis - this.frameTickMillis > 1000) {
+          console.log('fps: %d', this.frameCount);
+          this.frameTickMillis = nowMillis;
+          this.frameCount = 0;
+        }
+      }
       if (this._state === AnimationState.STOPPED) {
         return; // Skips scheduling next loop iteration.
       }
@@ -59,7 +71,8 @@ export class AnimatorService {
     };
     this.renderService.prepareToRender();
     // Kick off the animation loop.
-    requestAnimationFrame(render);
+    // TODO: Look for a better way to draw first frame after the viewport and projection are set.
+    setTimeout(() => requestAnimationFrame(render));
   }
 
   /** When running, pauses the clock while the renderer is still called at the frame rate. */

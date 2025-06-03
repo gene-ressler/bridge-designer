@@ -7,6 +7,13 @@ layout(std140) uniform Transforms {
   mat4 modelViewProjection;
 } transforms;
 
+// Make VScode happy.
+#ifndef IN_POSITION_LOCATION
+#define IN_POSITION_LOCATION 0
+#define IN_NORMAL_LOCATION 1
+#define IN_MATERIAL_REF_LOCATION 2
+#endif
+
 layout(location = IN_POSITION_LOCATION) in vec3 inPosition;
 layout(location = IN_NORMAL_LOCATION) in vec3 inNormal;
 layout(location = IN_MATERIAL_REF_LOCATION) in uint inMaterialRef;

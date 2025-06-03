@@ -4,6 +4,20 @@
   "configurations": [
     {
       "type": "java",
+      "name": "GL2",
+      "request": "launch",
+      "mainClass": "GL2",
+      "projectName": "bridge-designer_58250f4a"
+    },
+    {
+      "type": "java",
+      "name": "FlyThruWheelModel",
+      "request": "launch",
+      "mainClass": "FlyThruWheelModel",
+      "projectName": "bridge-designer_58250f4a"
+    },
+    {
+      "type": "java",
       "name": "FlyThruTruckModel",
       "request": "launch",
       "mainClass": "FlyThruTruckModel",

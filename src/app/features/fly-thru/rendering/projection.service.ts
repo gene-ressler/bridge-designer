@@ -40,7 +40,7 @@ export class ProjectionService {
 
   constructor(private readonly convexHullService: ConvexHullService) {}
 
-  public set(fovy: number, aspect: number, near: number, far: number, focusRatio: number): void {
+  public setFrustum(fovy: number, aspect: number, near: number, far: number, focusRatio: number): void {
     this.near = near;
     this.far = far;
     this.top = near * Math.tan((fovy * Math.PI) / 360.0);

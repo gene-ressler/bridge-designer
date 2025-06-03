@@ -4,8 +4,7 @@ import { Injectable } from '@angular/core';
 export class TerrainService {
   constructor() { }
 
-  public getElevationAt(x: number, z: number): number {
-    console.log(x, z);
+  public getElevationAt(_x: number, _z: number): number {
     return 0;
   }
 }

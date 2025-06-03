@@ -11,7 +11,7 @@ type CompileFailure = { program: string; linkLog: string | null; vertexLog: stri
 export class ShaderService {
   private programs: Programs | undefined;
 
-  public initialize(gl: WebGL2RenderingContext) {
+  public prepareShaders(gl: WebGL2RenderingContext) {
     this.programs = this.buildPrograms(gl);
   }
 
@@ -30,6 +30,11 @@ export class ShaderService {
         name: 'facet_mesh',
         vertexShader: shaders['FACET_MESH_VERTEX_SHADER'],
         fragmentShader: shaders['FACET_MESH_FRAGMENT_SHADER'],
+      },
+      {
+        name: 'overlay',
+        vertexShader: shaders['OVERLAY_VERTEX_SHADER'],
+        fragmentShader: shaders['OVERLAY_FRAGMENT_SHADER'],
       },
     ];
     return this.linkPrograms(gl, programSpecs);

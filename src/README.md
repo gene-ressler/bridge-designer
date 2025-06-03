@@ -87,7 +87,6 @@ We thank the providers now and forever.
 # Master TODO
 
 - Animation
-- Auto-correct
 - Complete help edit
 - Legacy animation
 - Member details
@@ -95,5 +94,13 @@ We thank the providers now and forever.
 - Printing, 3D
 
 # Issues
+
 - Set help height based on window size.
 - Maybe move toasts to app level.
+
+# Build notes
+
+- `ng build` # builds production app
+- `npm run build` # advances version and builds
+- `cd src/app/features/fly-thru/shaders && python3 build.py --compress` # builds shaders
+- `cd src/app/features/fly-thru/models && python3 build.py` # builds models from .obj files

@@ -44,8 +44,8 @@ import { DesignConditions } from '../../../shared/services/design-conditions.ser
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DraftingPanelComponent implements AfterViewInit {
-  width: number = screen.availWidth;
-  height: number = screen.availHeight;
+  width: number = screen.availWidth * devicePixelRatio;
+  height: number = screen.availHeight * devicePixelRatio;
   @ViewChild('wrapper') wrapper!: ElementRef<HTMLDivElement>;
   @ViewChild('draftingPanel') draftingPanel!: ElementRef<HTMLCanvasElement>;
   @ViewChild('cursorLayer') cursorLayer!: ElementRef<CursorOverlayComponent>;

@@ -6,5 +6,8 @@
     #flyThruCanvas
     [width]="width"
     [height]="height"
+    (pointerdown)="handlePointerDown($event)"
+    (pointermove)="handlePointerMove($event)"
+    (pointerup)="handlePointerUp($event)"   
   ></canvas>
 </div>

@@ -13,7 +13,7 @@ export const MATERIAL_CONFIG = new Float32Array([
   40.0, // shininess
 
   // 3: White
-  .9, .9, .9, // diffuse rgb
+  1, 1, 1, // diffuse rgb
   100.0, // shininess
 
   // 4: DarkGray
