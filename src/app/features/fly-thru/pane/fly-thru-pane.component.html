@@ -8,6 +8,7 @@
     [height]="height"
     (pointerdown)="handlePointerDown($event)"
     (pointermove)="handlePointerMove($event)"
-    (pointerup)="handlePointerUp($event)"   
+    (pointerup)="handlePointerUp($event)"
+    (contextmenu)="ignore()"
   ></canvas>
 </div>

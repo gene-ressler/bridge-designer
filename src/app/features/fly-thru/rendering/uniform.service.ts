@@ -8,47 +8,39 @@ import {
   MATERIAL_CONFIG_UBO_BINDING_INDEX,
   OVERLAY_UBO_BINDING_INDEX,
 } from '../shaders/constants';
-import { mat3, mat4 } from 'gl-matrix';
+import { mat3, mat4, vec4 } from 'gl-matrix';
 import { GlService } from './gl.service';
 
 /** std124 padding. */
 const _ = 0;
 
-type Transforms = {
-  modelMatrix: mat4;
-  modelViewMatrix: Float32Array;
-  modelViewProjectionMatrix: Float32Array;
-  store: ArrayBuffer;
-};
-
-/** Builds a stack of buffers shaped to fit the transforms uniform. */
-function buildTransformStack(size: number): Transforms[] {
-  const transforms = [];
-  for (let i = 0; i < size; ++i) {
-    const modelMatrix = mat4.create();
-    const store = new ArrayBuffer(128); // 2 each 4x4 floats
-    const modelViewMatrix = new Float32Array(store, 0, 16);
-    const modelViewProjectionMatrix = new Float32Array(store, 64, 16);
-    transforms.push({ modelMatrix, modelViewMatrix, modelViewProjectionMatrix, store });
-  }
-  return transforms;
-}
-
 @Injectable({ providedIn: 'root' })
 export class UniformService {
-  // prettier-ignore
-  private static readonly LIGHT_CONFIG = new Float32Array([
-    0.0572181596, 0.68661791522, 0.72476335496, // unit light direction
-    _,
-    0.8, 0.8, 1.0, // light color
-    0.08, // ambient intensity
-  ]);
+  public static UNIT_LIGHT_DIRECTION = vec4.fromValues(0.0572181596, 0.68661791522, 0.72476335496, 0);
   private transformsBuffer!: WebGLBuffer;
+  private lightConfigBuffer!: WebGLBuffer;
   private overlayBuffer!: WebGLBuffer;
-  private transformsStack: Transforms[] = buildTransformStack(4);
-  private transformStackPointer: number = 0;
+  private modelTransformStackPointer: number = 0;
+  private readonly modelTransformStack = (() => {
+    const stack = [];
+    for (let i = 0; i < 5; ++i) {
+      stack.push(mat4.create());
+    }
+    return stack;
+  })();
+  // One backing store buffer matching the uniform block with two matrix views.
+  private readonly transformsUniformStore = new ArrayBuffer(128); // 2 each 4x4 floats
+  private readonly modelViewMatrix = new Float32Array(this.transformsUniformStore, 0, 16);
+  private readonly modelViewProjectionMatrix = new Float32Array(this.transformsUniformStore, 64, 16);
+  // prettier-ignore
+  private readonly lightConfig = new Float32Array([
+    1, 0, 0, // unit light direction (placeholder values)
+    _,
+    0.9, 0.9, 1.0, // light color
+    0.25, // ambient intensity
+  ]);
   public readonly overlayStore = new ArrayBuffer(16 * 4);
-  // Format:
+  // std140 layout:
   // m00 m10 m20 _ m01 m11 m21 _ m02 m12 m22 __ alpha __ __ __
   //  0   1   2  3  4   5   6  7  8   9  10  11   12  13 14 15
   public readonly overlayFloats = new Float32Array(this.overlayStore, 0, 16);
@@ -67,10 +59,10 @@ export class UniformService {
     const program = this.shaderService.getProgram('facet_mesh');
 
     this.transformsBuffer = this.setUpUniformBlock(program, 'Transforms', TRANSFORMS_UBO_BINDING_INDEX);
-    gl.bufferData(gl.UNIFORM_BUFFER, this.transformsStack[0].store.byteLength, gl.DYNAMIC_DRAW);
+    gl.bufferData(gl.UNIFORM_BUFFER, this.transformsUniformStore.byteLength, gl.DYNAMIC_DRAW);
 
-    this.setUpUniformBlock(program, 'LightConfig', LIGHT_CONFIG_UBO_BINDING_INDEX);
-    gl.bufferData(gl.UNIFORM_BUFFER, UniformService.LIGHT_CONFIG as Float32Array, gl.STATIC_DRAW);
+    this.lightConfigBuffer = this.setUpUniformBlock(program, 'LightConfig', LIGHT_CONFIG_UBO_BINDING_INDEX);
+    gl.bufferData(gl.UNIFORM_BUFFER, this.lightConfig.buffer.byteLength, gl.STATIC_DRAW);
 
     this.setUpUniformBlock(program, 'MaterialConfig', MATERIAL_CONFIG_UBO_BINDING_INDEX);
     gl.bufferData(gl.UNIFORM_BUFFER, MATERIAL_CONFIG, gl.STATIC_DRAW);
@@ -80,44 +72,44 @@ export class UniformService {
     gl.bufferData(gl.UNIFORM_BUFFER, this.overlayStore.byteLength, gl.STREAM_DRAW);
   }
 
-  /** Clears the stack and sets initial transform to given ones. Model transform is identity. */
-  public initializeTransformStack(viewMatrix: mat4, projectionMatrix: mat4) {
-    this.transformStackPointer = 0;
-    const stackBase = this.transformsStack[0];
-    mat4.copy(stackBase.modelViewMatrix, viewMatrix);
-    mat4.multiply(stackBase.modelViewProjectionMatrix, projectionMatrix, viewMatrix);
-    this.updateTransformsUniform(stackBase);
+  /** The current model matrix top of stack. */
+  public get modelMatrix(): mat4 {
+    return this.modelTransformStack[this.modelTransformStackPointer];
   }
 
-  /** Append a new modeling transformation onto the stack. */
-  public pushModelTransform(transform: (dst: mat4, src: mat4) => void) {
-    const sp = ++this.transformStackPointer;
-    if (sp >= this.transformsStack.length) {
-      throw new Error('Transform stack overflow');
+  /** Pushes the model matrix stack, copying the old top to the new one and returning it. */
+  public pushModelMatrix(): mat4 {
+    const stack = this.modelTransformStack;
+    const sp = ++this.modelTransformStackPointer;
+    if (sp >= stack.length) {
+      throw new Error('Model transform stack overflow');
     }
-    const stack = this.transformsStack;
-    const newModelMatrix = stack[sp].modelMatrix;
-    transform(newModelMatrix, stack[sp - 1].modelMatrix);
-    // The stack base matrices are V and PV, so post-multiply by M to get VM and PVM.
-    mat4.multiply(stack[sp].modelViewMatrix, stack[0].modelViewMatrix, newModelMatrix);
-    mat4.multiply(stack[sp].modelViewProjectionMatrix, stack[0].modelViewProjectionMatrix, newModelMatrix);
-    this.updateTransformsUniform(stack[sp]);
+    return mat4.copy(stack[sp], stack[sp - 1]);
   }
 
-  /** Remove most recent appended modeling transform from the stack. */
-  public popPopTransform() {
-    const sp = --this.transformStackPointer;
-    if (sp < 0) {
-      throw new Error('Transform stack underflow');
+  /** Pops the model matrix stack, restoring the value prior to the previous push. */
+  public popModelMatrixStack() {
+    if (this.modelTransformStackPointer <= 0) {
+      throw new Error('Model transform stack underflow');
     }
-    const stack = this.transformsStack;
-    this.updateTransformsUniform(stack[sp]);
+    --this.modelTransformStackPointer;
   }
 
-  public updateTransformsUniform(transforms: Transforms): void {
+  /** Updates the shader transforms uniform with current model matrix and given view and projection matrices. */
+  public updateTransformsUniform(viewMatrix: mat4, projectionMatrix: mat4): void {
+    mat4.multiply(this.modelViewMatrix, viewMatrix, this.modelMatrix);
+    mat4.multiply(this.modelViewProjectionMatrix, projectionMatrix, this.modelViewMatrix);
     const gl = this.glService.gl;
     gl.bindBuffer(gl.UNIFORM_BUFFER, this.transformsBuffer);
-    gl.bufferSubData(gl.UNIFORM_BUFFER, 0, transforms.store);
+    gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.transformsUniformStore);
+  }
+
+  /** Transforms the constant light direction with the view matrix and updates the light config uniform. */
+  public updateLightDirection(viewMatrix: mat4) {
+    vec4.transformMat4(this.lightConfig, UniformService.UNIT_LIGHT_DIRECTION, viewMatrix);
+    const gl = this.glService.gl;
+    gl.bindBuffer(gl.UNIFORM_BUFFER, this.lightConfigBuffer);
+    gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.lightConfig);
   }
 
   public updateOverlayUniform(projection: mat3, alpha: number = 1): void {

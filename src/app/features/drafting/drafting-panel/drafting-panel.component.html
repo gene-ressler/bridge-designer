@@ -8,6 +8,7 @@
     class="view"
     [width]="width"
     [height]="height"
+    (contextmenu)="ignore()"
   >
     <tool-selector #toolSelector></tool-selector>
   </canvas>

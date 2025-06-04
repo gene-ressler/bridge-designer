@@ -77,6 +77,11 @@ export class DraftingPanelComponent implements AfterViewInit {
     this.viewportTransform.setWindow(this.bridgeService.siteInfo.drawingWindow);
     this.eventBrokerService.draftingPanelInvalidation.next({ origin: EventOrigin.DRAFTING_PANEL, data: 'viewport' });
   }
+  
+  /** Suppresses context menu. */
+  ignore(): boolean {
+    return false;
+  }
 
   /** Renders the panel, optionally with draggable elements missing, e.g. because they're being dragged. */
   render(draggable?: Draggable | undefined): void {

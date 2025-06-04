@@ -58,6 +58,11 @@ export class FlyThruPaneComponent implements AfterViewInit {
     }
   }
 
+  /** Suppresses context menu. */
+  ignore(): boolean {
+    return false;
+  }
+
   private set isVisible(value: boolean) {
     this.display = value ? 'block' : 'none';
     this.changeDetector.detectChanges();
@@ -67,6 +72,7 @@ export class FlyThruPaneComponent implements AfterViewInit {
       this.animatorService.stop();
     }
   }
+  
   private handleResize(): void {
     const parent = Utility.assertNotNull(this.flyThruCanvas.nativeElement.parentElement);
     // Do nothing if canvas not yet visible.

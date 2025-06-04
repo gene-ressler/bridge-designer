@@ -27,12 +27,12 @@ out vec4 fragmentColor;
 void main() {
   vec3 unitNormal = normalize(normal); // TODO: Verify not needed since not interpolating.
   float normalDotLight = dot(unitNormal, light.unitDirection);
-  vec3 unitReflection = normalize(2.0 * normalDotLight * unitNormal - light.unitDirection);
+  vec3 unitReflection = normalize(2.0f * normalDotLight * unitNormal - light.unitDirection);
   vec3 unitEye = normalize(-vertex);
   MaterialSpec materal = material.specs[materialRef];
-  float specularIntensity = pow(max(dot(unitReflection, unitEye), 0.0), materal.SHININESS);
+  float specularIntensity = pow(max(dot(unitReflection, unitEye), 0.0f), materal.SHININESS);
   vec3 specularColor = specularIntensity * light.color;
-  float diffuseIntensity = clamp(normalDotLight + light.ambientIntensity, 0.0, 1.0);
-  vec3 diffuseColor = materal.COLOR * diffuseIntensity * light.color * (1.0 - specularIntensity);
-  fragmentColor = vec4(specularColor + diffuseColor, 1.0);
+  float diffuseIntensity = (1.0f - light.ambientIntensity) * clamp(normalDotLight, 0.0f, 1.0f) + light.ambientIntensity;
+  vec3 diffuseColor = diffuseIntensity * materal.COLOR * light.color * (1.0 - specularIntensity);
+  fragmentColor = vec4(specularColor + diffuseColor, 1.0f);
 }
