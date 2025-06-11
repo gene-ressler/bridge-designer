@@ -18,17 +18,17 @@ export class TruckRenderingService {
   private dualWheelMesh!: Mesh;
 
   constructor(
-    private readonly meshService: MeshRenderingService,
+    private readonly meshRenderingService: MeshRenderingService,
     private readonly uniformService: UniformService,
   ) {}
 
   public prepare(): void {
-    this.bodyMesh = this.meshService.prepareColoredFacetMesh(TRUCK_MESH_DATA);
-    this.wheelMesh = this.meshService.prepareColoredFacetMesh(WHEEL_MESH_DATA);
-    this.dualWheelMesh = this.meshService.prepareColoredFacetMesh(DUAL_WHEEL_MESH_DATA);
+    this.bodyMesh = this.meshRenderingService.prepareColoredFacetMesh(TRUCK_MESH_DATA);
+    this.wheelMesh = this.meshRenderingService.prepareColoredFacetMesh(WHEEL_MESH_DATA);
+    this.dualWheelMesh = this.meshRenderingService.prepareColoredFacetMesh(DUAL_WHEEL_MESH_DATA);
   }
 
-  public render(viewMatrix: mat4, projectionMatrix: mat4) {
+  public render(viewMatrix: mat4, projectionMatrix: mat4): void {
     const wheelbaseOffset = -4;
     let m: mat4;
 
@@ -38,9 +38,9 @@ export class TruckRenderingService {
     mat4.translate(m, m, vec3.set(this.offset, 0, 0.5, 0.95));
     mat4.rotateZ(m, m, -this.wheelRotation);
     this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
-    this.meshService.renderFacetMesh(this.wheelMesh);
+    this.meshRenderingService.renderFacetMesh(this.wheelMesh);
 
-    this.uniformService.popModelMatrixStack();
+    this.uniformService.popModelMatrix();
 
     // Right rear.
     m = this.uniformService.pushModelMatrix();
@@ -48,9 +48,9 @@ export class TruckRenderingService {
     mat4.translate(m, m, vec3.set(this.offset, wheelbaseOffset, 0.5, 1.05));
     mat4.rotateZ(m, m, -this.wheelRotation);
     this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
-    this.meshService.renderFacetMesh(this.dualWheelMesh);
+    this.meshRenderingService.renderFacetMesh(this.dualWheelMesh);
 
-    this.uniformService.popModelMatrixStack();
+    this.uniformService.popModelMatrix();
 
     // Left front.
     m = this.uniformService.pushModelMatrix();
@@ -59,9 +59,9 @@ export class TruckRenderingService {
     mat4.rotateX(m, m, Math.PI);
     mat4.rotateZ(m, m, -this.wheelRotation);
     this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
-    this.meshService.renderFacetMesh(this.wheelMesh);
+    this.meshRenderingService.renderFacetMesh(this.wheelMesh);
 
-    this.uniformService.popModelMatrixStack();
+    this.uniformService.popModelMatrix();
 
     // Left rear.
     m = this.uniformService.pushModelMatrix();
@@ -70,12 +70,12 @@ export class TruckRenderingService {
     mat4.rotateX(m, m, Math.PI);
     mat4.rotateZ(m, m, -this.wheelRotation);
     this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
-    this.meshService.renderFacetMesh(this.dualWheelMesh);
+    this.meshRenderingService.renderFacetMesh(this.dualWheelMesh);
 
-    this.uniformService.popModelMatrixStack();
+    this.uniformService.popModelMatrix();
 
     // Body.
     this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
-    this.meshService.renderFacetMesh(this.bodyMesh);
+    this.meshRenderingService.renderFacetMesh(this.bodyMesh);
   }
 }

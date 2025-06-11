@@ -60,17 +60,18 @@ export class UniformService {
     const gl = this.glService.gl;
     const facetMeshProgram = this.shaderService.getProgram('facet_mesh');
     const overlayProgram = this.shaderService.getProgram('overlay');
+    const riverProgram = this.shaderService.getProgram('river');
     const terrainProgram = this.shaderService.getProgram('terrain');
 
     this.transformsBuffer = this.setUpUniformBlock(
-      [facetMeshProgram, terrainProgram],
+      [facetMeshProgram, riverProgram, terrainProgram],
       'Transforms',
       TRANSFORMS_UBO_BINDING_INDEX,
     );
     gl.bufferData(gl.UNIFORM_BUFFER, this.transformsUniformStore.byteLength, gl.DYNAMIC_DRAW);
 
     this.lightConfigBuffer = this.setUpUniformBlock(
-      [facetMeshProgram, terrainProgram],
+      [facetMeshProgram, riverProgram, terrainProgram],
       'LightConfig',
       LIGHT_CONFIG_UBO_BINDING_INDEX,
     );
@@ -99,7 +100,7 @@ export class UniformService {
   }
 
   /** Pops the model matrix stack, restoring the value prior to the previous push. */
-  public popModelMatrixStack() {
+  public popModelMatrix() {
     if (this.modelTransformStackPointer <= 0) {
       throw new Error('Model transform stack underflow');
     }

@@ -58,9 +58,9 @@ describe('TerrainModelService', () => {
     ip = 0;
     for (let i = 0; i < TerrainModelService.POST_COUNT; ++i) {
       for (let j = 0; j < TerrainModelService.POST_COUNT; ++j) {
-        const nx = mesh.normals[ip++];
-        const ny = mesh.normals[ip++];
-        const nz = mesh.normals[ip++];
+        const nx = mesh.normals![ip++];
+        const ny = mesh.normals![ip++];
+        const nz = mesh.normals![ip++];
         const context = `e[${i},${j}]`;
         expect(nx).withContext(context).toBeLessThan(0.5);
         expect(ny).withContext(context).toBeGreaterThan(0.5);

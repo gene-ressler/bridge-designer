@@ -42,6 +42,11 @@ export class ShaderService {
         vertexShader: shaders['TERRAIN_VERTEX_SHADER'],
         fragmentShader: shaders['TERRAIN_FRAGMENT_SHADER'],
       },
+      {
+        name: 'river',
+        vertexShader: shaders['RIVER_VERTEX_SHADER'],
+        fragmentShader: shaders['RIVER_FRAGMENT_SHADER'],
+      }
     ];
     return this.linkPrograms(gl, programSpecs);
   }

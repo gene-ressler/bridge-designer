@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { mat4, vec3 } from 'gl-matrix';
+import { mat4 } from 'gl-matrix';
 import { ImageService } from '../../../shared/core/image.service';
 import { ShaderService } from '../shaders/shader.service';
 import { GlService } from './gl.service';
@@ -11,32 +11,33 @@ import { ProjectionService } from './projection.service';
 import { UniformService } from './uniform.service';
 import { ViewService } from './view.service';
 import { ViewportService } from './viewport.service';
-import { TOWER_MESH_DATA } from '../models/tower';
 import { TruckRenderingService } from './truck-rendering.service';
 import { TerrainModelService } from '../models/terrain-model.service';
+import { UtilityLineRenderingService } from './utility-line-rendering.service';
+import { RiverRenderingService } from './river-rendering.service';
 
 /** Rendering functionality for fly-thrus. */
 @Injectable({ providedIn: 'root' })
 export class RenderingService {
   private readonly viewMatrix = mat4.create();
   private readonly projectionMatrix = mat4.create();
-  private readonly offset = vec3.create();
   private prepared: boolean = false;
-  private towerMesh!: Mesh;
   private terrainMesh!: Mesh;
   private controlsOverlay!: OverlayContext;
 
   constructor(
     private readonly glService: GlService,
     private readonly imageService: ImageService,
-    private readonly meshService: MeshRenderingService,
+    private readonly meshRenderingService: MeshRenderingService,
     private readonly overlayService: OverlayRenderingService,
     private readonly overlayUiService: OverlayUiService,
     private readonly projectionService: ProjectionService,
+    private readonly riverRenderingService: RiverRenderingService,
     private readonly shaderService: ShaderService,
     private readonly terrainModelService: TerrainModelService,
     private readonly truckRenderingService: TruckRenderingService,
     private readonly uniformService: UniformService,
+    private readonly utilityLineRenderingService: UtilityLineRenderingService,
     private readonly viewService: ViewService,
     private readonly viewportService: ViewportService,
   ) {}
@@ -62,9 +63,10 @@ export class RenderingService {
     this.uniformService.prepareUniforms();
 
     // Set up meshes.
-    this.towerMesh = this.meshService.prepareColoredFacetMesh(TOWER_MESH_DATA);
-    this.terrainMesh = this.meshService.prepareTerrainMesh(this.terrainModelService.mesh)
+    this.terrainMesh = this.meshRenderingService.prepareTerrainMesh(this.terrainModelService.mesh)
+    this.riverRenderingService.prepare();
     this.truckRenderingService.prepare();
+    this.utilityLineRenderingService.prepare();
 
     // Set up overlay icons with click/drag.
     const iconsLoader = this.imageService.createImagesLoader(OVERLAY_ICONS);
@@ -105,18 +107,10 @@ export class RenderingService {
 
     this.uniformService.updateTransformsUniform(this.viewMatrix, this.projectionMatrix);
     this.uniformService.updateLightDirection(this.viewMatrix);
-
-    this.meshService.renderTerrainMesh(this.terrainMesh);
+    this.meshRenderingService.renderTerrainMesh(this.terrainMesh);
+    this.riverRenderingService.render(this.viewMatrix, this.projectionMatrix);
     this.truckRenderingService.render(this.viewMatrix, this.projectionMatrix);
-
-    // TODO: To PowerLineRenderingService.
-    let m: mat4;
-    m = this.uniformService.pushModelMatrix();
-    mat4.translate(m, m, vec3.set(this.offset, 4, 0, 0));
-    this.uniformService.updateTransformsUniform(this.viewMatrix, this.projectionMatrix);
-    this.meshService.renderFacetMesh(this.towerMesh);
-    this.uniformService.popModelMatrixStack();
-
+    this.utilityLineRenderingService.render(this.viewMatrix, this.projectionMatrix);
     this.overlayService.drawIconOverlays(this.controlsOverlay);
   }
 }

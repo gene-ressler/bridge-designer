@@ -246,7 +246,7 @@ export class TerrainModelService {
     }
     // Clamp underwater portion.
     if (y < TerrainModelService.WATER_LEVEL) {
-      y = TerrainModelService.WATER_LEVEL - TerrainModelService.EPS_PAINT;
+      y = TerrainModelService.WATER_LEVEL - 5;
       rtn.isVisible = false;
     }
     // Raise to grade.

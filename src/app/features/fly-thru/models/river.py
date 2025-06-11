@@ -118,26 +118,33 @@ def main():
     axis = buildRiverAxis(32)
     with open("river.ts", "w") as outFile:
         print("// This file is generated. Edit river.py.", file=outFile)
+
+        # Axis
+        print("// prettier-ignore", file=outFile)
         print("export const RIVER_AXIS = new Float32Array([", file=outFile)
         for i, p in enumerate(axis):
             print(f"  {p[0]:.2f}, {p[1]:.2f}, // {i}", file=outFile)
         print("]);", file=outFile)
-        leftPoints, rightPoints = fattenAxis(24)
 
-        print("export const RIVER_POLYGON_POSITIONS = new Float32Array([", file=outFile)
+        # Polygon
+        leftPoints, rightPoints = fattenAxis(32)
+        print("// prettier-ignore", file=outFile)
+        print("export const RIVER_MESH_DATA = {", file=outFile)
+        print("  positions: new Float32Array([", file=outFile)
         for i, p in enumerate(leftPoints):
-            print(f"  {p[0]:.2f}, {p[1]:.2f}, // {i}", file=outFile)
+            print(f"    {p[0]:.2f}, {p[1]:.2f}, // {i}", file=outFile)
         for i, p in enumerate(rightPoints):
-            print(f"  {p[0]:.2f}, {p[1]:.2f}, // {i + len(leftPoints)}", file=outFile)
-        print("]);", file=outFile)
-        print("export const RIVER_POLYGON_INDICES = new Uint8Array([", file=outFile)
+            print(f"    {p[0]:.2f}, {p[1]:.2f}, // {i + len(leftPoints)}", file=outFile)
+        print("  ]),", file=outFile)
+        print("  indices: new Uint16Array([", file=outFile)
         for i in range(len(leftPoints) - 1):
-            sw = i
-            nw = sw + 1
-            se = i + len(leftPoints)
+            se = i
             ne = se + 1
-            print(f"  {sw}, {ne}, {nw},", file=outFile)
-            print(f"  {ne}, {sw}, {se},", file=outFile)
-        print("]);", file=outFile)
+            sw = i + len(leftPoints)
+            nw = sw + 1
+            print(f"    {sw}, {ne}, {nw},", file=outFile)
+            print(f"    {ne}, {sw}, {se},", file=outFile)
+        print("  ]),", file=outFile)
+        print("};", file=outFile)
 
 main()

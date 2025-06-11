@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ShaderService } from '../shaders/shader.service';
 import { ImagesLoader } from '../../../shared/core/image.service';
 import { Utility } from '../../../shared/classes/utility';
-import { IN_TEX_COORD_LOCATION } from '../shaders/constants';
+import { IN_POSITION_LOCATION } from '../shaders/constants';
 import { mat3 } from 'gl-matrix';
 import { GlService } from './gl.service';
 import { ViewportService } from './viewport.service';
@@ -62,8 +62,8 @@ export class OverlayRenderingService {
     const texCoordBuffer = Utility.assertNotNull(gl.createBuffer());
     gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, OverlayRenderingService.ICON_TEX_COORDS, gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(IN_TEX_COORD_LOCATION);
-    gl.vertexAttribPointer(IN_TEX_COORD_LOCATION, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(IN_POSITION_LOCATION);
+    gl.vertexAttribPointer(IN_POSITION_LOCATION, 2, gl.FLOAT, false, 0, 0);
 
     const overlaysByUrl: OverlaysByUrl = {};
 
