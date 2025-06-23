@@ -13,7 +13,7 @@ in vec3 direction;
 out vec4 fragmentColor;
 
 const vec3 WIRE_COLOR = vec3(0.5f, 0.3f, 0.3f);
-const float WIRE_SHININESS = 50.0;
+const float WIRE_SHININESS = 10.0;
 
 void main() {
   vec3 unitDirection = normalize(direction);

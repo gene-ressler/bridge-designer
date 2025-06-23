@@ -1,18 +1,12 @@
 // This file is generated. Edit .vert and .frag files instead.
 export const FACET_MESH_VERTEX_SHADER = 
 `#version 300 es
-#define IN_POSITION_LOCATION 0
-#define IN_NORMAL_LOCATION 1
-#define IN_DIRECTION_LOCATION 1
-#define IN_MATERIAL_REF_LOCATION 2
-#define IN_TEX_COORD_LOCATION 3
-#define IN_INSTANCE_MODEL_TRANSFORM_LOCATION 4
 layout(std140)uniform Transforms{
 mat4 modelView;
 mat4 modelViewProjection;}transforms;
-layout(location=IN_POSITION_LOCATION)in vec3 inPosition;
-layout(location=IN_NORMAL_LOCATION)in vec3 inNormal;
-layout(location=IN_MATERIAL_REF_LOCATION)in uint inMaterialRef;
+layout(location=0)in vec3 inPosition;
+layout(location=1)in vec3 inNormal;
+layout(location=2)in uint inMaterialRef;
 out vec3 vertex;
 out vec3 normal;
 flat out uint materialRef;
@@ -31,8 +25,6 @@ vec3 unitDirection;
 vec3 color;
 float ambientIntensity;}light;
 struct MaterialSpec{
-#define COLOR spec.xyz
-#define SHININESS spec.w
 vec4 spec;};
 layout(std140)uniform MaterialConfig{
 MaterialSpec specs[11];}material;
@@ -46,27 +38,21 @@ float normalDotLight=dot(unitNormal,light.unitDirection);
 vec3 unitReflection=normalize(2.0f*normalDotLight*unitNormal-light.unitDirection);
 vec3 unitEye=normalize(-vertex);
 MaterialSpec materal=material.specs[materialRef];
-float specularIntensity=pow(max(dot(unitReflection,unitEye),0.0f),materal.SHININESS);
+float specularIntensity=pow(max(dot(unitReflection,unitEye),0.0f),materal.spec.w);
 vec3 specularColor=specularIntensity*light.color;
 float diffuseIntensity=(1.0f-light.ambientIntensity)*clamp(normalDotLight,0.0f,1.0f)+light.ambientIntensity;
-vec3 diffuseColor=diffuseIntensity*materal.COLOR*light.color*(1.0-specularIntensity);
+vec3 diffuseColor=diffuseIntensity*materal.spec.xyz*light.color*(1.0-specularIntensity);
 fragmentColor=vec4(specularColor+diffuseColor,1.0f);}`;
 
 export const FACET_MESH_INSTANCES_VERTEX_SHADER = 
 `#version 300 es
-#define IN_POSITION_LOCATION 0
-#define IN_NORMAL_LOCATION 1
-#define IN_DIRECTION_LOCATION 1
-#define IN_MATERIAL_REF_LOCATION 2
-#define IN_TEX_COORD_LOCATION 3
-#define IN_INSTANCE_MODEL_TRANSFORM_LOCATION 4
 layout(std140)uniform Transforms{
 mat4 modelView;
 mat4 modelViewProjection;}transforms;
-layout(location=IN_POSITION_LOCATION)in vec3 inPosition;
-layout(location=IN_NORMAL_LOCATION)in vec3 inNormal;
-layout(location=IN_MATERIAL_REF_LOCATION)in uint inMaterialRef;
-layout(location=IN_INSTANCE_MODEL_TRANSFORM_LOCATION)in mat4x4 inModelTransform;
+layout(location=0)in vec3 inPosition;
+layout(location=1)in vec3 inNormal;
+layout(location=2)in uint inMaterialRef;
+layout(location=4)in mat4x4 inModelTransform;
 out vec3 vertex;
 out vec3 normal;
 flat out uint materialRef;
@@ -79,17 +65,11 @@ materialRef=inMaterialRef;}`;
 
 export const OVERLAY_VERTEX_SHADER = 
 `#version 300 es
-#define IN_POSITION_LOCATION 0
-#define IN_NORMAL_LOCATION 1
-#define IN_DIRECTION_LOCATION 1
-#define IN_MATERIAL_REF_LOCATION 2
-#define IN_TEX_COORD_LOCATION 3
-#define IN_INSTANCE_MODEL_TRANSFORM_LOCATION 4
 precision mediump float;
 layout(std140)uniform Overlay{
 uniform mat3 projection;
 float alpha;}overlay;
-layout(location=IN_POSITION_LOCATION)in vec2 inPosition;
+layout(location=0)in vec2 inPosition;
 out vec2 texCoord;
 void main(){
 vec2 position2D=(overlay.projection*vec3(inPosition,1)).xy;
@@ -112,16 +92,10 @@ fragmentColor.a*=overlay.alpha;}`;
 export const RIVER_VERTEX_SHADER = 
 `#version 300 es
 precision mediump float;
-#define IN_POSITION_LOCATION 0
-#define IN_NORMAL_LOCATION 1
-#define IN_DIRECTION_LOCATION 1
-#define IN_MATERIAL_REF_LOCATION 2
-#define IN_TEX_COORD_LOCATION 3
-#define IN_INSTANCE_MODEL_TRANSFORM_LOCATION 4
 layout(std140)uniform Transforms{
 mat4 modelView;
 mat4 modelViewProjection;}transforms;
-layout(location=IN_POSITION_LOCATION)in vec2 inPosition;
+layout(location=0)in vec2 inPosition;
 out vec3 vertex;
 out vec3 normal;
 out vec2 texCoord;
@@ -163,15 +137,9 @@ fragmentColor=vec4(specularColor+diffuseColor,1.0f);}`;
 export const SKY_VERTEX_SHADER = 
 `#version 300 es
 precision mediump float;
-#define IN_POSITION_LOCATION 0
-#define IN_NORMAL_LOCATION 1
-#define IN_DIRECTION_LOCATION 1
-#define IN_MATERIAL_REF_LOCATION 2
-#define IN_TEX_COORD_LOCATION 3
-#define IN_INSTANCE_MODEL_TRANSFORM_LOCATION 4
 layout(std140)uniform SkyboxTransforms{
 mat4 viewRotationProjection;}transforms;
-layout(location=IN_POSITION_LOCATION)in vec3 inPosition;
+layout(location=0)in vec3 inPosition;
 out vec3 texCoord;
 void main(){
 vec4 homogenousPosition=transforms.viewRotationProjection*vec4(inPosition,1);
@@ -189,17 +157,11 @@ fragmentColor=texture(skybox,texCoord);}`;
 
 export const TERRAIN_VERTEX_SHADER = 
 `#version 300 es
-#define IN_POSITION_LOCATION 0
-#define IN_NORMAL_LOCATION 1
-#define IN_DIRECTION_LOCATION 1
-#define IN_MATERIAL_REF_LOCATION 2
-#define IN_TEX_COORD_LOCATION 3
-#define IN_INSTANCE_MODEL_TRANSFORM_LOCATION 4
 layout(std140)uniform Transforms{
 mat4 modelView;
 mat4 modelViewProjection;}transforms;
-layout(location=IN_POSITION_LOCATION)in vec3 inPosition;
-layout(location=IN_NORMAL_LOCATION)in vec3 inNormal;
+layout(location=0)in vec3 inPosition;
+layout(location=1)in vec3 inNormal;
 out vec3 normal;
 out float yModelNormal;
 void main(){
@@ -230,17 +192,11 @@ fragmentColor=vec4(diffuseIntensity*color*light.color,1.0f);}`;
 
 export const WIRE_VERTEX_SHADER = 
 `#version 300 es
-#define IN_POSITION_LOCATION 0
-#define IN_NORMAL_LOCATION 1
-#define IN_DIRECTION_LOCATION 1
-#define IN_MATERIAL_REF_LOCATION 2
-#define IN_TEX_COORD_LOCATION 3
-#define IN_INSTANCE_MODEL_TRANSFORM_LOCATION 4
 layout(std140)uniform Transforms{
 mat4 modelView;
 mat4 modelViewProjection;}transforms;
-layout(location=IN_POSITION_LOCATION)in vec3 inPosition;
-layout(location=IN_DIRECTION_LOCATION)in vec3 inDirection;
+layout(location=0)in vec3 inPosition;
+layout(location=1)in vec3 inDirection;
 out vec3 vertex;
 out vec3 direction;
 void main(){
@@ -260,7 +216,7 @@ in vec3 vertex;
 in vec3 direction;
 out vec4 fragmentColor;
 const vec3 WIRE_COLOR=vec3(0.5f,0.3f,0.3f);
-const float WIRE_SHININESS=50.0;
+const float WIRE_SHININESS=10.0;
 void main(){
 vec3 unitDirection=normalize(direction);
 vec3 unitEye=normalize(-vertex);
@@ -275,18 +231,12 @@ fragmentColor=vec4(specularColor+diffuseColor,1.0f);}`;
 
 export const WIRE_INSTANCES_VERTEX_SHADER = 
 `#version 300 es
-#define IN_POSITION_LOCATION 0
-#define IN_NORMAL_LOCATION 1
-#define IN_DIRECTION_LOCATION 1
-#define IN_MATERIAL_REF_LOCATION 2
-#define IN_TEX_COORD_LOCATION 3
-#define IN_INSTANCE_MODEL_TRANSFORM_LOCATION 4
 layout(std140)uniform Transforms{
 mat4 modelView;
 mat4 modelViewProjection;}transforms;
-layout(location=IN_POSITION_LOCATION)in vec3 inPosition;
-layout(location=IN_DIRECTION_LOCATION)in vec3 inDirection;
-layout(location=IN_INSTANCE_MODEL_TRANSFORM_LOCATION)in mat4x4 inModelTransform;
+layout(location=0)in vec3 inPosition;
+layout(location=1)in vec3 inDirection;
+layout(location=4)in mat4x4 inModelTransform;
 out vec3 vertex;
 out vec3 direction;
 void main(){

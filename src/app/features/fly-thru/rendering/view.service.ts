@@ -57,7 +57,7 @@ export class ViewService {
 
     const xCenter = extent.x0 + 0.5 * extent.width;
     const zEye = 1.2 * Math.max(extent.width, 1.75 * extent.height);
-    
+
     // Always put eye at height of a person on the road.
     // Swivel eye right a bit to account for slant of river.
     vec3.set(this.eye, xCenter - 0.2 * zEye, 1, zEye);
@@ -80,7 +80,7 @@ export class ViewService {
     this.eyeMin[0] = -100.0;
     this.eyeMax[0] = 100 + conditions.spanLength;
 
-    this.eyeMax[1] = conditions.overMargin + 15.0;
+    this.eyeMax[1] = conditions.overMargin + 25.0;
     this.eyeMin[2] = -100.0;
     this.eyeMax[2] = 100.0;
   }
@@ -96,41 +96,21 @@ export class ViewService {
     this.thetaEye = Utility.normalizeAngle(this.thetaEye + this.thetaEyeRate * elapsedSecs);
     const dx = +cosPhiEye * Math.sin(this.thetaEye);
     const dz = -cosPhiEye * Math.cos(this.thetaEye);
-    if (this.isIgnoringBoundaries) {
-      if (this.isMovingLaterally) {
-        this.eye[0] -= dz * this.xzEyeVelocity * elapsedSecs;
-        this.eye[2] += dx * this.xzEyeVelocity * elapsedSecs;
-      } else {
-        this.eye[0] += dx * this.xzEyeVelocity * elapsedSecs;
-        this.eye[2] += dz * this.xzEyeVelocity * elapsedSecs;
-      }
-      this.eye[1] += this.yEyeVelocity * elapsedSecs;
+    if (this.isMovingLaterally) {
+      this.eye[0] -= dz * this.xzEyeVelocity * elapsedSecs;
+      this.eye[2] += dx * this.xzEyeVelocity * elapsedSecs;
     } else {
-      if (this.isMovingLaterally) {
-        this.eye[0] = Utility.clamp(
-          this.eye[0] - dz * this.xzEyeVelocity * elapsedSecs,
-          this.eyeMin[0],
-          this.eyeMax[0],
-        );
-        this.eye[2] = Utility.clamp(
-          this.eye[2] + dx * this.xzEyeVelocity * elapsedSecs,
-          this.eyeMin[2],
-          this.eyeMax[2],
-        );
-      } else {
-        this.eye[0] = Utility.clamp(
-          this.eye[0] + dx * this.xzEyeVelocity * elapsedSecs,
-          this.eyeMin[0],
-          this.eyeMax[0],
-        );
-        this.eye[2] = Utility.clamp(
-          this.eye[2] + dz * this.xzEyeVelocity * elapsedSecs,
-          this.eyeMin[2],
-          this.eyeMax[2],
-        );
-      }
+      this.eye[0] += dx * this.xzEyeVelocity * elapsedSecs;
+      this.eye[2] += dz * this.xzEyeVelocity * elapsedSecs;
+    }
+    this.eye[1] += this.yEyeVelocity * elapsedSecs;
+
+    // Clamp to eye box boundaries unless in debug mode.
+    if (!this.isIgnoringBoundaries) {
+      this.eye[0] = Utility.clamp(this.eye[0], this.eyeMin[0], this.eyeMax[0]);
+      this.eye[2] = Utility.clamp(this.eye[2], this.eyeMin[2], this.eyeMax[2]);
       this.eyeMin[1] = this.terrainService.getElevationAtXZ(this.eye[0], this.eye[2]) + 1.8;
-      this.eye[1] = Utility.clamp(this.eye[1] + this.yEyeVelocity * elapsedSecs, this.eyeMin[1], this.eyeMax[1]);
+      this.eye[1] = Utility.clamp(this.eye[1], this.eyeMin[1], this.eyeMax[1]);
     }
     this.center[0] = this.eye[0] + dx;
     this.center[1] = this.eye[1] + dy;

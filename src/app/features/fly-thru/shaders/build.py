@@ -23,10 +23,17 @@ def readFileWithIncludes(file_name, depth=0):
                 )
         return "".join(lines)
 
-def buildDefines(text):
-    lines = "\n".split(text);
 
-def main(noCompress):
+def processDefines(text):
+    matches = re.findall(r"#define\s+(\w+)\s+(.*)", text)
+    text = re.sub(r"#define .*", "", text)
+    for token, replacement in matches:
+        text = text.replace(token, replacement)
+    print(text)
+    return text
+
+
+def main(noCompress, noProcessDefines):
     # Build constants.h from constants.ts. First so shader includes see any changes.
     with open("constants.ts", "r") as input:
         with open("constants.h", "w") as output:
@@ -55,6 +62,8 @@ def main(noCompress):
             print(f"{file_name}:")
             file_count += 1
             text = readFileWithIncludes(file_name)
+            if not noProcessDefines:
+                text = processDefines(text)
             var_name = os.path.splitext(file_name)[0].upper().replace("-", "_")
             if file_name.endswith(".vert"):
                 var_name += "_VERTEX_SHADER"
@@ -98,4 +107,4 @@ def main(noCompress):
                 ins[inId] = (inLocation, inType)
 
 
-main("--no-compress" in sys.argv)
+main("--no-compress" in sys.argv, "--no-process-defines" in sys.argv)
