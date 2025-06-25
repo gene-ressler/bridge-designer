@@ -63,14 +63,14 @@ export class UtilityLineModelService {
       // Power wire between tower pairs. Parabolas because catenaries are nearly
       // identical and harder. Coordinates are wrt bottom center of tower.
       // An instance is translated to the end of each support arm.
-      if (iTower) {
+      if (iTower > 0) {
         const dx = x1 - x0!;
         const dy = y1 - y0!;
         const dz = z1 - z0!;
         const du = Geometry.vectorLength2D(dx, dz);
         const m = dy / du + UtilityLineModelService.DROOP_SLOPE;
         const a = (dy - m * du) / (du * du);
-        // d0 is the previous segment direction, and d1 is the current wrt iWire.
+        // d0 is second previous segment direction, and d1 is the current wrt iWire.
         // So iWire=0 has no previous, and iWire=post count has no current.
         let dx0, dy0, dz0, dx1, dy1, dz1;
         for (let iWire = 0; iWire <= UtilityLineModelService.WIRE_POST_COUNT_PER_TOWER; iWire++) {
@@ -80,50 +80,42 @@ export class UtilityLineModelService {
           positions[ip] = x0! + dx * t;
           positions[ip + 1] = y0! + (a * u + m) * u;
           positions[ip + 2] = z0! + dz * t;
-          // Wire directions.
-          if (iWire < UtilityLineModelService.WIRE_POST_COUNT_PER_TOWER) {
-            dx1 = positions[ip + 3] - positions[ip];
-            dy1 = positions[ip + 4] - positions[ip + 1];
-            dz1 = positions[ip + 5] - positions[ip + 2];
+          // Wire directions. Current direction is at previous position.
+          if (iWire > 0) {
+            // Unit vector pointing in direction of wire segment ending at current position.
+            dx1 = positions[ip] - positions[ip - 3];
+            dy1 = positions[ip + 1] - positions[ip - 2];
+            dz1 = positions[ip + 2] - positions[ip - 1];
             const s = 1.0 / Math.sqrt(dx1 * dx1 + dy1 * dy1 + dz1 * dz1);
             dx1 *= s;
             dy1 *= s;
             dz1 *= s;
-          } else {
-            dx1 = dy1 = dz1 = undefined;
+            // Ends get direction of resp wire segment. Middle posts get average of two.
+            let dirX = dx1,
+              dirY = dy1,
+              dirZ = dz1;
+            if (dx0 !== undefined) {
+              dirX += dx0!;
+              dirY += dy0!;
+              dirZ += dz0!;
+              const s = 1.0 / Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+              dirX *= s;
+              dirY *= s;
+              dirZ *= s;
+            }
+            directions[ip - 3] = dirX;
+            directions[ip - 2] = dirY;
+            directions[ip - 1] = dirZ;
+            dx0 = dx1;
+            dy0 = dy1;
+            dz0 = dz1;
           }
-          // Ends get direction of resp wire segment.
-          // Middle posts get average of two.
-          let n = 0,
-            dirX = 0,
-            dirY = 0,
-            dirZ = 0;
-          if (dx0 !== undefined) {
-            dirX += dx0!;
-            dirY += dy0!;
-            dirZ += dz0!;
-            ++n;
-          }
-          if (dx1 !== undefined) {
-            dirX += dx1!;
-            dirY += dy1!;
-            dirZ += dz1!;
-            ++n;
-          }
-          if (n === 2) {
-            const s = 1.0 / Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
-            dirX *= s;
-            dirY *= s;
-            dirZ *= s;
-          }
-          directions[ip] = dirX;
-          directions[ip + 1] = dirY;
-          directions[ip + 2] = dirZ;
-          dx0 = dx1;
-          dy0 = dy1;
-          dz0 = dz1;
           ip += 3;
         }
+        // Fill in final direction, since no iteration had it as previous.
+        directions[ip - 3] = dx1!;
+        directions[ip - 2] = dy1!;
+        directions[ip - 1] = dz1!;
       }
       x0 = x1;
       y0 = y1;

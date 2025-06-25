@@ -5,8 +5,7 @@ import { BridgeService } from '../../../shared/services/bridge.service';
 import { Joint } from '../../../shared/classes/joint.model';
 import { Geometry, Point2D, Point2DInterface } from '../../../shared/classes/graphics';
 import { Member } from '../../../shared/classes/member.model';
-
-const GUSSET_MATERIAL_THICKNESS = 0.02;
+import { SiteConstants } from '../../../shared/classes/site.model';
 
 /**
  * Geometry of one member adjacent to a given gusset. The coordinate origin as at the
@@ -38,7 +37,7 @@ function buildMemberGeometry(gussetJoint: Joint, member: Member): MemberGeometry
   const otherJoint = member.getOtherJoint(gussetJoint);
   const vx = otherJoint.x - gussetJoint.x;
   const vy = otherJoint.y - gussetJoint.y;
-  const halfSizeM = 0.005 * member.materialSizeCm + GUSSET_MATERIAL_THICKNESS;
+  const halfSizeM = 0.005 * member.materialSizeMm + SiteConstants.GUSSET_THICKNESS;
   const vScale = halfSizeM / Math.sqrt(vx * vx + vy * vy);
   const ux = vx * vScale;
   const uy = vy * vScale;

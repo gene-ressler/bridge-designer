@@ -117,6 +117,7 @@ export class SkyRenderingService {
     const gl = this.glService.gl;
     gl.useProgram(this.shaderService.getProgram('sky'));
     gl.depthFunc(gl.LEQUAL);
+    // TODO: Experiment with doing this once, not once per frame. Possible because we have fewer textures than units?
     gl.uniform1i(this.skyBoxUniformLocation, SKYBOX_TEXTURE_UNIT);
     gl.activeTexture(gl.TEXTURE0 + SKYBOX_TEXTURE_UNIT);
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.skyBoxTexture);

@@ -26,14 +26,8 @@ export class UniformService {
   private transformsBuffer!: WebGLBuffer;
   private skyboxTransformsBuffer!: WebGLBuffer;
   private modelTransformStackPointer: number = 0;
-  /** Preallocated model transform stack. (Glmatrix creation is slow.) */
-  private readonly modelTransformStack = (() => {
-    const stack = [];
-    for (let i = 0; i < 5; ++i) {
-      stack.push(mat4.create());
-    }
-    return stack;
-  })();
+  /** Preallocated model transform stack. Typed array creation is slow. */
+  private readonly modelTransformStack = [mat4.create(), mat4.create(), mat4.create(), mat4.create()];
   // One backing store buffer matching the uniform block with two matrix views.
   private readonly transformsUniformStore = new ArrayBuffer(128); // 2 each 4x4 floats
   private readonly modelViewMatrix = new Float32Array(this.transformsUniformStore, 0, 16);
@@ -44,7 +38,7 @@ export class UniformService {
     0, 1, 0, // unit light direction (placeholder values)
     _,
     0.9, 0.9, 1.0, // light color
-    0.1, // ambient intensity
+    0.5, // ambient intensity
   ]);
   private readonly lightDirection = new Float32Array(this.lightConfig.buffer, 0, 4);
   // std140 layout w/ mij = i'th row, j'th column of projection:
@@ -64,17 +58,28 @@ export class UniformService {
    */
   public prepareUniforms(): void {
     const gl = this.glService.gl;
-    const facetMeshProgram = this.shaderService.getProgram('facet_mesh');
-    const facetMeshInstancesProgram = this.shaderService.getProgram('facet_mesh_instances');
+    const facetMeshProgram = this.shaderService.getProgram('colored_mesh');
+    const facetMeshInstancesProgram = this.shaderService.getProgram('colored_mesh_instances');
     const overlayProgram = this.shaderService.getProgram('overlay');
     const riverProgram = this.shaderService.getProgram('river');
     const skyProgram = this.shaderService.getProgram('sky');
     const terrainProgram = this.shaderService.getProgram('terrain');
+    const texturedMeshProgram = this.shaderService.getProgram('textured_mesh');
+    const texturedMeshInstancesProgram = this.shaderService.getProgram('textured_mesh_instances');
     const wireProgram = this.shaderService.getProgram('wire');
     const wireInstancesProgram = this.shaderService.getProgram('wire_instances');
 
     this.transformsBuffer = this.setUpUniformBlock(
-      [facetMeshProgram, facetMeshInstancesProgram, riverProgram, terrainProgram, wireProgram, wireInstancesProgram],
+      [
+        facetMeshProgram,
+        facetMeshInstancesProgram,
+        riverProgram,
+        terrainProgram,
+        texturedMeshProgram,
+        texturedMeshInstancesProgram,
+        wireProgram,
+        wireInstancesProgram,
+      ],
       'Transforms',
       TRANSFORMS_UBO_BINDING_INDEX,
     );
@@ -88,7 +93,16 @@ export class UniformService {
     gl.bufferData(gl.UNIFORM_BUFFER, this.skyboxTransformsFloats.buffer.byteLength, gl.DYNAMIC_DRAW);
 
     this.lightConfigBuffer = this.setUpUniformBlock(
-      [facetMeshProgram, facetMeshInstancesProgram, riverProgram, terrainProgram, wireProgram, wireInstancesProgram],
+      [
+        facetMeshProgram,
+        facetMeshInstancesProgram,
+        riverProgram,
+        terrainProgram,
+        texturedMeshProgram,
+        texturedMeshInstancesProgram,
+        wireProgram,
+        wireInstancesProgram,
+      ],
       'LightConfig',
       LIGHT_CONFIG_UBO_BINDING_INDEX,
     );

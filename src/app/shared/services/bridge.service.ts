@@ -3,7 +3,7 @@ import { BridgeModel } from '../classes/bridge.model';
 import { Point2DInterface, Rectangle2D } from '../classes/graphics';
 import { Joint } from '../classes/joint.model';
 import { Member } from '../classes/member.model';
-import { SiteModel } from '../classes/site.model';
+import { SiteConstants, SiteModel } from '../classes/site.model';
 import { DesignConditions, DesignConditionsService } from './design-conditions.service';
 import { AllowedShapeChangeMask, InventoryService, StockId } from './inventory.service';
 import { BridgeSketchModel } from '../classes/bridge-sketch.model';
@@ -152,7 +152,7 @@ export class BridgeService {
 
   /**
    * Returns a stock heuristically likely to be one the user will want to use next.
-   * 
+   *
    * Three cases:
    *  - No members in the bridge: Return a stock generally useful to niave users.
    *  - Empty member index list: returns the most common stock in the bridge, else EMPTY if no members.
@@ -298,6 +298,29 @@ export class BridgeService {
       }
     }
     return true;
+  }
+
+  /**
+   * Return roadway width including the widest members that transsect the deck.
+   * Useful for peirs and abutments.
+   */
+  public get bridgeHalfWidth(): number {
+    let maxDeckMemberSizeMm = 0;
+    for (const member of this.bridge.members) {
+      // prettier-ignore
+      if ((member.materialSizeMm <= maxDeckMemberSizeMm) || 
+        // Ignore the member if it doesn't transsect the deck.
+        (member.a.y > 0 && member.b.y > 0) ||
+        (member.a.y < 0 && member.b.y < 0) ||
+        (member.a.index === this.designConditions.leftAnchorageJointIndex) ||
+        (member.b.index === this.designConditions.leftAnchorageJointIndex) ||
+        (member.a.index === this.designConditions.rightAnchorageJointIndex) ||
+        (member.b.index === this.designConditions.rightAnchorageJointIndex)) {
+        continue;
+      }
+      maxDeckMemberSizeMm = member.materialSizeMm;
+    }
+    return SiteConstants.DECK_HALF_WIDTH + maxDeckMemberSizeMm * 0.001 + 2 * SiteConstants.GUSSET_THICKNESS;
   }
 
   public get saveSet(): SaveSet {

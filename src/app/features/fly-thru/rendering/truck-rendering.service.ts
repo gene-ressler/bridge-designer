@@ -23,9 +23,9 @@ export class TruckRenderingService {
   ) {}
 
   public prepare(): void {
-    this.bodyMesh = this.meshRenderingService.prepareColoredFacetMesh(TRUCK_MESH_DATA);
-    this.wheelMesh = this.meshRenderingService.prepareColoredFacetMesh(WHEEL_MESH_DATA);
-    this.dualWheelMesh = this.meshRenderingService.prepareColoredFacetMesh(DUAL_WHEEL_MESH_DATA);
+    this.bodyMesh = this.meshRenderingService.prepareColoredMesh(TRUCK_MESH_DATA);
+    this.wheelMesh = this.meshRenderingService.prepareColoredMesh(WHEEL_MESH_DATA);
+    this.dualWheelMesh = this.meshRenderingService.prepareColoredMesh(DUAL_WHEEL_MESH_DATA);
   }
 
   public render(viewMatrix: mat4, projectionMatrix: mat4): void {
@@ -38,7 +38,7 @@ export class TruckRenderingService {
     mat4.translate(m, m, vec3.set(this.offset, 0, 0.5, 0.95));
     mat4.rotateZ(m, m, -this.wheelRotation);
     this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
-    this.meshRenderingService.renderFacetMesh(this.wheelMesh);
+    this.meshRenderingService.renderColoredMesh(this.wheelMesh);
 
     this.uniformService.popModelMatrix();
 
@@ -48,7 +48,7 @@ export class TruckRenderingService {
     mat4.translate(m, m, vec3.set(this.offset, wheelbaseOffset, 0.5, 1.05));
     mat4.rotateZ(m, m, -this.wheelRotation);
     this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
-    this.meshRenderingService.renderFacetMesh(this.dualWheelMesh);
+    this.meshRenderingService.renderColoredMesh(this.dualWheelMesh);
 
     this.uniformService.popModelMatrix();
 
@@ -59,7 +59,7 @@ export class TruckRenderingService {
     mat4.rotateX(m, m, Math.PI);
     mat4.rotateZ(m, m, -this.wheelRotation);
     this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
-    this.meshRenderingService.renderFacetMesh(this.wheelMesh);
+    this.meshRenderingService.renderColoredMesh(this.wheelMesh);
 
     this.uniformService.popModelMatrix();
 
@@ -70,12 +70,12 @@ export class TruckRenderingService {
     mat4.rotateX(m, m, Math.PI);
     mat4.rotateZ(m, m, -this.wheelRotation);
     this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
-    this.meshRenderingService.renderFacetMesh(this.dualWheelMesh);
+    this.meshRenderingService.renderColoredMesh(this.dualWheelMesh);
 
     this.uniformService.popModelMatrix();
 
     // Body.
     this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
-    this.meshRenderingService.renderFacetMesh(this.bodyMesh);
+    this.meshRenderingService.renderColoredMesh(this.bodyMesh);
   }
 }

@@ -42,6 +42,8 @@ export class TerrainModelService {
     -TerrainModelService.GAP_HALF_WIDTH * TerrainModelService.RIVER_BANK_SLOPE;
   public static readonly RIVER_EDGE_TO_CENTER_DISTANCE =
     (TerrainModelService.WATER_LEVEL - TerrainModelService.GORGE_BOTTOM_HEIGHT) / TerrainModelService.RIVER_BANK_SLOPE;
+  /** Distance from gap center to line where terrain along the roadway ends, and abutment begins. */
+  public static readonly TERRAIN_GAP_SETBACK = TerrainModelService.GAP_HALF_WIDTH;
 
   private readonly random0to1 = makeRandomGenerator(2093415, 3205892098, 239837, 13987483);
 
@@ -263,20 +265,24 @@ export class TerrainModelService {
 
     // Cut or fill for the roadway.
     const tCut = Math.abs(z);
+    // A bit lower than road elevation so actual road can't be hidden.
     const yRoad = this.roadCenterLine[j].elevation - TerrainModelService.EPS_PAINT;
     // TODO: Replace deck width with actual abutment width.
+    // The y of a cut bank. Zero at road level, one grid distance from roadway edge and rising thereafter.
     const yRise = (tCut - SiteConstants.DECK_HALF_WIDTH - metersPerGrid) * TerrainModelService.ROAD_CUT_SLOPE;
 
-    // Try cut first.
+    // Try cut first. See what the cut elevation would be and use it if less than actual.
     const yCut = yRise >= 0 ? yRoad + yRise : yRoad;
     if (yCut <= y) {
       y = yCut;
     }
-    // Try fill only if we're not close to bridge.
-    else if (x < -TerrainModelService.GAP_HALF_WIDTH || x > TerrainModelService.GAP_HALF_WIDTH) {
-      const yFill = yRise >= 0 ? yRoad - yRise : yRoad;
-      if (yFill >= y) {
-        y = yFill;
+    // Try fill only if we're outside the abutments.
+    else {
+      if (x < -TerrainModelService.TERRAIN_GAP_SETBACK || x > TerrainModelService.TERRAIN_GAP_SETBACK) {
+        const yFill = yRise >= 0 ? yRoad - yRise : yRoad;
+        if (yFill >= y) {
+          y = yFill;
+        }
       }
     }
     /* TODO: Finish me!
@@ -425,9 +431,9 @@ export class TerrainModelService {
         normals[ip++] = nScale * nz;
       }
     }
-    /** Indices by tracing a grid as triangles, two per grid square. */
+    // Indices by tracing a grid as triangles, two per grid square.
+    // About 3.3k triangles are skipped by the visibility logic.
     ip = 0;
-    let skipCount = 0;
     for (let j = 0, i0 = 0; j < ijMax; ++j, i0 += postCount) {
       for (let i = 0; i < ijMax; ++i) {
         const nw = i0 + i;
@@ -439,27 +445,43 @@ export class TerrainModelService {
           indices[ip++] = nw;
           indices[ip++] = se;
           indices[ip++] = ne;
-        } else {
-          ++skipCount;
         }
         if (isDiagVisible || visibleBits.getBit(sw)) {
           indices[ip++] = se;
           indices[ip++] = nw;
           indices[ip++] = sw;
-        } else {
-          ++skipCount;
         }
       }
     }
-    console.log('skipped triangles:', skipCount);
     return { positions, normals, indices };
   }
 
-  private getElevationAtIJ(i: number, j: number): number {
+  public getElevationAtIJ(i: number, j: number): number {
     i = Utility.clamp(i, 0, TerrainModelService.GRID_COUNT);
     j = Utility.clamp(j, 0, TerrainModelService.GRID_COUNT);
     const xyzIndex = j * TerrainModelService.POST_COUNT + i;
     return this.terrainMeshData.positions[xyzIndex * 3 + 1]; // y-coordinate
+  }
+
+  /**
+   * Starting at gap center, moving left, finds the first post where the
+   * road centerline joins the terrain and returns the x-coordinate.
+   */
+  public get leftAbutmentEndX(): [number, number] {
+    // Search from gap center left along road to find post where road rises to terrain.
+    let j = TerrainModelService.HALF_GRID_COUNT;
+    for (; j > 0; --j) {
+      if (
+        Utility.areNearlyEqual(
+          this.roadCenterLine[j].elevation,
+          this.getElevationAtIJ(TerrainModelService.HALF_GRID_COUNT, j),
+          2 * TerrainModelService.EPS_PAINT,
+        )
+      ) {
+        break;
+      }
+    }
+    return [this.gridColumnToWorldX(j), j];
   }
 
   /** Returns the terrain model elevation at the given x-z point. */

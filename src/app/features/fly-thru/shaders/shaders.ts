@@ -1,5 +1,5 @@
 // This file is generated. Edit .vert and .frag files instead.
-export const FACET_MESH_VERTEX_SHADER = 
+export const COLORED_MESH_VERTEX_SHADER = 
 `#version 300 es
 layout(std140)uniform Transforms{
 mat4 modelView;
@@ -17,7 +17,7 @@ vertex=vec3(transforms.modelView*inPositionHomogeneous);
 normal=mat3(transforms.modelView)*inNormal;
 materialRef=inMaterialRef;}`;
 
-export const FACET_MESH_FRAGMENT_SHADER = 
+export const COLORED_MESH_FRAGMENT_SHADER = 
 `#version 300 es
 precision mediump float;
 layout(std140)uniform LightConfig{
@@ -44,7 +44,7 @@ float diffuseIntensity=(1.0f-light.ambientIntensity)*clamp(normalDotLight,0.0f,1
 vec3 diffuseColor=diffuseIntensity*materal.spec.xyz*light.color*(1.0-specularIntensity);
 fragmentColor=vec4(specularColor+diffuseColor,1.0f);}`;
 
-export const FACET_MESH_INSTANCES_VERTEX_SHADER = 
+export const COLORED_MESH_INSTANCES_VERTEX_SHADER = 
 `#version 300 es
 layout(std140)uniform Transforms{
 mat4 modelView;
@@ -144,7 +144,7 @@ out vec3 texCoord;
 void main(){
 vec4 homogenousPosition=transforms.viewRotationProjection*vec4(inPosition,1);
 gl_Position=homogenousPosition.xyww;
-texCoord=inPosition;}`;
+texCoord=vec3(-inPosition.x,inPosition.y,-inPosition.z);}`;
 
 export const SKY_FRAGMENT_SHADER = 
 `#version 300 es
@@ -179,16 +179,68 @@ float ambientIntensity;}light;
 in vec3 normal;
 in float yModelNormal;
 out vec4 fragmentColor;
-const vec3 NORMAL_TERRAIN_COLOR=vec3(0.13f,0.59f,0.33f);
-const vec3 ERODED_TERRAIN_COLOR=vec3(0.87f,0.78f,0.52f);
+const vec3 NORMAL_TERRAIN_COLOR=0.6f*vec3(0.13f,0.4f,0.33f);
+const vec3 ERODED_TERRAIN_COLOR=0.6f*vec3(0.87f,0.78f,0.52f);
 const vec3 EROSION_DIFF=NORMAL_TERRAIN_COLOR-ERODED_TERRAIN_COLOR;
 void main(){
 vec3 unitNormal=normalize(normal);
 float normalDotLight=dot(unitNormal,light.unitDirection);
-float diffuseIntensity=clamp(normalDotLight,0.0f,1.0f);
-float normalTerrainColorWeight=pow(yModelNormal,4.0);
+float adjustedAmbientIntensity=light.ambientIntensity*0.2f;
+float diffuseIntensity=(1.0f-adjustedAmbientIntensity)*clamp(normalDotLight,0.0f,1.0f)+adjustedAmbientIntensity;
+float normalTerrainColorWeight=pow(yModelNormal,6.0f);
 vec3 color=ERODED_TERRAIN_COLOR+EROSION_DIFF*normalTerrainColorWeight;
 fragmentColor=vec4(diffuseIntensity*color*light.color,1.0f);}`;
+
+export const TEXTURED_MESH_VERTEX_SHADER = 
+`#version 300 es
+layout(std140)uniform Transforms{
+mat4 modelView;
+mat4 modelViewProjection;}transforms;
+layout(location=0)in vec3 inPosition;
+layout(location=1)in vec3 inNormal;
+layout(location=3)in vec2 inTexCoord;
+out vec3 normal;
+out vec2 texCoord;
+void main(){
+vec4 inPositionHomogeneous=vec4(inPosition,1.0f);
+gl_Position=transforms.modelViewProjection*inPositionHomogeneous;
+normal=mat3(transforms.modelView)*inNormal;
+texCoord=inTexCoord;}`;
+
+export const TEXTURED_MESH_FRAGMENT_SHADER = 
+`#version 300 es
+precision mediump float;
+layout(std140)uniform LightConfig{
+vec3 unitDirection;
+vec3 color;
+float ambientIntensity;}light;
+uniform sampler2D meshTexture;
+in vec3 normal;
+in vec2 texCoord;
+out vec4 fragmentColor;
+void main(){
+vec3 unitNormal=normalize(normal);
+float normalDotLight=dot(unitNormal,light.unitDirection);
+float diffuseIntensity=(1.0f-light.ambientIntensity)*clamp(normalDotLight,0.0f,1.0f)+light.ambientIntensity;
+vec3 materialColor=texture(meshTexture,texCoord).rgb;
+fragmentColor=vec4(diffuseIntensity*materialColor*light.color,1);}`;
+
+export const TEXTURED_MESH_INSTANCES_VERTEX_SHADER = 
+`#version 300 es
+layout(std140)uniform Transforms{
+mat4 modelView;
+mat4 modelViewProjection;}transforms;
+layout(location=0)in vec3 inPosition;
+layout(location=1)in vec3 inNormal;
+layout(location=3)in vec2 inTexCoord;
+layout(location=4)in mat4x4 inModelTransform;
+out vec3 normal;
+out vec2 texCoord;
+void main(){
+vec4 position=inModelTransform*vec4(inPosition,1.0f);
+gl_Position=transforms.modelViewProjection*position;
+normal=mat3(transforms.modelView)*inNormal;
+texCoord=inTexCoord;}`;
 
 export const WIRE_VERTEX_SHADER = 
 `#version 300 es
@@ -216,11 +268,11 @@ in vec3 vertex;
 in vec3 direction;
 out vec4 fragmentColor;
 const vec3 WIRE_COLOR=vec3(0.5f,0.3f,0.3f);
-const float WIRE_SHININESS=10.0;
+const float WIRE_SHININESS=30.0;
 void main(){
 vec3 unitDirection=normalize(direction);
 vec3 unitEye=normalize(-vertex);
-vec3 unitNormal=unitEye-dot(unitEye,unitDirection)*unitDirection;
+vec3 unitNormal=normalize(unitEye-dot(unitEye,unitDirection)*unitDirection);
 float normalDotLight=dot(unitNormal,light.unitDirection);
 vec3 unitReflection=normalize(2.0f*normalDotLight*unitNormal-light.unitDirection);
 float specularIntensity=pow(max(dot(unitReflection,unitEye),0.0f),WIRE_SHININESS);

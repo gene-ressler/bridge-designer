@@ -41,7 +41,7 @@ export class ViewService {
   private yEyeVelocity: number = 0;
   private phiDriverHead: number = 0;
   private thetaDriverHead: number = 0;
-  public isIgnoringBoundaries: boolean = false;
+  public isIgnoringBoundaries: boolean = true;
   public isMovingLaterally: boolean = false;
   public isDriving: boolean = false;
 

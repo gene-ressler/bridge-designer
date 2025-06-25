@@ -73,19 +73,21 @@ export const enum PointTag {
   HEIGHT_ADJUSTED,
 }
 
-/** Constants describing site geometry. */
+/** Constants describing site geometry and its 2D drawing. */
 export class SiteConstants {
+  /** Coordinate value "off the drawing," where reasonable views are certainly clipped. */
+  static readonly ABUTMENT_FACE_X: number = 0.25;
   static readonly ABUTMENT_INTERFACE_OFFSET: number = 1.0;
   static readonly ABUTMENT_STEP_HEIGHT: number = -0.35;
   static readonly ABUTMENT_STEP_INSET: number = -0.45;
-  static readonly ABUTMENT_STEP_WIDTH: number = 0.25;
   static readonly ACCESS_SLOPE: number = 1.0 / 6.0;
   static readonly BEAM_HEIGHT: number = 0.9;
   static readonly DECK_CANTILEVER: number = 0.32;
   static readonly DECK_HALF_WIDTH: number = 5.0;
+  static readonly DECK_HEIGHT: number = 0.8;
   static readonly DRAWING_X_MARGIN: number = 3;
-  /** Coordinate value "off the drawing," where reasonable views are certainly clipped. */
   static readonly FAR_AWAY: number = 100.0;
+  static readonly GUSSET_THICKNESS = 0.02;
   static readonly HALF_NATURAL_GAP_WIDTH: number = 22.0;
   static readonly INDEX_LEFT_SHORE: number = 25;
   static readonly INDEX_RIGHT_SHORE: number = 16;
@@ -95,10 +97,9 @@ export class SiteConstants {
   static readonly TANGENT_OFFSET: number = 8.0;
   static readonly TERRAIN_DASH: number[] = [4, 3];
   static readonly WATER_BELOW_GRADE: number = 26.4;
+
   static readonly WEAR_SURFACE_X0: number = -this.ABUTMENT_INTERFACE_OFFSET;
   static readonly WEAR_SURFACE_X1: number = this.ABUTMENT_STEP_INSET;
-  static readonly DECK_HEIGHT: number = 0.8;
-
   static readonly ACCESS_LENGTH: number = this.FAR_AWAY - this.TANGENT_OFFSET;
   static readonly ACCESS_CURVE: Point2D[] = this.createAccessCurve();
   /** Terrain cross-section clockwisepolygon. Between WATER_BELOW_GRADE points is the water cross-section. */
@@ -155,8 +156,8 @@ export class SiteConstants {
       [this.WEAR_SURFACE_X0, this.DECK_HEIGHT],
       [this.WEAR_SURFACE_X1, this.DECK_HEIGHT],
       [this.ABUTMENT_STEP_INSET, this.ABUTMENT_STEP_HEIGHT],
-      [this.ABUTMENT_STEP_WIDTH, this.ABUTMENT_STEP_HEIGHT],
-      [this.ABUTMENT_STEP_WIDTH, -5.0],
+      [this.ABUTMENT_FACE_X, this.ABUTMENT_STEP_HEIGHT],
+      [this.ABUTMENT_FACE_X, -5.0],
       [0.75, -5.0],
       [0.75, -5.5],
       [-2.0, -5.5],
@@ -172,8 +173,8 @@ export class SiteConstants {
       [this.WEAR_SURFACE_X0, this.DECK_HEIGHT],
       [this.WEAR_SURFACE_X1, this.DECK_HEIGHT],
       [this.ABUTMENT_STEP_INSET, this.ABUTMENT_STEP_HEIGHT, PointTag.HEIGHT_ADJUSTED],
-      [this.ABUTMENT_STEP_WIDTH, this.ABUTMENT_STEP_HEIGHT, PointTag.HEIGHT_ADJUSTED],
-      [this.ABUTMENT_STEP_WIDTH, -5.0, PointTag.HEIGHT_ADJUSTED],
+      [this.ABUTMENT_FACE_X, this.ABUTMENT_STEP_HEIGHT, PointTag.HEIGHT_ADJUSTED],
+      [this.ABUTMENT_FACE_X, -5.0, PointTag.HEIGHT_ADJUSTED],
       [0.75, -5.0, PointTag.HEIGHT_ADJUSTED],
       [0.75, -5.5, PointTag.HEIGHT_ADJUSTED],
       [-2.0, -5.5, PointTag.HEIGHT_ADJUSTED],

@@ -29,7 +29,6 @@ def processDefines(text):
     text = re.sub(r"#define .*", "", text)
     for token, replacement in matches:
         text = text.replace(token, replacement)
-    print(text)
     return text
 
 

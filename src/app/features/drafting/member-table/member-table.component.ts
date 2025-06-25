@@ -20,7 +20,7 @@ export class MemberTableComponent implements AfterViewInit {
     { name: 'number', type: 'number' },
     { name: 'materialShortName', type: 'string' },
     { name: 'crossSectionShortName', type: 'string' },
-    { name: 'materialSize', type: 'number' },
+    { name: 'materialSizeMm', type: 'number' },
     { name: 'length', type: 'number' },
     { name: 'slenderness', type: 'number' },
     { name: 'compressionForceStrengthRatio', type: 'number' },
@@ -49,7 +49,7 @@ export class MemberTableComponent implements AfterViewInit {
       renderer: MemberTableComponent.renderHeader,
     }, { 
       text: 'Size (mm)', 
-      datafield: 'materialSize', 
+      datafield: 'materialSizeMm', 
       cellsalign: 'right', 
       cellsformat: 'f0',
       width: 44, 

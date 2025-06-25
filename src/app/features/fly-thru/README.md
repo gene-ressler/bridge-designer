@@ -5,7 +5,7 @@ This document describes how data flows through shaders.
 ## Overall organization
 
 - **Pane.** The UI component that contains the scene and receives user interactions.
-- **Models.** Raw data for items in the scene. Some are static (from OBJ files), others computed on the fly.
+- **Models.** Raw data for items in the scene. Some are static (from OBJ files), others computed.
 - **Rendering.** Logic for rendering models, including.
   - **Meshes.** Converting model data into triangle meshes understood by WebGL shaders.
   - **Projections.** Model, view and projection, transformations that orient objects in the scene and the scene for
@@ -14,6 +14,13 @@ This document describes how data flows through shaders.
 - **Shaders.** GLSL vertex and fragment manipulators.
 
 ## Coordinate systems
+
+The "global" world coordinate system has
+
+- Origin at the bridge's leftmost deck joint, center of roadway.
+- Roadway running along the x-axis.
+- Y-axis "up".
+- Right-handed Z. When origin is on left bank, axis is pointing toward viewer.
 
 ## Objects in the animation
 
@@ -36,6 +43,7 @@ The animation scene consists of the following:
   - Rotating wheels
   - Constrained to roadway and bridge deck wear surface
   - Fades in on approach to bridge and out on exit.
+- Sky box at infinity
 
 ## Models
 
@@ -55,19 +63,13 @@ Static models don't change during the animation. Dynamic ones change geometry or
 
 ## Transformations
 
-A fairly standard pipeline.
+A fairly standard pipeline for everything except the sky box and UI overlays. There are notrs about these in the shaders
+README.
 
-### Cordinate systems.
+### Model coordinates
 
-The "global" world coordinate system has
-
-- Origin at the bridge's leftmost deck joint, center of roadway.
-- Roadway running along the x-axis.
-- Y-axis vertical.
-- Right-handed Z. When origin is on left bank, axis is pointing toward viewer.
-
-Various model-specific coordinate systems are handy. Model transformations are applied to reconcile to global world
-coordinates.
+Model-specific coordinate systems simplify creation logic for computed models and tool usage for static models. Model
+transformations reconcile them to global world coordinates.
 
 | Object                  | Origin                        | Orientation                                    |
 | ----------------------- | ----------------------------- | ---------------------------------------------- |
@@ -82,7 +84,8 @@ coordinates.
 
 ### Model matrix
 
-Per-model, rotate into correct orientation. Move to correct origin.
+Per-model, rotate to correct orientation. Move to correct origin. The uniform service mimicks the old OpenGL API's
+transformation stack.
 
 ### View matrix
 

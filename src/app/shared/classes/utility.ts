@@ -43,6 +43,11 @@ export class Utility {
     return a <= b ? a <= x && x <= b : b <= x && x <= a;
   }
 
+  /** Returns whether two numbers are nearly equal within a given tolerance. */
+  public static areNearlyEqual(x: number, y: number, tolerance: number = 0.01): boolean {
+    return Math.abs(x - y) <= tolerance;
+  }
+
   /** Returns the value x clamped to the range [a, b]. */
   public static clamp(x: number, a: number, b: number): number {
     if (x < a) {

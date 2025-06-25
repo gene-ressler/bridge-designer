@@ -24,13 +24,13 @@ export class UtilityLineRenderingService {
     this.wireRenderingService.deleteExistingWire(this.lineWireInstances);
     const [instanceModelTransforms, wireData] = this.utilityLineModelService.buildModel();
     const meshData = { instanceModelTransforms, ...TOWER_MESH_DATA };
-    this.towerMesh = this.meshRenderingService.prepareColoredFacetMesh(meshData);
+    this.towerMesh = this.meshRenderingService.prepareColoredMesh(meshData);
     this.lineWireInstances = this.wireRenderingService.prepareWire(wireData);
   }
 
   public render(viewMatrix: mat4, projectionMatrix: mat4) {
     this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
-    this.meshRenderingService.renderFacetMesh(this.towerMesh);
+    this.meshRenderingService.renderColoredMesh(this.towerMesh);
     this.wireRenderingService.renderWire(this.lineWireInstances);
   }
 }

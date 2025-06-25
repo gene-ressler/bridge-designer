@@ -10,6 +10,7 @@ export class Colors {
   public static readonly SKY = 'rgb(192, 255, 255)';
   public static readonly STEEL = 'gray';
   public static readonly WATER = 'blue';
+  public static readonly GL_CONCRETE = new Uint8Array([128, 128, 128, 255])
   public static readonly GL_WATER = new Uint8Array([11, 104, 158, 255]);
   public static readonly GL_SKY = new Uint8Array([135, 206, 235, 255]);
 }

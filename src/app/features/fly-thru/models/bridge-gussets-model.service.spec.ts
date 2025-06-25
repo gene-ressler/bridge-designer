@@ -51,6 +51,6 @@ describe('BridgeGussetsModelService', () => {
   });
 
   function buildMember(a: Joint, b: Joint, materialSizeCm: number): Member {
-    return { a, b, materialSizeCm, getOtherJoint: (j: Joint) => (j === a ? b : a) } as Member;
+    return { a, b, materialSizeMm, getOtherJoint: (j: Joint) => (j === a ? b : a) } as Member;
   }
 });

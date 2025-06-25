@@ -1,5 +1,4 @@
 import { Utility } from '../../../shared/classes/utility';
-import { ToastError } from '../../toast/toast/toast-error';
 import * as shaderSources from './shaders';
 import { Injectable } from '@angular/core';
 
@@ -18,8 +17,7 @@ export class ShaderService {
   public getProgram(name: string): WebGLProgram {
     const program = this.programs?.[name];
     if (!program) {
-      console.log(`Missing shader: ${name}`);
-      throw new ToastError('shaderError');
+      throw new Error(`Missing shader: ${name}`);
     }
     return program;
   }
@@ -28,14 +26,14 @@ export class ShaderService {
     const shaders = this.compileShaders(gl);
     const programSpecs: ProgramSpec[] = [
       {
-        name: 'facet_mesh',
-        vertexShader: shaders['FACET_MESH_VERTEX_SHADER'],
-        fragmentShader: shaders['FACET_MESH_FRAGMENT_SHADER'],
+        name: 'colored_mesh',
+        vertexShader: shaders['COLORED_MESH_VERTEX_SHADER'],
+        fragmentShader: shaders['COLORED_MESH_FRAGMENT_SHADER'],
       },
       {
-        name: 'facet_mesh_instances',
-        vertexShader: shaders['FACET_MESH_INSTANCES_VERTEX_SHADER'],
-        fragmentShader: shaders['FACET_MESH_FRAGMENT_SHADER'],
+        name: 'colored_mesh_instances',
+        vertexShader: shaders['COLORED_MESH_INSTANCES_VERTEX_SHADER'],
+        fragmentShader: shaders['COLORED_MESH_FRAGMENT_SHADER'],
       },
       {
         name: 'overlay',
@@ -56,6 +54,16 @@ export class ShaderService {
         name: 'sky',
         vertexShader: shaders['SKY_VERTEX_SHADER'],
         fragmentShader: shaders['SKY_FRAGMENT_SHADER'],
+      },
+      {
+        name: 'textured_mesh',
+        vertexShader: shaders['TEXTURED_MESH_VERTEX_SHADER'],
+        fragmentShader: shaders['TEXTURED_MESH_FRAGMENT_SHADER'],
+      },
+      {
+        name: 'textured_mesh_instances',
+        vertexShader: shaders['TEXTURED_MESH_INSTANCES_VERTEX_SHADER'],
+        fragmentShader: shaders['TEXTURED_MESH_FRAGMENT_SHADER'],
       },
       {
         name: 'wire',

@@ -16,6 +16,7 @@ import { TerrainModelService } from '../models/terrain-model.service';
 import { UtilityLineRenderingService } from './utility-line-rendering.service';
 import { RiverRenderingService } from './river-rendering.service';
 import { SkyRenderingService } from './sky-rendering.service';
+import { AbutmentRenderingService } from './abutment-rendering.service';
 
 /** Rendering functionality for fly-thrus. */
 @Injectable({ providedIn: 'root' })
@@ -28,6 +29,7 @@ export class RenderingService {
   private controlsOverlay!: OverlayContext;
 
   constructor(
+    private readonly abutmentRenderingService: AbutmentRenderingService,
     private readonly glService: GlService,
     private readonly imageService: ImageService,
     private readonly meshRenderingService: MeshRenderingService,
@@ -53,24 +55,27 @@ export class RenderingService {
 
   /** Prepares for rendering frames before every animation start. */
   public prepareToRender(): void {
+    // Setups needed one time and before the per-design conditions setups.
+    if (!this.prepared) {
+      this.shaderService.prepareShaders(this.glService.gl);
+      this.uniformService.prepareUniforms();
+    }
+
+    // Per-design conditions setups.
     this.setDefaultView();
-    // Rebuild the terrain model every time. Updating would be fragile.
-    // TODO: Save some garbage by rebuilding only when design conditions change.
+    // TODO: Most of these can be done only on design conditions changes.
     this.terrainModelService.initializeForBridge();
     this.meshRenderingService.deleteExistingMesh(this.terrainMesh);
     this.meshRenderingService.deleteExistingMesh(this.roadwayMesh);
     this.terrainMesh = this.meshRenderingService.prepareTerrainMesh(this.terrainModelService.terrainMeshData);
-    this.roadwayMesh = this.meshRenderingService.prepareColoredFacetMesh(this.terrainModelService.roadwayMeshData);
+    this.roadwayMesh = this.meshRenderingService.prepareColoredMesh(this.terrainModelService.roadwayMeshData);
+    this.abutmentRenderingService.prepare();
     this.utilityLineRenderingService.prepare();
 
-    // One-time setups follow.
+    // Other on-time setups follow.
     if (this.prepared) {
       return;
     }
-
-    // Set up shaders.
-    this.shaderService.prepareShaders(this.glService.gl);
-    this.uniformService.prepareUniforms();
 
     // Set up meshes.
     this.riverRenderingService.prepare();
@@ -116,8 +121,9 @@ export class RenderingService {
     this.uniformService.updateTimeUniform(clockMillis);
     this.uniformService.updateLightDirection(this.viewMatrix);
     this.meshRenderingService.renderTerrainMesh(this.terrainMesh);
-    this.meshRenderingService.renderFacetMesh(this.roadwayMesh);
+    this.meshRenderingService.renderColoredMesh(this.roadwayMesh);
     this.riverRenderingService.render(this.viewMatrix, this.projectionMatrix);
+    this.abutmentRenderingService.render(this.viewMatrix, this.projectionMatrix);
     this.truckRenderingService.render(this.viewMatrix, this.projectionMatrix);
     this.utilityLineRenderingService.render(this.viewMatrix, this.projectionMatrix);
     this.skyRenderingService.render(this.viewMatrix, this.projectionMatrix);

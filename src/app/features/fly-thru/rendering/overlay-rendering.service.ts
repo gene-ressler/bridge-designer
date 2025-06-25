@@ -100,6 +100,7 @@ export class OverlayRenderingService {
 
     gl.useProgram(this.shaderService.getProgram('overlay'));
     gl.bindVertexArray(overlayContext.vertexArray);
+    // TODO: Experiment with doing this once, not once per frame. Possible because we have fewer textures than units?
     gl.uniform1i(overlayContext.textureUniformLocation, OVERLAY_TEXTURE_UNIT);
     gl.activeTexture(gl.TEXTURE0 + OVERLAY_TEXTURE_UNIT);
     gl.bindVertexArray(overlayContext.vertexArray);

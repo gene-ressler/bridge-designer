@@ -13,12 +13,12 @@ in vec3 direction;
 out vec4 fragmentColor;
 
 const vec3 WIRE_COLOR = vec3(0.5f, 0.3f, 0.3f);
-const float WIRE_SHININESS = 10.0;
+const float WIRE_SHININESS = 30.0;
 
 void main() {
   vec3 unitDirection = normalize(direction);
   vec3 unitEye = normalize(-vertex);
-  vec3 unitNormal = unitEye - dot(unitEye, unitDirection) * unitDirection;
+  vec3 unitNormal = normalize(unitEye - dot(unitEye, unitDirection) * unitDirection);
   float normalDotLight = dot(unitNormal, light.unitDirection);
   vec3 unitReflection = normalize(2.0f * normalDotLight * unitNormal - light.unitDirection);
   float specularIntensity = pow(max(dot(unitReflection, unitEye), 0.0f), WIRE_SHININESS);
