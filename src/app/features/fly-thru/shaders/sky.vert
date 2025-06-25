@@ -20,5 +20,6 @@ out vec3 texCoord;
 void main() {
   vec4 homogenousPosition = transforms.viewRotationProjection * vec4(inPosition, 1);
   gl_Position = homogenousPosition.xyww; // Clamp z to 1 after perspective division.
+  // Rotate to put the sun in the right place.
   texCoord = vec3(-inPosition.x, inPosition.y, -inPosition.z);
 }

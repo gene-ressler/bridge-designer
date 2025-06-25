@@ -4,6 +4,7 @@ import { BridgeService } from '../../../shared/services/bridge.service';
 import { SiteConstants } from '../../../shared/classes/site.model';
 import { MeshData } from '../rendering/mesh-rendering.service';
 import { Material } from './materials';
+import { mat4, vec3 } from 'gl-matrix';
 
 /** A container for the singleton abutment model. */
 @Injectable({ providedIn: 'root' })
@@ -31,6 +32,8 @@ export class AbutmentModelService {
   private static readonly wearSurfaceHeight = BridgeView.wearSurfaceHeight;
   private static readonly yGorgeBottom = -halfGapWidth * bankSlope;
 */
+  private readonly offset = vec3.create();
+
   constructor(
     private readonly bridgeService: BridgeService,
     private readonly terrainModelService: TerrainModelService,
@@ -52,13 +55,20 @@ export class AbutmentModelService {
     const faceX = SiteConstants.ABUTMENT_FACE_X;
     const insetX = SiteConstants.ABUTMENT_STEP_INSET;
     const deckY = SiteConstants.DECK_HEIGHT;
-    const waterY = this.terrainModelService.getElevationAtIJ(
-      TerrainModelService.HALF_GRID_COUNT,
-      TerrainModelService.HALF_GRID_COUNT,
-    );
+    const halfGridCount = TerrainModelService.HALF_GRID_COUNT;
+    const waterY = this.terrainModelService.getElevationAtIJ(halfGridCount, halfGridCount);
+
+    // Create left and right abutment instance transforms, used by both meshes.
+    const instanceModelTransforms = new Float32Array(2 * 16);
+    const leftModelTransform = instanceModelTransforms.subarray(0, 16);
+    mat4.identity(leftModelTransform);
+    const rightModelTransform = instanceModelTransforms.subarray(16, 32);
+    mat4.fromTranslation(rightModelTransform, vec3.set(this.offset, conditions.spanLength, 0, 0));
+    mat4.rotateY(rightModelTransform, rightModelTransform, Math.PI);
 
     // Use a closure as a namespace.
     const buildTexturedMesh = (): MeshData => {
+
       // Textured mesh
       const indices: number[] = [];
       const positions: number[] = [];
@@ -75,11 +85,7 @@ export class AbutmentModelService {
       // Left bottom of abutment.
       addRearFacePoint(leftX, waterY);
       // Wear surface
-      for (
-        let j = leftIndex, x = leftX;
-        j < TerrainModelService.HALF_GRID_COUNT;
-        ++j, x += TerrainModelService.METERS_PER_GRID
-      ) {
+      for (let j = leftIndex, x = leftX; j < halfGridCount; ++j, x += TerrainModelService.METERS_PER_GRID) {
         if (x >= insetX) {
           addRearFacePoint(insetX, deckY);
           break;
@@ -155,6 +161,7 @@ export class AbutmentModelService {
         positions: new Float32Array(positions),
         normals: new Float32Array(normals),
         texCoords: new Float32Array(texCoords),
+        instanceModelTransforms,
       };
     };
 
@@ -163,7 +170,7 @@ export class AbutmentModelService {
       const positions: number[] = [];
       const normals: number[] = [];
       const materialRefs: number[] = [];
-      const materialRef = Material.CorrogatedMetal; // Concrete-ish.
+      const materialRef = Material.Aluminum; // Concrete-ish.
 
       const addPointPair = (x: number, y: number, nx: number, ny: number): void => {
         positions.push(x, y, -halfWidth, x, y, halfWidth);
@@ -172,11 +179,7 @@ export class AbutmentModelService {
       };
 
       // Shoulders of abutment wear surfaces.
-      for (
-        let j = leftIndex, x = leftX;
-        j < TerrainModelService.HALF_GRID_COUNT;
-        ++j, x += TerrainModelService.METERS_PER_GRID
-      ) {
+      for (let j = leftIndex, x = leftX; j < halfGridCount; ++j, x += TerrainModelService.METERS_PER_GRID) {
         if (x >= insetX) {
           addPointPair(insetX, deckY, 0, 1);
           break;
@@ -224,6 +227,7 @@ export class AbutmentModelService {
         positions: new Float32Array(positions),
         normals: new Float32Array(normals),
         materialRefs: new Uint16Array(materialRefs),
+        instanceModelTransforms,
       };
     };
     return { texturedMeshData: buildTexturedMesh(), coloredMeshData: buildColoredMesh() };
