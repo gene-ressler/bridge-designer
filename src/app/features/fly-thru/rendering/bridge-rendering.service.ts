@@ -3,18 +3,19 @@ import { mat4 } from 'gl-matrix';
 import { Mesh, MeshRenderingService, Wire } from './mesh-rendering.service';
 import { BridgeModelService } from '../models/bridge-model.service';
 import { UniformService } from './uniform.service';
-import { BridgeGussetsModelService } from '../models/bridge-gussets-model.service';
+import { GussetsModelService } from '../models/gussets-model.service';
 
 @Injectable({ providedIn: 'root' })
 export class BridgeRenderingService {
-  private membersMesh!: Mesh;
   private deckBeamMesh!: Mesh;
-  private stiffeningWire!: Wire;
+  private deckSlabMesh!: Mesh;
   private gussetMeshes!: Mesh[];
+  private membersMesh!: Mesh;
   private pinMesh!: Mesh;
+  private stiffeningWire!: Wire;
 
   constructor(
-    private readonly bridgeGussetsModelService: BridgeGussetsModelService,
+    private readonly bridgeGussetsModelService: GussetsModelService,
     private readonly bridgeModelService: BridgeModelService,
     private readonly meshRenderingService: MeshRenderingService,
     private readonly uniformService: UniformService,
@@ -25,6 +26,7 @@ export class BridgeRenderingService {
     const bridgeMeshData = this.bridgeModelService.buildForCurrentAnalysis();
     this.membersMesh = this.meshRenderingService.prepareColoredMesh(bridgeMeshData.memberMeshData);
     this.deckBeamMesh = this.meshRenderingService.prepareColoredMesh(bridgeMeshData.deckBeamMeshData);
+    this.deckSlabMesh = this.meshRenderingService.prepareColoredMesh(bridgeMeshData.deckSlabMeshData);
     this.stiffeningWire = this.meshRenderingService.prepareWire(bridgeMeshData.stiffeningWireData);
     const {gussetMeshData, pinMeshData } = this.bridgeGussetsModelService.meshData;
     this.gussetMeshes = gussetMeshData.map(meshData => this.meshRenderingService.prepareColoredMesh(meshData));
@@ -33,10 +35,12 @@ export class BridgeRenderingService {
 
   public render(viewMatrix: mat4, projectionMatrix: mat4): void {
     this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
+    // Order with meshes most likely to be ocluded last.
+    this.meshRenderingService.renderColoredMesh(this.deckSlabMesh);
     this.meshRenderingService.renderColoredMesh(this.membersMesh);
     this.meshRenderingService.renderColoredMesh(this.deckBeamMesh);
-    this.meshRenderingService.renderWire(this.stiffeningWire);
     this.gussetMeshes.forEach(mesh => this.meshRenderingService.renderColoredMesh(mesh));
+    this.meshRenderingService.renderWire(this.stiffeningWire);
     this.meshRenderingService.renderColoredMesh(this.pinMesh);
   }
 }

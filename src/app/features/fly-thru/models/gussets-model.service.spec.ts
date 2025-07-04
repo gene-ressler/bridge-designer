@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { BridgeGussetsModelService } from './bridge-gussets-model.service';
+import { GussetsModelService } from './gussets-model.service';
 import { BridgeService } from '../../../shared/services/bridge.service';
 import { ConvexHullService } from '../../../shared/services/convex-hull.service';
 import { Joint } from '../../../shared/classes/joint.model';
@@ -7,8 +7,8 @@ import { Member } from '../../../shared/classes/member.model';
 import { Point2DInterface } from '../../../shared/classes/graphics';
 import { projectLocalMatchers } from '../../../shared/test/jasmine-matchers';
 
-describe('BridgeGussetsModelService', () => {
-  let service: BridgeGussetsModelService;
+describe('GussetsModelService', () => {
+  let service: GussetsModelService;
   let bridgeServiceSpy: jasmine.SpyObj<BridgeService>;
 
   const jointA = { x: 0, y: 0, index: 0 } as Joint;
@@ -156,9 +156,9 @@ describe('BridgeGussetsModelService', () => {
     });
 
     TestBed.configureTestingModule({
-      providers: [BridgeGussetsModelService, ConvexHullService, { provide: BridgeService, useValue: bridgeServiceSpy }],
+      providers: [GussetsModelService, ConvexHullService, { provide: BridgeService, useValue: bridgeServiceSpy }],
     });
-    service = TestBed.inject(BridgeGussetsModelService);
+    service = TestBed.inject(GussetsModelService);
   });
 
   it('should be created', () => {

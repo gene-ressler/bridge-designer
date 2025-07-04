@@ -336,6 +336,10 @@ export class BridgeService {
     return SiteConstants.DECK_HALF_WIDTH + this.maxDeckMemberSizeMm * 0.0005 + SiteConstants.GUSSET_THICKNESS;
   }
 
+  public static isJointClearOfRoadway(joint: Point2DInterface) {
+    return joint.y <= 0 || joint.y >= SiteConstants.MIN_ROADWAY_CLEARANCE;
+  }
+
   public get membersNotTransectingRoadwayClearance(): BitVector {
     const bits = new BitVector(this.bridge.members.length);
     const minClearance = SiteConstants.MIN_ROADWAY_CLEARANCE;

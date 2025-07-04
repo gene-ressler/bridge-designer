@@ -86,10 +86,9 @@ export class SiteConstants {
   static readonly ACCESS_SLOPE: number = 1.0 / 6.0;
   static readonly ANCHOR_OFFSET = 8;
   static readonly BEAM_HEIGHT: number = 0.9;
-  static readonly DECK_CANTILEVER: number = 0.32;
+  static readonly DECK_CANTILEVER: number = 0.40;
   static readonly DECK_HALF_WIDTH: number = 5.0;
   static readonly DECK_TOP_HEIGHT: number = 0.8;
-  static readonly DECK_THICKNESS: number = 0.3;
   static readonly DRAWING_X_MARGIN: number = 3;
   /** Coordinate value "off the drawing," where reasonable views are certainly clipped. */
   static readonly FAR_AWAY: number = 100.0;

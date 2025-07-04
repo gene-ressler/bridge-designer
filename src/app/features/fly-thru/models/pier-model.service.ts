@@ -152,7 +152,7 @@ export class PierModelService {
           let ny = btx * ttz - btz * ttx;
           let nz = bty * ttx - btx * tty;
           // scale
-          const s = 1 / Math.sqrt(nx * nx + ny * ny + nz * nz);
+          const s = 1 / Math.hypot(nx, ny, nz);
           nx *= s;
           ny *= s;
           nz *= s;

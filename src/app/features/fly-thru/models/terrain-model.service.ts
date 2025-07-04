@@ -196,10 +196,10 @@ export class TerrainModelService {
         let yw = centerLine[i - 1].elevation - e0;
         let xe = TerrainModelService.METERS_PER_GRID;
         let ye = centerLine[i + 1].elevation - e0;
-        const rw = 1.0 / Math.sqrt(xw * xw + yw * yw);
+        const rw = 1.0 / Math.hypot(xw, yw);
         xw *= rw;
         yw *= rw;
-        const re = 1.0 / Math.sqrt(xe * xe + ye * ye);
+        const re = 1.0 / Math.hypot(xe, ye);
         xe *= re;
         ye *= re;
         // Perpendiculars, which are the normals.
@@ -210,7 +210,7 @@ export class TerrainModelService {
         // Average and re-normalize to unit length.
         let nx = 0.5 * (xnw + xne);
         let ny = 0.5 * (ynw + yne);
-        const rn = 1.0 / Math.sqrt(nx * nx + ny * ny);
+        const rn = 1.0 / Math.hypot(nx, ny);
         nx *= rn;
         ny *= rn;
         centerLine[i].xNormal = nx;
@@ -286,10 +286,11 @@ export class TerrainModelService {
       }
     }
     // Depress the terrain around the anchorages so they don't appear to be buried.
+    // TODO: These don't look good. The anchorage is still buried, and the slopes expose the road edge.
     const yAnchorDepression = (x: number, z: number, xAnchor: number, zAnchor: number): number  => {
       const mPerGrid = TerrainModelService.METERS_PER_GRID;
-      const stepHeight = SiteConstants.ABUTMENT_STEP_HEIGHT;
-      return stepHeight + Math.max(0, Math.abs(x - xAnchor) - mPerGrid, Math.abs(z - zAnchor) - mPerGrid);
+      const dyBottom = SiteConstants.ABUTMENT_STEP_HEIGHT - 0.1;
+      return dyBottom + 2 * Math.max(0, Math.abs(x - xAnchor) - mPerGrid, Math.abs(z - zAnchor) - mPerGrid);
     };
     const trussCenterOffset = this.bridgeService.trussCenterlineOffset;
     const anchorOffset = SiteConstants.ANCHOR_OFFSET;
@@ -405,23 +406,22 @@ export class TerrainModelService {
         let daz = cdz;
 
         // Scale to unit vectors.
-        const pqy2 = pqy * pqy;
-        const abScale = 1 / Math.sqrt(abx * abx + pqy2 + abz * abz);
+        const abScale = 1 / Math.hypot(abx, mPerGrid, abz);
         abx *= abScale;
         aby *= abScale;
         abz *= abScale;
 
-        const bcScale = 1 / Math.sqrt(bcx * bcx + pqy2 + bcz * bcz);
+        const bcScale = 1 / Math.hypot(bcx, mPerGrid, bcz);
         bcx *= bcScale;
         bcy *= bcScale;
         bcz *= bcScale;
 
-        const cdScale = 1 / Math.sqrt(cdx * cdx + pqy2 + cdz * cdz);
+        const cdScale = 1 / Math.hypot(cdx,mPerGrid, cdz);
         cdx *= cdScale;
         cdy *= cdScale;
         cdz *= cdScale;
 
-        const daScale = 1 / Math.sqrt(dax * dax + pqy2 + daz * daz);
+        const daScale = 1 / Math.hypot(dax, mPerGrid, daz);
         dax *= daScale;
         day *= daScale;
         daz *= daScale;
@@ -430,7 +430,7 @@ export class TerrainModelService {
         let nx = abx + bcx + cdx + dax;
         let ny = aby + bcy + cdy + day;
         let nz = abz + bcz + cdz + daz;
-        const nScale = 1 / Math.sqrt(nx * nx + ny * ny + nz * nz);
+        const nScale = 1 / Math.hypot(nx, ny, nz);
 
         normals[ip++] = nScale * nx;
         normals[ip++] = nScale * ny;
@@ -478,10 +478,11 @@ export class TerrainModelService {
     let j = TerrainModelService.HALF_GRID_COUNT;
     for (; j > 0; --j) {
       if (
+        // Fuzzy check because road floats EPS_PAINT above terrain.
         Utility.areNearlyEqual(
           this.roadCenterLine[j].elevation,
           this.getElevationAtIJ(TerrainModelService.HALF_GRID_COUNT, j),
-          2 * TerrainModelService.EPS_PAINT,
+          TerrainModelService.EPS_PAINT + 0.001,
         )
       ) {
         break;

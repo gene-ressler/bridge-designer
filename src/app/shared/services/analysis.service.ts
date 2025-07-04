@@ -174,7 +174,7 @@ export class AnalysisService {
       const b = members[i].b;
       const dx = b.x - a.x;
       const dy = b.y - a.y;
-      length[i] = Utility.hypot(dx, dy);
+      length[i] = Math.hypot(dx, dy);
       cosX[i] = dx / length[i];
       cosY[i] = dy / length[i];
     }

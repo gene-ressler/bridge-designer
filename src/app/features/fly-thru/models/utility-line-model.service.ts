@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { mat4, vec3 } from 'gl-matrix';
 import { TerrainModelService } from './terrain-model.service';
-import { Geometry } from '../../../shared/classes/graphics';
 import { WireData } from '../rendering/mesh-rendering.service';
 
 @Injectable({ providedIn: 'root' })
@@ -10,7 +9,7 @@ export class UtilityLineModelService {
   private static readonly Z_WEST_TOWER = -102;
   private static readonly DX_TOWER = 90;
   private static readonly DZ_TOWER = 70;
-  private static readonly TOWER_DISTANCE = Geometry.vectorLength2D(
+  private static readonly TOWER_DISTANCE = Math.hypot(
     UtilityLineModelService.DX_TOWER,
     UtilityLineModelService.DZ_TOWER,
   );
@@ -76,7 +75,7 @@ export class UtilityLineModelService {
         const dx = x1 - x0!;
         const dy = y1 - y0!;
         const dz = z1 - z0!;
-        const du = Geometry.vectorLength2D(dx, dz);
+        const du = Math.hypot(dx, dz);
         const m = dy / du + UtilityLineModelService.DROOP_SLOPE;
         const a = (dy - m * du) / (du * du);
         // d0 is second previous segment direction, and d1 is the current wrt iWire.
@@ -95,7 +94,7 @@ export class UtilityLineModelService {
             dx1 = positions[ip] - positions[ip - 3];
             dy1 = positions[ip + 1] - positions[ip - 2];
             dz1 = positions[ip + 2] - positions[ip - 1];
-            const s = 1.0 / Math.sqrt(dx1 * dx1 + dy1 * dy1 + dz1 * dz1);
+            const s = 1.0 / Math.hypot(dx1, dy1, dz1);
             dx1 *= s;
             dy1 *= s;
             dz1 *= s;
@@ -107,7 +106,7 @@ export class UtilityLineModelService {
               dirX += dx0!;
               dirY += dy0!;
               dirZ += dz0!;
-              const s = 1.0 / Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+              const s = 1.0 / Math.hypot(dirX, dirY, dirZ);
               dirX *= s;
               dirY *= s;
               dirZ *= s;

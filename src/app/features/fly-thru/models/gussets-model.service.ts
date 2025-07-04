@@ -42,7 +42,7 @@ function buildMemberGeometry(gussetJoint: Joint, member: Member): MemberGeometry
   const vx = otherJoint.x - gussetJoint.x;
   const vy = otherJoint.y - gussetJoint.y;
   const halfSizeM = 0.0005 * member.materialSizeMm + SiteConstants.GUSSET_THICKNESS;
-  const vScale = halfSizeM / Math.sqrt(vx * vx + vy * vy);
+  const vScale = halfSizeM / Math.hypot(vx, vy);
   const ux = vx * vScale;
   const uy = vy * vScale;
   const upx = -uy;
@@ -56,7 +56,7 @@ function buildMemberGeometry(gussetJoint: Joint, member: Member): MemberGeometry
   return { x0, y0, x1, y1, x2, y2, ux, uy, upx, upy, halfSizeM };
 }
 
-type Gusset = {
+type GussetModel = {
   joint: Joint;
   memberGeometries?: MemberGeometry[]; // Temporary accumulator deleted after gusset is complete.
   /** Convex hull with origin at the joint. */
@@ -66,7 +66,7 @@ type Gusset = {
 
 /** Container for logic that builds gussets and pins for the current bridge and converts them to meshes. */
 @Injectable({ providedIn: 'root' })
-export class BridgeGussetsModelService {
+export class GussetsModelService {
   private static readonly PIN_PROTRUSION = 0.08;
 
   private readonly vTmp = vec3.create();
@@ -78,9 +78,9 @@ export class BridgeGussetsModelService {
 
   /** Builds one gusset per joint in the current bridge. */
   // visible-for-testing
-  get gussets(): Gusset[] {
+  get gussets(): GussetModel[] {
     // Make one gusset per joint.
-    const gussets: Gusset[] = this.bridgeService.bridge.joints.map(joint => {
+    const gussets: GussetModel[] = this.bridgeService.bridge.joints.map(joint => {
       return {
         joint,
         memberGeometries: [],
@@ -143,23 +143,31 @@ export class BridgeGussetsModelService {
     return gussets;
   }
 
-  private buildMeshDataForPins(gussets: Gusset[]): MeshData {
+  private buildMeshDataForPins(gussets: GussetModel[]): MeshData {
     const centerOffset = this.bridgeService.trussCenterlineOffset;
     const joints = this.bridgeService.bridge.joints;
-    const modelTransforms = new Float32Array(joints.length * 16);
-    for (let i = 0, offset = 0; i < joints.length; ++i, offset += 16) {
+    const nonInterferingJointCount = joints.reduce<number>(
+      (count, joint) => (BridgeService.isJointClearOfRoadway(joint) ? count + 1 : count),
+      0,
+    );
+    const modelTransforms = new Float32Array(nonInterferingJointCount * 16);
+    for (let i = 0, offset = 0; i < joints.length; ++i) {
       const gusset = gussets[i];
-      const halfLength = centerOffset + gusset.halfDepthM + BridgeGussetsModelService.PIN_PROTRUSION;
+      if (!BridgeService.isJointClearOfRoadway(gusset.joint)) {
+        continue;
+      }
+      const halfLength = centerOffset + gusset.halfDepthM + GussetsModelService.PIN_PROTRUSION;
       const m = modelTransforms.subarray(offset, offset + 16);
+      offset += 16;
       mat4.fromTranslation(m, vec3.set(this.vTmp, gusset.joint.x, gusset.joint.y, 0));
-      mat4.scale(m, m, vec3.set(this.vTmp, 1, 1, halfLength));
+      mat4.scale(m, m, vec3.set(this.vTmp, 0.6, 0.6, halfLength));
     }
     return { instanceModelTransforms: modelTransforms, ...TRUSS_PIN_MESH_DATA };
   }
 
   /** Builds colored mesh data with two instance positioning matrices, back and front. */
   // visible-for-testing
-  buildMeshDataForGusset(gusset: Gusset): MeshData {
+  buildMeshDataForGusset(gusset: GussetModel): MeshData {
     const hullLength = gusset.hull.length;
     const positionCount = 6 * hullLength + 2;
     const positions = new Float32Array(positionCount * 3);
@@ -178,7 +186,7 @@ export class BridgeGussetsModelService {
       // Negative perp of hull edge vector.
       let dx = pp.y - pq.y;
       let dy = pq.x - pp.x;
-      const s = 1 / Math.sqrt(dx * dx + dy * dy);
+      const s = 1 / Math.hypot(dx, dy);
       dx *= s;
       dy *= s;
       // Quad between previous and current hull point.

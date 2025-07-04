@@ -306,7 +306,7 @@ export class Geometry {
   }
 
   public static length2D(v: Vector2DInterface): number {
-    return Math.sqrt(Geometry.dot2D(v, v));
+    return Math.hypot(v.x, v.y);
   }
 
   public static areColocated2D(a: Point2DInterface, b: Point2DInterface, toleranceSquared: number = 0): boolean {
@@ -325,15 +325,11 @@ export class Geometry {
   }
 
   public static distance2DPoints(a: Point2DInterface, b: Point2DInterface): number {
-    return Math.sqrt(this.distanceSquared2DPoints(a, b));
+    return Math.hypot(b.x - a.x, b.y - a.y);
   }
 
   public static distance2D(ax: number, ay: number, bx: number, by: number): number {
-    return Math.sqrt(this.distanceSquared2D(ax, ay, bx, by));
-  }
-
-  public static vectorLength2D(dx: number, dy: number): number {
-    return Math.sqrt(dx * dx + dy * dy);
+    return Math.hypot(bx - ax, by - ay);
   }
 
   public static pointSegmentDistance2DPoints(p: Point2DInterface, a: Point2DInterface, b: Point2DInterface): number {
@@ -350,12 +346,12 @@ export class Geometry {
     const ux = px - ax;
     const uy = py - ay;
     if (ux * vx + uy * vy <= 0) {
-      return Math.sqrt(ux * ux + uy * uy);
+      return Math.hypot(ux, uy);
     }
     const wx = px - bx;
     const wy = py - by;
     if (wx * vx + wy * vy >= 0) {
-      return Math.sqrt(wx * wx + wy * wy);
+      return Math.hypot(wx, wy);
     }
     return Math.abs(uy * vx - ux * vy) / Math.sqrt(vDotV);
   }
@@ -510,10 +506,10 @@ export class Geometry {
   }
 
   /** Glmatrix operation adapted to accept direction vector rather than angle. */
-  public static rotateX(out: mat4, a: ReadonlyMat4, dy: number, dx: number): mat4 {
-    const scale = 1 / Geometry.vectorLength2D(dx, dy);
-    const c = scale * dx;
-    const s = scale * dy;
+  public static rotateX(out: mat4, a: ReadonlyMat4, sinTheta: number, cosTheta: number): mat4 {
+    const scale = 1 / Math.hypot(cosTheta, sinTheta);
+    const c = scale * cosTheta;
+    const s = scale * sinTheta;
     const a00 = a[0];
     const a01 = a[1];
     const a02 = a[2];
@@ -522,6 +518,42 @@ export class Geometry {
     const a11 = a[5];
     const a12 = a[6];
     const a13 = a[7];
+    if (a !== out) {
+      // If the source and destination differ, copy the unchanged last row
+      out[8] = a[8];
+      out[9] = a[9];
+      out[10] = a[10];
+      out[11] = a[11];
+      out[12] = a[12];
+      out[13] = a[13];
+      out[14] = a[14];
+      out[15] = a[15];
+    }
+    // Perform axis-specific matrix multiplication
+    out[0] = a00 * c + a10 * s;
+    out[1] = a01 * c + a11 * s;
+    out[2] = a02 * c + a12 * s;
+    out[3] = a03 * c + a13 * s;
+    out[4] = a10 * c - a00 * s;
+    out[5] = a11 * c - a01 * s;
+    out[6] = a12 * c - a02 * s;
+    out[7] = a13 * c - a03 * s;
+    return out;
+  }
+
+  /** Glmatrix operation adapted to accept direction vector rather than angle. */
+  public static rotateZ(out: mat4, a: ReadonlyMat4, sinTheta: number, cosTheta: number) {
+    const scale = 1 / Math.hypot(cosTheta, sinTheta);
+    const c = scale * cosTheta;
+    const s = scale * sinTheta;
+    let a00 = a[0];
+    let a01 = a[1];
+    let a02 = a[2];
+    let a03 = a[3];
+    let a10 = a[4];
+    let a11 = a[5];
+    let a12 = a[6];
+    let a13 = a[7];
     if (a !== out) {
       // If the source and destination differ, copy the unchanged last row
       out[8] = a[8];
@@ -608,7 +640,7 @@ export class Graphics {
     if (dx === 0 && dy === 0) {
       return;
     }
-    const len = Math.sqrt(dx * dx + dy * dy);
+    const len = Math.hypot(dx, dy);
     const ux = dx / len;
     const uy = dy / len;
     const bx = x1 - ux * length;

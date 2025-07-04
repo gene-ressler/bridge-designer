@@ -30,11 +30,6 @@ export class Utility {
     return Utility.sqr(Utility.sqr(x));
   }
 
-  /** Like Math.hypot(), but doesn't cover edge cases and runs much faster on some browsers.  */
-  public static hypot(x: number, y: number): number {
-    return Math.sqrt(x * x + y * y);
-  }
-
   /**
    * Returns whether a given number lies in a given closed range [a,b] or [b,a].
    * I.e., the order of bounds doesn't matter.

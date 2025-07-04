@@ -7,10 +7,12 @@ import { Material } from './materials';
 import { BitVector } from '../../../shared/core/bitvector';
 import { SiteConstants } from '../../../shared/classes/site.model';
 import { DECK_BEAM_MESH_DATA } from './deck-beam';
+import { DECK_SLAB_MESH_DATA } from './deck-slab';
 
 export type BridgeMeshData = {
   memberMeshData: MeshData;
   deckBeamMeshData: MeshData;
+  deckSlabMeshData: MeshData;
   stiffeningWireData: WireData;
   trussCenterlineOffset: number;
   membersNotTransectingRoadwayClearance: BitVector;
@@ -135,6 +137,10 @@ export class BridgeModelService {
         instanceModelTransforms: this.getDeckBeamInstanceModelTransforms(),
         ...DECK_BEAM_MESH_DATA,
       },
+      deckSlabMeshData: {
+        instanceModelTransforms: this.getDeckSlabInstanceModelTransforms(),
+        ...DECK_SLAB_MESH_DATA,
+      },
       stiffeningWireData: {
         positions: BridgeModelService.WIRE_POSITIONS,
         directions: BridgeModelService.WIRE_DIRECTIONS,
@@ -160,6 +166,47 @@ export class BridgeModelService {
     );
   }
 
+  private getDeckBeamInstanceModelTransforms(): Float32Array {
+    const joints = this.bridgeService.bridge.joints;
+    const deckJointCount = this.bridgeService.designConditions.loadedJointCount;
+    const modelTransforms = new Float32Array(deckJointCount * 16);
+    const halfWidth = BridgeModelService.DECK_BEAM_HALF_WIDTH;
+    const height = SiteConstants.DECK_TOP_HEIGHT - this.bridgeService.designConditions.deckThickness;
+    for (let i = 0, offset = 0; i < deckJointCount; ++i, offset += 16) {
+      const joint = joints[i];
+      const m = modelTransforms.subarray(offset, offset + 16);
+      mat4.fromTranslation(m, vec3.set(this.vTmp, joint.x, joint.y, 0));
+      mat4.scale(m, m, vec3.set(this.vTmp, halfWidth, height, SiteConstants.DECK_HALF_WIDTH));
+    }
+    return modelTransforms;
+  }
+
+  private getDeckSlabInstanceModelTransforms(): Float32Array {
+    const joints = this.bridgeService.bridge.joints;
+    const slabCount = this.bridgeService.designConditions.panelCount;
+    const modelTransforms = new Float32Array(slabCount * 16);
+    const maxSlabIndex = slabCount - 1;
+    const thickness = this.bridgeService.designConditions.deckThickness;
+    const heightAboveJoint = SiteConstants.DECK_TOP_HEIGHT - this.bridgeService.designConditions.deckThickness;
+    for (let i = 0, offset = 0; i <= maxSlabIndex; ++i, offset += 16) {
+      const jointA = joints[i];
+      const jointB = joints[i + 1];
+      const memberLength = Geometry.distance2DPoints(jointA, jointB);
+      const dx = jointB.x - jointA.x;
+      const dy = jointB.y - jointA.y;
+      const m = modelTransforms.subarray(offset, offset + 16);
+      const length = i === 0 || i === maxSlabIndex ? memberLength + SiteConstants.DECK_CANTILEVER : memberLength;
+      mat4.fromTranslation(m, vec3.set(this.vTmp, jointA.x, jointA.y + heightAboveJoint, 0));
+      Geometry.rotateZ(m, m, dy, dx);
+      // Extra shift left for first slab so that extra length rotates around the left joint
+      if (i === 0) {
+        mat4.translate(m, m, vec3.set(this.vTmp, -SiteConstants.DECK_CANTILEVER, 0, 0));
+      }
+      mat4.scale(m, m, vec3.set(this.vTmp, length, thickness, SiteConstants.DECK_HALF_WIDTH));
+    }
+    return modelTransforms;
+  }
+
   private getMemberInstanceModelTransforms(trussCenterlineOffset: number): Float32Array {
     const members = this.bridgeService.bridge.members;
     const modelTransforms = new Float32Array(members.length * 32);
@@ -178,24 +225,6 @@ export class BridgeModelService {
       const mRear = modelTransforms.subarray(offset + 16, offset + 32);
       mat4.copy(mRear, this.mTmp);
       mRear[14] -= trussCenterlineOffset;
-    }
-    return modelTransforms;
-  }
-
-  private getDeckBeamInstanceModelTransforms(): Float32Array {
-    const joints = this.bridgeService.bridge.joints;
-    const deckJointCount = this.bridgeService.designConditions.loadedJointCount;
-    const modelTransforms = new Float32Array(deckJointCount * 16);
-    const beamHeight = SiteConstants.DECK_TOP_HEIGHT - SiteConstants.DECK_THICKNESS;
-    for (let i = 0, offset = 0; i < deckJointCount; ++i, offset += 16) {
-      const joint = joints[i];
-      const m = modelTransforms.subarray(offset, offset + 16);
-      mat4.fromTranslation(m, vec3.set(this.vTmp, joint.x, joint.y, 0));
-      mat4.scale(
-        m,
-        m,
-        vec3.set(this.vTmp, BridgeModelService.DECK_BEAM_HALF_WIDTH, beamHeight, SiteConstants.DECK_HALF_WIDTH),
-      );
     }
     return modelTransforms;
   }
