@@ -10,10 +10,6 @@ import { Geometry } from '../../../shared/classes/graphics';
 
 @Injectable({ providedIn: 'root' })
 export class TruckRenderingService {
-  public readonly position: vec3 = vec3.create();
-  public readonly bodyRotation: number = 0;
-  public readonly wheelRotation: number = 0;
-
   private readonly offset = vec3.create();
   private bodyMesh!: Mesh;
   private wheelMesh!: Mesh;
@@ -35,10 +31,12 @@ export class TruckRenderingService {
     let m: mat4;
 
     m = this.uniformService.pushModelMatrix();
-    const position = this.simlulationStateService.wayPoint;
-    const rotation = this.simlulationStateService.rotation;
-    mat4.translate(m, m, vec3.set(this.offset, position[0], position[1], 0));
-    Geometry.rotateZ(m, m, rotation[1], rotation[0]);
+    const loadPosition = this.simlulationStateService.wayPoint;
+    const loadRotation = this.simlulationStateService.rotation;
+    mat4.translate(m, m, vec3.set(this.offset, loadPosition[0], loadPosition[1], 0));
+    Geometry.rotateZ(m, m, loadRotation[1], loadRotation[0]);
+    // Tire diameter is 1. A rotation through 2pi radians covers distance pi.
+    const wheelRotation = -2 * loadPosition[0];
 
     const wheelbaseOffset = -4;
 
@@ -46,7 +44,7 @@ export class TruckRenderingService {
     m = this.uniformService.pushModelMatrix();
 
     mat4.translate(m, m, vec3.set(this.offset, 0, 0.5, 0.95));
-    mat4.rotateZ(m, m, -this.wheelRotation);
+    mat4.rotateZ(m, m, wheelRotation);
     this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
     this.meshRenderingService.renderColoredMesh(this.wheelMesh);
 
@@ -56,7 +54,7 @@ export class TruckRenderingService {
     m = this.uniformService.pushModelMatrix();
 
     mat4.translate(m, m, vec3.set(this.offset, wheelbaseOffset, 0.5, 1.05));
-    mat4.rotateZ(m, m, -this.wheelRotation);
+    mat4.rotateZ(m, m, wheelRotation);
     this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
     this.meshRenderingService.renderColoredMesh(this.dualWheelMesh);
 
@@ -67,7 +65,7 @@ export class TruckRenderingService {
 
     mat4.translate(m, m, vec3.set(this.offset, 0, 0.5, -0.95));
     mat4.rotateX(m, m, Math.PI);
-    mat4.rotateZ(m, m, -this.wheelRotation);
+    mat4.rotateZ(m, m, wheelRotation);
     this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
     this.meshRenderingService.renderColoredMesh(this.wheelMesh);
 
@@ -78,7 +76,7 @@ export class TruckRenderingService {
 
     mat4.translate(m, m, vec3.set(this.offset, wheelbaseOffset, 0.5, -1.05));
     mat4.rotateX(m, m, Math.PI);
-    mat4.rotateZ(m, m, -this.wheelRotation);
+    mat4.rotateZ(m, m, wheelRotation);
     this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
     this.meshRenderingService.renderColoredMesh(this.dualWheelMesh);
 
