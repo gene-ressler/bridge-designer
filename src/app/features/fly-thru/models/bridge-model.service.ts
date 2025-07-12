@@ -270,7 +270,7 @@ export class BridgeModelService {
       0,
     );
     out ||= new Float32Array(nonInterferingJointCount * 16);
-    for (let i = 0, offset = 0; i < joints.length; ++i, offset += 16) {
+    for (let i = 0, offset = 0; i < joints.length; ++i) {
       const gusset = gussets[i];
       if (!BridgeService.isJointClearOfRoadway(gusset.joint)) {
         continue;
@@ -280,6 +280,7 @@ export class BridgeModelService {
       const jointY = jointLocations[i2 + 1];
       const halfLength = centerOffset + gusset.halfDepthM + BridgeModelService.PIN_PROTRUSION;
       const m = out.subarray(offset, offset + 16);
+      offset += 16;
       mat4.fromTranslation(m, vec3.set(this.vTmp, jointX, jointY, 0));
       mat4.scale(m, m, vec3.set(this.vTmp, 0.6, 0.6, halfLength));
     }
