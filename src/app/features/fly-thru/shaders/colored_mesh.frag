@@ -16,8 +16,9 @@ struct MaterialSpec {
 };
 
 layout(std140) uniform MaterialConfig {
+  float globalAlpha;
   MaterialSpec specs[11];
-} material;
+} materialConfig;
 
 in vec3 vertex;
 in vec3 normal;
@@ -29,10 +30,10 @@ void main() {
   float normalDotLight = dot(unitNormal, light.unitDirection);
   vec3 unitReflection = normalize(2.0f * normalDotLight * unitNormal - light.unitDirection);
   vec3 unitEye = normalize(-vertex);
-  MaterialSpec materal = material.specs[materialRef];
-  float specularIntensity = pow(max(dot(unitReflection, unitEye), 0.0f), materal.SHININESS);
+  MaterialSpec materialSpec = materialConfig.specs[materialRef];
+  float specularIntensity = pow(max(dot(unitReflection, unitEye), 0.0f), materialSpec.SHININESS);
   vec3 specularColor = specularIntensity * light.color;
   float diffuseIntensity = (1.0f - light.ambientIntensity) * clamp(normalDotLight, 0.0f, 1.0f) + light.ambientIntensity;
-  vec3 diffuseColor = diffuseIntensity * materal.COLOR * light.color * (1.0 - specularIntensity);
-  fragmentColor = vec4(specularColor + diffuseColor, 1.0f);
+  vec3 diffuseColor = diffuseIntensity * materialSpec.COLOR * light.color * (1.0f - specularIntensity);
+  fragmentColor = vec4(specularColor + diffuseColor, materialConfig.globalAlpha);
 }

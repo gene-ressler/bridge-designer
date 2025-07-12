@@ -27,7 +27,8 @@ float ambientIntensity;}light;
 struct MaterialSpec{
 vec4 spec;};
 layout(std140)uniform MaterialConfig{
-MaterialSpec specs[11];}material;
+float globalAlpha;
+MaterialSpec specs[11];}materialConfig;
 in vec3 vertex;
 in vec3 normal;
 flat in uint materialRef;
@@ -37,12 +38,12 @@ vec3 unitNormal=normalize(normal);
 float normalDotLight=dot(unitNormal,light.unitDirection);
 vec3 unitReflection=normalize(2.0f*normalDotLight*unitNormal-light.unitDirection);
 vec3 unitEye=normalize(-vertex);
-MaterialSpec materal=material.specs[materialRef];
-float specularIntensity=pow(max(dot(unitReflection,unitEye),0.0f),materal.spec.w);
+MaterialSpec materialSpec=materialConfig.specs[materialRef];
+float specularIntensity=pow(max(dot(unitReflection,unitEye),0.0f),materialSpec.spec.w);
 vec3 specularColor=specularIntensity*light.color;
 float diffuseIntensity=(1.0f-light.ambientIntensity)*clamp(normalDotLight,0.0f,1.0f)+light.ambientIntensity;
-vec3 diffuseColor=diffuseIntensity*materal.spec.xyz*light.color*(1.0-specularIntensity);
-fragmentColor=vec4(specularColor+diffuseColor,1.0f);}`;
+vec3 diffuseColor=diffuseIntensity*materialSpec.spec.xyz*light.color*(1.0f-specularIntensity);
+fragmentColor=vec4(specularColor+diffuseColor,materialConfig.globalAlpha);}`;
 
 export const COLORED_MESH_INSTANCES_VERTEX_SHADER = 
 `#version 300 es

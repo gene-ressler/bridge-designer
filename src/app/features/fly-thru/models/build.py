@@ -47,6 +47,8 @@ class MaterialsLibrary:
     def emit(self):
         with open(Path(self.file_name).with_suffix(".ts").name, "w") as out_file:
             print("export const MATERIAL_CONFIG = new Float32Array([", file=out_file)
+            print("  // Global alpha and padding", file=out_file)
+            print("  1.0, 0, 0, 0,", file=out_file)
             for name, material in self.materials.items():
                 kd = material["kd"]
                 ns = material["ns"]

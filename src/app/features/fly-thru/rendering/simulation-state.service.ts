@@ -10,9 +10,9 @@ import { DesignConditions } from '../../../shared/services/design-conditions.ser
 const enum SimulationPhase {
   UNSTARTED,
   DEAD_LOADING,
-  MATERIALIZING,
+  FADING_IN,
   TRAVERSING,
-  DEMATERIALIZING,
+  FADING_OUT,
   FAILING,
 }
 
@@ -20,13 +20,13 @@ const enum SimulationPhase {
 @Injectable({ providedIn: 'root' })
 export class SimulationStateService {
   /** Load progress parameter starting value. Roughly 16 meters left of the deck. */
-  private static readonly START_PARAMETER = -24;
+  private static readonly START_PARAMETER = -16;
   private static readonly END_PARAMETER_PAST_SPAN =
     DesignConditions.PANEL_SIZE_WORLD - SimulationStateService.START_PARAMETER;
 
   /** Duration of the dead loading phase. */
   private static readonly INV_DEAD_LOADING_MILLIS = 1 / 1200;
-  /** DUration of the materializing and dematerializing phases. */
+  /** Duration of the materializing and dematerializing phases. */
   private static readonly INV_MATERIALIZING_MILLIS = 1 / 800;
 
   public readonly wayPoint = vec2.create();
@@ -87,13 +87,13 @@ export class SimulationStateService {
       case SimulationPhase.DEAD_LOADING:
         const t = (clockMillis - this.phaseStartClockMillis) * SimulationStateService.INV_DEAD_LOADING_MILLIS;
         if (t > 1) {
-          this.phase = SimulationPhase.MATERIALIZING;
+          this.phase = SimulationPhase.FADING_IN;
           this.phaseStartClockMillis = clockMillis;
           return this.advance(clockMillis);
         }
         this.deadLoadingInterpolator.withParameter(t);
         break;
-      case SimulationPhase.MATERIALIZING:
+      case SimulationPhase.FADING_IN:
         const loadAlpha = (clockMillis - this.phaseStartClockMillis) * SimulationStateService.INV_MATERIALIZING_MILLIS;
         if (loadAlpha > 1) {
           this.loadAlpha = 1;
@@ -108,22 +108,22 @@ export class SimulationStateService {
         {
           const remainingTraverseMillis =
             (this.endParameter - this.traversingInterpolator.parameter) * this.parameterService.elapsedMillisPerMeter;
-          if (remainingTraverseMillis < SimulationStateService.INV_MATERIALIZING_MILLIS) {
-            this.phase = SimulationPhase.DEMATERIALIZING;
+          if (remainingTraverseMillis * SimulationStateService.INV_MATERIALIZING_MILLIS < 1) {
+            this.phase = SimulationPhase.FADING_OUT;
             // Don't reset the clock.
             return this.advance(clockMillis);
           }
           this.advanceLoad(clockMillis);
         }
         break;
-      case SimulationPhase.DEMATERIALIZING:
+      case SimulationPhase.FADING_OUT:
         {
           const remainingTraverseMillis =
             (this.endParameter - this.traversingInterpolator.parameter) * this.parameterService.elapsedMillisPerMeter;
           if (remainingTraverseMillis < 0) {
             this.loadAlpha = 0;
             this.phaseStartClockMillis = clockMillis;
-            this.phase = SimulationPhase.MATERIALIZING;
+            this.phase = SimulationPhase.FADING_IN;
             return this.advance(clockMillis);
           }
           this.loadAlpha = remainingTraverseMillis * SimulationStateService.INV_MATERIALIZING_MILLIS;

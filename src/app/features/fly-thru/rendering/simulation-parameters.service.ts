@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 export class SimulationParametersService {
   private static readonly KM_PER_HOUR_TO_M_PER_MILLI = 1 / 3600;
 
-  public exaggeration: number = 1;
+  public exaggeration: number = 10;
   public speedMetersPerMilli: number = 15 * SimulationParametersService.KM_PER_HOUR_TO_M_PER_MILLI;
   public elapsedMillisPerMeter: number = 1 / (15 * SimulationParametersService.KM_PER_HOUR_TO_M_PER_MILLI);
 

@@ -21,10 +21,11 @@ export class UniformService {
   /** Homogeneous light vector (w == 0). */
   public static UNIT_LIGHT_DIRECTION = vec4.fromValues(0.0572181596, 0.68661791522, 0.72476335496, 0);
   private lightConfigBuffer!: WebGLBuffer;
+  private materialConfigBuffer!: WebGLBuffer;
   private overlayBuffer!: WebGLBuffer;
+  private skyboxTransformsBuffer!: WebGLBuffer;
   private timeBuffer!: WebGLBuffer;
   private transformsBuffer!: WebGLBuffer;
-  private skyboxTransformsBuffer!: WebGLBuffer;
   private modelTransformStackPointer: number = 0;
   /** Preallocated model transform stack. Typed array creation is slow. */
   private readonly modelTransformStack = [mat4.create(), mat4.create(), mat4.create(), mat4.create()];
@@ -108,7 +109,7 @@ export class UniformService {
     );
     gl.bufferData(gl.UNIFORM_BUFFER, this.lightConfig.buffer.byteLength, gl.STATIC_DRAW);
 
-    this.setUpUniformBlock(
+    this.materialConfigBuffer = this.setUpUniformBlock(
       [facetMeshProgram, facetMeshInstancesProgram],
       'MaterialConfig',
       MATERIAL_CONFIG_UBO_BINDING_INDEX,
@@ -143,6 +144,14 @@ export class UniformService {
       throw new Error('Model transform stack underflow');
     }
     --this.modelTransformStackPointer;
+  }
+
+  /** Updates the value of global alpha. gl.BLEND must be enabled. Used e.g. by the colored mesh shader. */
+  public updateGlobalAlpha(globalAlpha: number): void {
+    const gl = this.glService.gl;
+    gl.bindBuffer(gl.UNIFORM_BUFFER, this.materialConfigBuffer);
+    MATERIAL_CONFIG[0] = globalAlpha;
+    gl.bufferSubData(gl.UNIFORM_BUFFER, 0, MATERIAL_CONFIG, 0, 4);
   }
 
   /** Updates the shader transforms uniform with current model matrix and given view and projection matrices. */

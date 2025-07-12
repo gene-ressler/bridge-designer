@@ -7,6 +7,7 @@ import { WHEEL_MESH_DATA } from '../models/wheel';
 import { UniformService } from './uniform.service';
 import { SimulationStateService } from './simulation-state.service';
 import { Geometry } from '../../../shared/classes/graphics';
+import { GlService } from './gl.service';
 
 @Injectable({ providedIn: 'root' })
 export class TruckRenderingService {
@@ -16,8 +17,9 @@ export class TruckRenderingService {
   private dualWheelMesh!: Mesh;
 
   constructor(
+    private readonly glService: GlService,
     private readonly meshRenderingService: MeshRenderingService,
-    private readonly simlulationStateService: SimulationStateService,
+    private readonly simulationStateService: SimulationStateService,
     private readonly uniformService: UniformService,
   ) {}
 
@@ -30,13 +32,22 @@ export class TruckRenderingService {
   public render(viewMatrix: mat4, projectionMatrix: mat4): void {
     let m: mat4;
 
+    // Blend for fade in/out effect if needed.
+    const gl = this.glService.gl;
+    const alpha = this.simulationStateService.loadAlpha;
+    if (alpha < 1) {
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      this.uniformService.updateGlobalAlpha(alpha);
+    }
+
     m = this.uniformService.pushModelMatrix();
-    const loadPosition = this.simlulationStateService.wayPoint;
-    const loadRotation = this.simlulationStateService.rotation;
-    mat4.translate(m, m, vec3.set(this.offset, loadPosition[0], loadPosition[1], 0));
-    Geometry.rotateZ(m, m, loadRotation[1], loadRotation[0]);
+    const truckPosition = this.simulationStateService.wayPoint;
+    const truckRotation = this.simulationStateService.rotation;
+    mat4.translate(m, m, vec3.set(this.offset, truckPosition[0], truckPosition[1], 0));
+    Geometry.rotateZ(m, m, truckRotation[1], truckRotation[0]);
     // Tire diameter is 1. A rotation through 2pi radians covers distance pi.
-    const wheelRotation = -2 * loadPosition[0];
+    const wheelRotation = -2 * truckPosition[0];
 
     const wheelbaseOffset = -4;
 
@@ -87,5 +98,9 @@ export class TruckRenderingService {
     this.meshRenderingService.renderColoredMesh(this.bodyMesh);
 
     this.uniformService.popModelMatrix();
+
+    if (alpha < 1) {
+      gl.disable(gl.BLEND);
+    }
   }
 }

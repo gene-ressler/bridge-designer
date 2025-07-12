@@ -1,4 +1,6 @@
 export const MATERIAL_CONFIG = new Float32Array([
+  // Global alpha and padding
+  1.0, 0, 0, 0,
 
   // 0: DarkGreenPaintedMetal
   0.2, 0.6, 0.2, // diffuse rgb

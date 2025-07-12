@@ -54,6 +54,7 @@ export class Interpolator {
     } else {
       this.getDisplacedJointLocation(this.tmpJointA, ctx.leftLoadCase, ctx);
       this.getDisplacedJointLocation(this.tmpJointB, ctx.leftLoadCase + 1, ctx);
+      // TODO: Use vec2.lerp.
       intepolateVec2(out, this.tmpJointA, this.tmpJointB, ctx.tPanel);
       // Offset result by deck height along the member perpendicular.
       const diff = this.tmpDiff;
@@ -85,7 +86,7 @@ export class Interpolator {
     const hiLimit = target + eps2;
     const loLimit = target - eps2;
     // Bail at a fixed limit for safety e.g. for elevation discontinuities at bridge ends, where no solution may exist.
-    for (let i = 0; i < 10; ++i) {
+    for (let i = 0; i < 20; ++i) {
       const t = (t0 + t1) * 0.5;
       this.getContext(this.tmpContext, t);
       this.getWayPoint(rear, this.tmpContext);
@@ -102,13 +103,32 @@ export class Interpolator {
     vec2.normalize(rotation, rotation);
   }
 
-  /** Returns the interpolated displaced joint location for the current parameter. */
+  /**
+   *  Returns the interpolated displaced joint location for given joint index and, by default, the current parameter.
+   * An alternate context is optional.
+   */
   public getDisplacedJointLocation(pt: vec2, index: number, ctx: InterpolatorContext = this.ctx): vec2 {
     this.getJointDisplacement(pt, index, ctx);
     const joint = this.service.bridgeService.bridge.joints[index];
     pt[0] += joint.x;
     pt[1] += joint.y;
     return pt;
+  }
+
+  /** Returns the interpolated displaced joint location for the current parameter. */
+  public getAllDisplacedJointLocations(
+    out: Float32Array,
+    ctx: InterpolatorContext = this.ctx,
+  ): Float32Array {
+    const joints = this.service.bridgeService.bridge.joints;
+    let i2 = 0;
+    for (const joint of joints) {
+      const v = this.getJointDisplacement(this.tmpJointA, joint.index, ctx);
+      out[i2] = v[0] + joint.x;
+      out[i2 + 1] = v[1] + joint.y;
+      i2 += 2;
+    }
+    return out;
   }
 
   /** Returns the interpolated joint displacement for the given parameter. */
@@ -239,11 +259,11 @@ export class InterpolationService {
    */
   public createBiInterpolator(sourceA: InterpolationSource, sourceB: InterpolationSource, t: number): Interpolator {
     const biSource = new BiInterpolationSource(sourceA, sourceB);
-    const interpolator = this.createInterpolator(biSource).withParameter(t);
+    const interpolator = this.createInterpolator(biSource);
     // Monkey patch the interpolator's parameter setter to operate on the bi-source.
     interpolator.withParameter = tSource => {
       biSource.withParameter(tSource);
-      // Bridge deck limits were probably affected by underlying source change.
+      // Lazily set or restore the context. Bridge deck limits were probably affected by underlying source change.
       return interpolator.refreshContext(t);
     };
     return interpolator;
