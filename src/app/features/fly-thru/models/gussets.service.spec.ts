@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { GussetsModelService } from './gussets-model.service';
+import { GussetsService } from './gussets.service';
 import { BridgeService } from '../../../shared/services/bridge.service';
 import { ConvexHullService } from '../../../shared/services/convex-hull.service';
 import { Joint } from '../../../shared/classes/joint.model';
@@ -8,7 +8,7 @@ import { Point2DInterface } from '../../../shared/classes/graphics';
 import { projectLocalMatchers } from '../../../shared/test/jasmine-matchers';
 
 describe('GussetsModelService', () => {
-  let service: GussetsModelService;
+  let service: GussetsService;
   let bridgeServiceSpy: jasmine.SpyObj<BridgeService>;
 
   const jointA = { x: 0, y: 0, index: 0 } as Joint;
@@ -156,9 +156,9 @@ describe('GussetsModelService', () => {
     });
 
     TestBed.configureTestingModule({
-      providers: [GussetsModelService, ConvexHullService, { provide: BridgeService, useValue: bridgeServiceSpy }],
+      providers: [GussetsService, ConvexHullService, { provide: BridgeService, useValue: bridgeServiceSpy }],
     });
-    service = TestBed.inject(GussetsModelService);
+    service = TestBed.inject(GussetsService);
   });
 
   it('should be created', () => {

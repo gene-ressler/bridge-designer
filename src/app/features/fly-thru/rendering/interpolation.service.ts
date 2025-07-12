@@ -165,7 +165,7 @@ export class Interpolator {
     const leftLoadCase = Math.trunc(tBridge);
     const tPanel = tBridge - leftLoadCase;
     let rightLoadCase = leftLoadCase + 1;
-    if (rightLoadCase >= this.service.bridgeService.designConditions.loadedJointCount) {
+    if (rightLoadCase >= panelIndexMax) {
       rightLoadCase = 0; // Off deck to the right: dead load only.
     }
     ctx.t = t;

@@ -11,12 +11,19 @@ import { DECK_SLAB_MESH_DATA } from './deck-slab';
 import { DesignConditions } from '../../../shared/services/design-conditions.service';
 import { SimulationStateService } from '../rendering/simulation-state.service';
 import { GlService } from '../rendering/gl.service';
+import { GussetModel as Gusset, GussetsService } from './gussets.service';
+import { TRUSS_PIN_MESH_DATA } from './truss-pin';
+import { MEMBER_MESH_DATA } from './member';
 
+// TODO: We could probably do with something lighter weight than full gussets.
 export type BridgeMeshData = {
   memberMeshData: MeshData;
   deckBeamMeshData: MeshData;
   deckSlabMeshData: MeshData;
+  gussetMeshData: MeshData[];
+  pinMeshData: MeshData;
   stiffeningWireData: WireData;
+  gussets: Gusset[];
   trussCenterlineOffset: number;
   membersNotTransectingRoadwayClearance: BitVector;
 };
@@ -25,71 +32,7 @@ export type BridgeMeshData = {
 @Injectable({ providedIn: 'root' })
 export class BridgeModelService {
   private static readonly DECK_BEAM_HALF_WIDTH = 0.1;
-
-  // Canonical member model.
-  // prettier-ignore
-  private static readonly MEMBER_POSITIONS = new Float32Array([
-    // front
-    0,  0.5,  0.5,  // 0
-    0, -0.5,  0.5,  // 1
-    1, -0.5,  0.5,  // 2
-    1,  0.5,  0.5,  // 3
-    // back
-    0,  0.5, -0.5,  // 4
-    1,  0.5, -0.5,  // 5
-    1, -0.5, -0.5,  // 6
-    0, -0.5, -0.5,  // 7
-    // top
-    0,  0.5,  0.5,  // 8
-    1,  0.5,  0.5,  // 9
-    1,  0.5, -0.5,  // 10
-    0,  0.5, -0.5,  // 11
-    // bottom
-    0, -0.5,  0.5,  // 12
-    0, -0.5, -0.5,  // 13
-    1, -0.5, -0.5,  // 14
-    1, -0.5,  0.5,  // 15
-  ]);
-
-  // prettier-ignore
-  private static readonly MEMBER_NORMALS = new Float32Array([
-    // front
-    0, 0, 1,
-    0, 0, 1,
-    0, 0, 1,
-    0, 0, 1,
-    // back
-    0, 0, -1,
-    0, 0, -1,
-    0, 0, -1,
-    0, 0, -1,
-    // top
-    0, 1, 0,
-    0, 1, 0,
-    0, 1, 0,
-    0, 1, 0,
-    // bottom
-    0, -1, 0,
-    0, -1, 0,
-    0, -1, 0,
-    0, -1, 0,
-  ]);
-
-  // prettier-ignore
-  private static readonly MEMBER_INDICES = new Uint16Array([
-    // front
-    0, 2, 3,
-    2, 0, 1,
-    // back
-    4, 6, 7,
-    6, 4, 5,
-    // top
-    8, 10, 11,
-    10, 8, 9,
-    // bottom
-    12, 14, 15,
-    14, 12, 13,
-  ]);
+  private static readonly PIN_PROTRUSION = 0.08;
 
   // prettier-ignore
   private static readonly WIRE_POSITIONS = new Float32Array([
@@ -124,6 +67,7 @@ export class BridgeModelService {
   constructor(
     private readonly bridgeService: BridgeService,
     private readonly glService: GlService,
+    private readonly gussetService: GussetsService,
     private readonly simlulationStateService: SimulationStateService,
   ) {}
 
@@ -136,15 +80,14 @@ export class BridgeModelService {
     const jointLocations = this.simlulationStateService.interpolator.getAllDisplacedJointLocations(
       this.jointLocationsTmp,
     );
+    const gussets = this.gussetService.gussets;
+
     const gl = this.glService.gl;
     return {
       memberMeshData: {
-        positions: BridgeModelService.MEMBER_POSITIONS,
-        normals: BridgeModelService.MEMBER_NORMALS,
-        indices: BridgeModelService.MEMBER_INDICES,
-        materialRefs,
         instanceModelTransforms: this.buildMemberInstanceTransforms(undefined, jointLocations, trussOffset),
         usage: { instanceModelTransforms: gl.STREAM_DRAW },
+        ...MEMBER_MESH_DATA,
       },
       deckBeamMeshData: {
         instanceModelTransforms: this.buildDeckBeamInstanceTransforms(undefined, jointLocations),
@@ -168,6 +111,12 @@ export class BridgeModelService {
         ),
         usage: { instanceModelTransforms: gl.STREAM_DRAW },
       },
+      gussetMeshData: gussets.map(gusset => this.buildMeshDataForGusset(gusset, jointLocations)),
+      pinMeshData: {
+        instanceModelTransforms: this.buildPinInstanceModelTransforms(undefined, jointLocations, gussets),
+        ...TRUSS_PIN_MESH_DATA,
+      },
+      gussets,
       trussCenterlineOffset: trussOffset,
       membersNotTransectingRoadwayClearance: okForCrossBraces,
     };
@@ -191,6 +140,18 @@ export class BridgeModelService {
       bridgeMeshData.trussCenterlineOffset,
       bridgeMeshData.membersNotTransectingRoadwayClearance,
     );
+    this.buildPinInstanceModelTransforms(
+      bridgeMeshData.pinMeshData.instanceModelTransforms,
+      jointLocations,
+      bridgeMeshData.gussets,
+    );
+    for (let i = 0; i < bridgeMeshData.gussetMeshData.length; ++i) {
+      this.buildGussetInstanceModelTransforms(
+        bridgeMeshData.gussetMeshData[i].instanceModelTransforms,
+        bridgeMeshData.gussets[i],
+        jointLocations,
+      );
+    }
   }
 
   private buildDeckBeamInstanceTransforms(out: Float32Array | undefined, jointLocations: Float32Array): Float32Array {
@@ -293,6 +254,153 @@ export class BridgeModelService {
       Geometry.rotateX(m, m, jointBY - jointAY, jointBX - jointAX);
       mat4.scale(m, m, vec3.set(this.vTmp, length, 1, 2 * trussCenterlineOffset));
     }
+    return out;
+  }
+
+  private buildPinInstanceModelTransforms(
+    out: Float32Array | undefined,
+    jointLocations: Float32Array,
+    gussets: Gusset[],
+  ): Float32Array {
+    const centerOffset = this.bridgeService.trussCenterlineOffset;
+    const joints = this.bridgeService.bridge.joints;
+    // TODO: Replace with simple loop since it runs for each frame.
+    const nonInterferingJointCount = joints.reduce<number>(
+      (count, joint) => (BridgeService.isJointClearOfRoadway(joint) ? count + 1 : count),
+      0,
+    );
+    out ||= new Float32Array(nonInterferingJointCount * 16);
+    for (let i = 0, offset = 0; i < joints.length; ++i, offset += 16) {
+      const gusset = gussets[i];
+      if (!BridgeService.isJointClearOfRoadway(gusset.joint)) {
+        continue;
+      }
+      const i2 = 2 * gusset.joint.index;
+      const jointX = jointLocations[i2];
+      const jointY = jointLocations[i2 + 1];
+      const halfLength = centerOffset + gusset.halfDepthM + BridgeModelService.PIN_PROTRUSION;
+      const m = out.subarray(offset, offset + 16);
+      mat4.fromTranslation(m, vec3.set(this.vTmp, jointX, jointY, 0));
+      mat4.scale(m, m, vec3.set(this.vTmp, 0.6, 0.6, halfLength));
+    }
+    return out;
+  }
+
+  /** Builds colored mesh data with two instance positioning matrices, back and front. */
+  // visible-for-testing
+  buildMeshDataForGusset(gusset: Gusset, jointLocations: Float32Array): MeshData {
+    const hullLength = gusset.hull.length;
+    const positionCount = 6 * hullLength + 2;
+    const positions = new Float32Array(positionCount * 3);
+    const normals = new Float32Array(positions.length);
+    const materialRefs = new Uint16Array(positionCount).fill(Material.PaintedSteel);
+    // For each outer facet, two triangles there and two in the end cap.
+    const triangleCount = 4 * hullLength;
+    const indices = new Uint16Array(triangleCount * 3);
+    let ip = 0;
+    // Outer surface. Each facet has its own normal, so points are repeated.
+    // p is the lead pointer, q is the trail.
+    for (let q = hullLength - 1, p = 0; p < hullLength; q = p++) {
+      const pq = gusset.hull[q];
+      const pp = gusset.hull[p];
+      // Negative perp of hull edge vector.
+      let dx = pp.y - pq.y;
+      let dy = pq.x - pp.x;
+      const s = 1 / Math.hypot(dx, dy);
+      dx *= s;
+      dy *= s;
+      // Quad between previous and current hull point.
+      positions[ip] = pq.x;
+      positions[ip + 1] = pq.y;
+      positions[ip + 2] = -gusset.halfDepthM;
+      normals[ip] = dx;
+      normals[ip + 1] = dy;
+
+      positions[ip + 3] = pq.x;
+      positions[ip + 4] = pq.y;
+      positions[ip + 5] = gusset.halfDepthM;
+      normals[ip + 3] = dx;
+      normals[ip + 4] = dy;
+
+      positions[ip + 6] = pp.x;
+      positions[ip + 7] = pp.y;
+      positions[ip + 8] = -gusset.halfDepthM;
+      normals[ip + 6] = dx;
+      normals[ip + 7] = dy;
+
+      positions[ip + 9] = pp.x;
+      positions[ip + 10] = pp.y;
+      positions[ip + 11] = gusset.halfDepthM;
+      normals[ip + 9] = dx;
+      normals[ip + 10] = dy;
+
+      ip += 12;
+    }
+    // Positive z end. Start with center.
+    const positiveZCenterIndex = ip / 3;
+    positions[ip + 2] = gusset.halfDepthM;
+    normals[ip + 2] = 1;
+    ip += 3;
+    for (const point of gusset.hull) {
+      positions[ip] = point.x;
+      positions[ip + 1] = point.y;
+      positions[ip + 2] = gusset.halfDepthM;
+      normals[ip + 2] = 1;
+      ip += 3;
+    }
+    // Negative z end. Start with center.
+    const negativeZCenterIndex = ip / 3;
+    positions[ip + 2] = -gusset.halfDepthM;
+    normals[ip + 2] = -1;
+    ip += 3;
+    for (let i = hullLength - 1; i >= 0; --i) {
+      const point = gusset.hull[i];
+      positions[ip] = point.x;
+      positions[ip + 1] = point.y;
+      positions[ip + 2] = -gusset.halfDepthM;
+      normals[ip + 2] = -1;
+      ip += 3;
+    }
+    let ii = 0;
+    // Outer surface triangles.
+    for (let i = 0, p = 0; i < hullLength; ++i, p += 4) {
+      indices[ii++] = p;
+      indices[ii++] = p + 3;
+      indices[ii++] = p + 1;
+      indices[ii++] = p + 3;
+      indices[ii++] = p;
+      indices[ii++] = p + 2;
+    }
+    // Triangle fan for posiitive z end.
+    for (let i = 0, q = hullLength, p = 1; i < hullLength; ++i, q = p++) {
+      indices[ii++] = positiveZCenterIndex;
+      indices[ii++] = positiveZCenterIndex + q;
+      indices[ii++] = positiveZCenterIndex + p;
+    }
+    // Triangle fan for negative z end.
+    for (let i = 0, q = hullLength, p = 1; i < hullLength; ++i, q = p++) {
+      indices[ii++] = negativeZCenterIndex;
+      indices[ii++] = negativeZCenterIndex + q;
+      indices[ii++] = negativeZCenterIndex + p;
+    }
+    const instanceModelTransforms = this.buildGussetInstanceModelTransforms(undefined, gusset, jointLocations);
+    return { positions, normals, materialRefs, instanceModelTransforms, indices };
+  }
+
+  private buildGussetInstanceModelTransforms(
+    out: Float32Array | undefined,
+    gusset: Gusset,
+    jointLocations: Float32Array,
+  ): Float32Array {
+    out ||= new Float32Array(32);
+    const centerOffset = this.bridgeService.trussCenterlineOffset;
+    const i2 = 2 * gusset.joint.index;
+    const jointX = jointLocations[i2];
+    const jointY = jointLocations[i2 + 1];
+    const mNegativeZ = out.subarray(0, 16);
+    mat4.fromTranslation(mNegativeZ, vec3.set(this.vTmp, jointX, jointY, -centerOffset));
+    const mPositiveZ = out.subarray(16, 32);
+    mat4.fromTranslation(mPositiveZ, vec3.set(this.vTmp, jointX, jointY, centerOffset));
     return out;
   }
 }
