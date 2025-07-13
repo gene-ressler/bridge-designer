@@ -7,12 +7,7 @@ import { OverlayHandlers } from './overlay-ui.service';
 import { HEAD_ICON, HOME_ICON, PAN_ICON, TRUCK_ICON, WALK_ICON } from './overlay-icons';
 import { SimulationStateService } from './simulation-state.service';
 
-export const enum ViewMode {
-  FLYING,
-  DRIVING,
-}
-
-/** Container for the fly-thru view transform and associated update logic. */
+/** Container for the fly-thru and driver view transforms and associated update logic. */
 @Injectable({ providedIn: 'root' })
 export class ViewService {
   /** Max radians of look up-down angle. */
@@ -26,13 +21,17 @@ export class ViewService {
   /** Pixel to world rotation rate ratio. */
   private static readonly UI_RATE_ROTATIONAL = (0.05 * 2.0 * Math.PI) / 100.0;
   /** Pixel to world tilt rate ratio. */
-  private static readonly UI_RATE_TILT = (5.0 * 2.0 * Math.PI) / 100.0;
+  private static readonly UI_RATE_TILT = Math.PI / 400;
 
-  private readonly up = vec3.fromValues(0, 1, 0);
   public readonly eye = vec3.create();
+  private readonly up = vec3.fromValues(0, 1, 0);
   private readonly center = vec3.create();
   private readonly eyeMin = vec3.create();
   private readonly eyeMax = vec3.create();
+  private readonly eyeDriver = vec3.create();
+  private readonly centerDriver = vec3.create();
+  private readonly driverRotation = mat4.create();
+
   private thetaEye: number = 0;
   private phiEye: number = 0;
   private thetaEyeRate: number = 0;
@@ -60,7 +59,7 @@ export class ViewService {
 
     // Always put eye at height of a person on the road.
     // Swivel eye right a bit to account for slant of river.
-    vec3.set(this.eye, xCenter - 0.2 * zEye, 1, zEye);
+    vec3.set(this.eye, xCenter, 2, zEye);
 
     // Direct gaze at middle of vertical extent.
     vec3.set(this.center, xCenter, extent.y0 + 0.5 * extent.height, 0);
@@ -85,7 +84,7 @@ export class ViewService {
     this.eyeMax[2] = 100.0;
   }
 
-  public updateView(elapsedSecs: number) {
+  public updateWalkingView(elapsedSecs: number) {
     this.phiEye = Utility.clamp(
       this.phiEye + this.phiEyeRate * elapsedSecs,
       -ViewService.MAX_TILT,
@@ -117,28 +116,26 @@ export class ViewService {
     this.center[2] = this.eye[2] + dz;
   }
 
-  private eyeDriver = vec3.create();
-  private centerDriver = vec3.create();
-
   public getLookAtMatrix(m: mat4 = mat4.create()): mat4 {
     if (this.isDriving) {
-      const loadPt = this.simulationStateService.wayPoint;
-      const loadLookDir = this.simulationStateService.rotation;
-      mat4.fromXRotation(m, -this.phiDriverHead);
-      mat4.rotateY(m, m, this.thetaDriverHead);
+      const truckPosition = this.simulationStateService.wayPoint;
+      const driverLookDir = this.simulationStateService.rotation;
+      mat4.fromXRotation(this.driverRotation, -this.phiDriverHead);
+      mat4.rotateY(this.driverRotation, this.driverRotation, this.thetaDriverHead);
       vec3.set(
         this.eyeDriver,
-        loadPt[0] + ViewService.DRIVER_EYE_LEAD,
-        loadPt[1] + ViewService.DRIVER_EYE_HEIGHT,
+        truckPosition[0] + ViewService.DRIVER_EYE_LEAD,
+        truckPosition[1] + ViewService.DRIVER_EYE_HEIGHT,
         0,
       );
       vec3.set(
         this.centerDriver,
-        loadPt[0] + loadLookDir[0],
-        loadPt[1] + loadLookDir[1] + ViewService.DRIVER_EYE_HEIGHT,
+        truckPosition[0] + driverLookDir[0],
+        truckPosition[1] + driverLookDir[1] + ViewService.DRIVER_EYE_HEIGHT,
         0,
       );
-      return mat4.lookAt(m, this.eyeDriver, this.centerDriver, this.up);
+      mat4.lookAt(m, this.eyeDriver, this.centerDriver, this.up);
+      return mat4.multiply(m, this.driverRotation, m);
     }
     return mat4.lookAt(m, this.eye, this.center, this.up);
   }

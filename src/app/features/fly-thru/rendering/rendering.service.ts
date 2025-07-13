@@ -121,7 +121,7 @@ export class RenderingService {
 
     // TODO: Maybe call this getter once every time viewport is set.
     this.projectionService.getPerspectiveProjection(this.projectionMatrix);
-    this.viewService.updateView(elapsedMillis * 0.001);
+    this.viewService.updateWalkingView(elapsedMillis * 0.001);
     this.viewService.getLookAtMatrix(this.viewMatrix);
 
     const gl = this.glService.gl;

@@ -61,6 +61,7 @@ export class UniformService {
     const gl = this.glService.gl;
     const facetMeshProgram = this.shaderService.getProgram('colored_mesh');
     const facetMeshInstancesProgram = this.shaderService.getProgram('colored_mesh_instances');
+    const instanceColoredMeshProgram = this.shaderService.getProgram('instance_colored_mesh');
     const overlayProgram = this.shaderService.getProgram('overlay');
     const riverProgram = this.shaderService.getProgram('river');
     const skyProgram = this.shaderService.getProgram('sky');
@@ -74,6 +75,7 @@ export class UniformService {
       [
         facetMeshProgram,
         facetMeshInstancesProgram,
+        instanceColoredMeshProgram,
         riverProgram,
         terrainProgram,
         texturedMeshProgram,
@@ -97,6 +99,7 @@ export class UniformService {
       [
         facetMeshProgram,
         facetMeshInstancesProgram,
+        instanceColoredMeshProgram,
         riverProgram,
         terrainProgram,
         texturedMeshProgram,

@@ -1,3 +1,5 @@
+# option: materialRefs = no
+
 mtllib materials.mtl
 usemtl PaintedSteel
 v 0 0.5 0.5 # 1

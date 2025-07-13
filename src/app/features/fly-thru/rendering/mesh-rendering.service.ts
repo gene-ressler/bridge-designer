@@ -6,6 +6,7 @@ import {
   IN_INSTANCE_MODEL_TRANSFORM_LOCATION,
   IN_TEX_COORD_LOCATION,
   IN_DIRECTION_LOCATION,
+  IN_INSTANCE_COLOR_LOCATION,
 } from '../shaders/constants';
 import { ShaderService } from '../shaders/shader.service';
 import { GlService } from './gl.service';
@@ -28,24 +29,25 @@ export type MeshData = {
     texCoords?: number;
     materialRefs?: number;
     instanceModelTransforms?: number;
+    instanceColors?: number;
   };
 };
 
 export type Mesh = {
   vertexArray: WebGLVertexArrayObject;
-  texture?: WebGLTexture;
-  textureUniformLocation?: WebGLUniformLocation;
   indexBuffer: WebGLBuffer;
   elementCount: number;
-  // Instance count inferred from mesh data instanceModelTransforms, if any.
-  instanceCount?: number;
-  // For delete-able meshes.
+
   positionBuffer?: WebGLBuffer;
   normalBuffer?: WebGLBuffer;
   materialRefBuffer?: WebGLBuffer;
-  // TODO: Add color buffer when needed!
+  instanceColorBuffer?: WebGLBuffer;
+  texture?: WebGLTexture;
+  textureUniformLocation?: WebGLUniformLocation;
   texCoordBuffer?: WebGLBuffer;
   instanceModelTransformBuffer?: WebGLBuffer;
+  // Instance count inferred from mesh data instanceModelTransforms, if any.
+  instanceCount?: number;
 };
 
 export type WireData = {
@@ -88,13 +90,26 @@ export class MeshRenderingService {
     gl.bindVertexArray(vertexArray);
     const positionBuffer = this.prepareBuffer(IN_POSITION_LOCATION, meshData.positions, meshData.usage?.positions);
     const normalBuffer = this.prepareBuffer(IN_NORMAL_LOCATION, meshData.normals!, meshData.usage?.normals);
-    const materialRefBuffer = this.prepareBuffer(
-      IN_MATERIAL_REF_LOCATION,
-      meshData.materialRefs!,
-      meshData.usage?.materialRefs,
-      1,
-      gl.UNSIGNED_SHORT,
-    );
+    let instanceColorBuffer, materialRefBuffer;
+    // If both are provided, we're favoring the instance colors.
+    if (meshData.instanceColors) {
+      instanceColorBuffer = this.prepareBuffer(
+        IN_INSTANCE_COLOR_LOCATION,
+        meshData.instanceColors!,
+        meshData.usage?.instanceColors,
+        3,
+        gl.FLOAT,
+        1,
+      );
+    } else {
+      materialRefBuffer = this.prepareBuffer(
+        IN_MATERIAL_REF_LOCATION,
+        meshData.materialRefs!,
+        meshData.usage?.materialRefs,
+        1,
+        gl.UNSIGNED_SHORT,
+      );
+    }
     const indexBuffer = this.prepareIndexBuffer(meshData.indices);
     const instanceModelTransformBuffer = this.prepareInstanceModelTransformBuffer(
       meshData.instanceModelTransforms,
@@ -114,6 +129,7 @@ export class MeshRenderingService {
       positionBuffer,
       normalBuffer,
       materialRefBuffer,
+      instanceColorBuffer,
       instanceModelTransformBuffer,
     };
   }
@@ -121,7 +137,15 @@ export class MeshRenderingService {
   /** Renders a previously prepared color facet mesh.  */
   public renderColoredMesh(mesh: Mesh): void {
     const gl = this.glService.gl;
-    gl.useProgram(this.shaderService.getProgram(mesh.instanceCount ? 'colored_mesh_instances' : 'colored_mesh'));
+    gl.useProgram(
+      this.shaderService.getProgram(
+        mesh.instanceColorBuffer
+          ? 'instance_colored_mesh'
+          : mesh.instanceCount
+            ? 'colored_mesh_instances'
+            : 'colored_mesh',
+      ),
+    );
     gl.bindVertexArray(mesh.vertexArray);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
     if (mesh.instanceCount) {
@@ -332,6 +356,36 @@ export class MeshRenderingService {
     }
   }
 
+  public deleteExistingMesh(mesh: Mesh | undefined): void {
+    if (!mesh) {
+      return;
+    }
+    const gl = this.glService.gl;
+    gl.deleteVertexArray(mesh.vertexArray);
+    gl.deleteBuffer(mesh.indexBuffer);
+    if (mesh.positionBuffer) {
+      gl.deleteBuffer(mesh.positionBuffer);
+    }
+    if (mesh.normalBuffer) {
+      gl.deleteBuffer(mesh.normalBuffer);
+    }
+    if (mesh.materialRefBuffer) {
+      gl.deleteBuffer(mesh.materialRefBuffer);
+    }
+    if (mesh.instanceColorBuffer) {
+      gl.deleteBuffer(mesh.instanceColorBuffer);
+    }
+    if (mesh.texture) {
+      gl.deleteTexture(mesh.texture);
+    }
+    if (mesh.texCoordBuffer) {
+      gl.deleteBuffer(mesh.texCoordBuffer);
+    }
+    if (mesh.instanceModelTransformBuffer) {
+      gl.deleteBuffer(mesh.instanceModelTransformBuffer);
+    }
+  }
+
   private prepareTexture(url: string, preloadColor: Uint8Array): WebGLTexture {
     const gl = this.glService.gl;
     const texture = gl.createTexture()!;
@@ -353,6 +407,7 @@ export class MeshRenderingService {
     usage: number = this.glService.gl.STATIC_DRAW,
     size: number = 3,
     type: number = this.glService.gl.FLOAT,
+    divisor: number = 0,
   ): WebGLBuffer {
     const gl = this.glService.gl;
     const buffer = gl.createBuffer()!;
@@ -364,6 +419,7 @@ export class MeshRenderingService {
     } else {
       gl.vertexAttribPointer(location, size, type, false, 0, 0);
     }
+    gl.vertexAttribDivisor(location, divisor);
     return buffer;
   }
 
@@ -395,29 +451,5 @@ export class MeshRenderingService {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, data, gl.STATIC_DRAW);
     return buffer;
-  }
-
-  public deleteExistingMesh(mesh: Mesh | undefined): void {
-    if (!mesh) {
-      return;
-    }
-    const gl = this.glService.gl;
-    gl.deleteVertexArray(mesh.vertexArray);
-    gl.deleteBuffer(mesh.indexBuffer);
-    if (mesh.positionBuffer) {
-      gl.deleteBuffer(mesh.positionBuffer);
-    }
-    if (mesh.normalBuffer) {
-      gl.deleteBuffer(mesh.normalBuffer);
-    }
-    if (mesh.texCoordBuffer) {
-      gl.deleteBuffer(mesh.texCoordBuffer);
-    }
-    if (mesh.instanceModelTransformBuffer) {
-      gl.deleteBuffer(mesh.instanceModelTransformBuffer);
-    }
-    if (mesh.texture) {
-      gl.deleteTexture(mesh.texture);
-    }
   }
 }

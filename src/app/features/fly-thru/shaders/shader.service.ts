@@ -36,6 +36,11 @@ export class ShaderService {
         fragmentShader: shaders['COLORED_MESH_FRAGMENT_SHADER'],
       },
       {
+        name: 'instance_colored_mesh',
+        vertexShader: shaders['INSTANCE_COLORED_MESH_VERTEX_SHADER'],
+        fragmentShader: shaders['INSTANCE_COLORED_MESH_FRAGMENT_SHADER'],
+      },
+      {
         name: 'overlay',
         vertexShader: shaders['OVERLAY_VERTEX_SHADER'],
         fragmentShader: shaders['OVERLAY_FRAGMENT_SHADER'],

@@ -40,8 +40,8 @@ TODO: This could all be done lazily to save graphic card resources if the animat
 - Add a `ProgramSpec` to the table in `shader.service.ts`.
 - For new uniform blocks, follow the pattern for existing ones in `uniform.service.ts`.
 - If any existing uniform blocks are used by the new shaders, update `uniform.service.ts`:
-  - Add a new shader lookup at the top of `prepareUniforms`.
-  - Update calls to `setUpUniformBlock`, i.e. the list of affected programs.
+  - Add a new shader program lookup at the top of `prepareUniforms`.
+  - Update calls to `setUpUniformBlock`, i.e. the list of affected programs connected to each.
 
 ## Sky box
 

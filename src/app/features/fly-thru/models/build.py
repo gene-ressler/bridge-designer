@@ -72,6 +72,7 @@ class Processor:
         self.quad_index = {}
         self.faces = [()]
         self.material_lib = None
+        self.options = {}
 
     def get_material(self, name):
         return self.material_lib and self.material_lib.get(name)
@@ -80,7 +81,10 @@ class Processor:
         print(f"{in_file.name} -> {out_file.name}:")
         material = {}
         for line in in_file:
-            line = re.sub("#.*$", "", line)
+            option_match = re.match(r"#\s*option:\s*(\w+)\s*=\s*(\w+)", line)
+            if option_match:
+                self.options[option_match.group(1)] = option_match.group(2)
+            line = re.sub(r"#.*$", "", line)
             parts = line.split()
             if len(parts) == 0:
                 continue
@@ -149,7 +153,7 @@ class Processor:
                 p = self.normals[quad[2]]
                 print(f"    {p[0]:.4g}, {p[1]:.4g}, {p[2]:.4g}, // {index}", file=out_file)
             print("  ]),", file=out_file)
-        if populated[3]:
+        if populated[3] and self.options.get('materialRefs', '').lower() != 'no':
             print(
                 f"  materialRefs: new Uint16Array([",
                 file=out_file,

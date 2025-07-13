@@ -14,6 +14,7 @@ import { GlService } from '../rendering/gl.service';
 import { GussetModel as Gusset, GussetsService } from './gussets.service';
 import { TRUSS_PIN_MESH_DATA } from './truss-pin';
 import { MEMBER_MESH_DATA } from './member';
+import { AnalysisService } from '../../../shared/services/analysis.service';
 
 // TODO: We could probably do with something lighter weight than full gussets.
 export type BridgeMeshData = {
@@ -65,6 +66,7 @@ export class BridgeModelService {
   private readonly jointLocationsTmp = new Float32Array(2 * DesignConditions.MAX_JOINT_COUNT);
 
   constructor(
+    private readonly analysisService: AnalysisService,
     private readonly bridgeService: BridgeService,
     private readonly glService: GlService,
     private readonly gussetService: GussetsService,
@@ -86,7 +88,8 @@ export class BridgeModelService {
     return {
       memberMeshData: {
         instanceModelTransforms: this.buildMemberInstanceTransforms(undefined, jointLocations, trussOffset),
-        usage: { instanceModelTransforms: gl.STREAM_DRAW },
+        instanceColors: this.buildMemberInstanceColors(undefined),
+        usage: { instanceModelTransforms: gl.STREAM_DRAW, instanceColors: gl.STREAM_DRAW },
         ...MEMBER_MESH_DATA,
       },
       deckBeamMeshData: {
@@ -132,6 +135,7 @@ export class BridgeModelService {
       jointLocations,
       bridgeMeshData.trussCenterlineOffset,
     );
+    this.buildMemberInstanceColors(bridgeMeshData.memberMeshData.instanceColors);
     this.buildDeckBeamInstanceTransforms(bridgeMeshData.deckBeamMeshData.instanceModelTransforms, jointLocations);
     this.buildDeckSlabInstanceTransforms(bridgeMeshData.deckSlabMeshData.instanceModelTransforms, jointLocations);
     this.buildWireInstanceTransforms(
@@ -225,6 +229,28 @@ export class BridgeModelService {
       const mRear = out.subarray(offset + 16, offset + 32);
       mat4.copy(mRear, this.mTmp);
       mRear[14] -= trussCenterlineOffset;
+    }
+    return out;
+  }
+
+  private buildMemberInstanceColors(out: Float32Array | undefined): Float32Array {
+    const members = this.bridgeService.bridge.members;
+    out ||= new Float32Array(members.length * 6);
+    const interpolator = this.simlulationStateService.interpolator;
+    for (let i = 0, offset = 0; i < members.length; ++i, offset += 6) {
+      const colors = out.subarray(offset, offset + 6);
+      const force = interpolator.getMemberForce(i);
+      if (force < 0) {
+        // compression; interpolate between gray and pure red
+        const ratio = (-0.5 * force) / this.analysisService.getMemberCompressiveStrength(i);
+        colors[0] = colors[3]  = 0.5 + ratio;
+        colors[1] = colors[4] = colors[2] = colors[5] = 0.5 - ratio;
+      } else {
+        // tension; interpolate between gray and pure blue
+        const ratio = (0.5 * force) / this.analysisService.getMemberTensileStrength(i);
+        colors[2] = colors[5] = 0.5 + ratio;
+        colors[0] = colors[3] = colors[1] = colors[4] = 0.5 - ratio;
+      }
     }
     return out;
   }
