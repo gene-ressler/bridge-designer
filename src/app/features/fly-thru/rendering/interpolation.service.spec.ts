@@ -57,7 +57,7 @@ describe('InterpolationService', () => {
 
     service = new InterpolationService(bridgeService, parametersService, terrainModelService);
 
-    interpolator = service.createInterpolator(analysisService);
+    interpolator = service.createAnalysisInterpolator(analysisService);
   });
 
   it('should return roadway coords if left of the bridge', () => {
@@ -80,7 +80,7 @@ describe('InterpolationService', () => {
   });
 
   it('should honor exaggeration for load case on bridge', () => {
-    const zeroForceInterpolator = service.createInterpolator(InterpolationService.ZERO_FORCE_JOINT_DISPLACEMENT_SOURCE);
+    const zeroForceInterpolator = service.createAnalysisInterpolator(InterpolationService.ZERO_FORCE_INTERPOLATION_SOURCE);
     const zeroForceJointLocation = zeroForceInterpolator.withParameter(6).getDisplacedJointLocation([0, 0], 1);
     const unExaggeratedJointLocation = interpolator.withParameter(6).getDisplacedJointLocation([0, 0], 1);
     parametersService.exaggeration = 2;

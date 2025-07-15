@@ -47,6 +47,14 @@ export class BridgeRenderingService {
       this.bridgeMeshData.memberMeshData.instanceModelTransforms!,
     );
     this.meshRenderingService.updateInstanceModelTransforms(
+      this.stiffeningWire,
+      this.bridgeMeshData.stiffeningWireData.instanceModelTransforms!,
+    );
+    this.meshRenderingService.updateInstanceColors(
+      this.membersMesh,
+      this.bridgeMeshData.memberMeshData.instanceColors!,
+    );
+    this.meshRenderingService.updateInstanceModelTransforms(
       this.deckBeamMesh,
       this.bridgeMeshData.deckBeamMeshData.instanceModelTransforms!,
     );

@@ -1,46 +1,79 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { BridgeService } from '../../../shared/services/bridge.service';
 import { CenterlinePost, TerrainModelService } from '../models/terrain-model.service';
 import { vec2 } from 'gl-matrix';
 import { DesignConditions } from '../../../shared/services/design-conditions.service';
 import { Geometry } from '../../../shared/classes/graphics';
-import { InterpolationSource } from '../../../shared/services/analysis.service';
+import { AnalysisService } from '../../../shared/services/analysis.service';
 import { SimulationParametersService } from './simulation-parameters.service';
 import { SiteConstants } from '../../../shared/classes/site.model';
+import { BitVector } from '../../../shared/core/bitvector';
+import { COLLAPSE_ANALYSIS } from '../pane/constants';
+
+/** Source data for an interpolator. Has several purpose-built implementations. */
+interface InterpolatorSource {
+  getJointDisplacementXForDeadLoadOnly(index: number): number;
+  getJointDisplacement(out: vec2, index: number, ctx: InterpolatorContext): vec2;
+  getMemberForce(index: number, ctx: InterpolatorContext): number;
+}
+
+/** Interpolator between various analysis states to drive the animation. */
+export interface Interpolator {
+  readonly memberForceStrengthRatios: Float32Array;
+  readonly isTestFailed: boolean;
+  readonly parameter: number;
+  readonly failedMemberMask: BitVector;
+  withParameter(t: number): Interpolator;
+  getLoadPosition(frontOut: vec2, rotationOut: vec2): void;
+  getAllDisplacedJointLocations(out: Float32Array): Float32Array;
+  getMemberForce(index: number): number;
+}
 
 /** Internal holder for calculations common to several interpolator methods. */
 type InterpolatorContext = {
+  /** Overall parameter. Roughly directed distance in x-coordinate meters from left abutment. */
   t: number;
+  /**
+   * If truck is on the bridge, parameter in [0..maxLoadCaseIndex] showing progress or NaN
+   * if not. The max load case is at the second last deck joint looking left to right.
+   */
   tBridge: number;
+  /** Value in [0..1) showing progress along the current panel. */
   tPanel: number;
+  /** Left joint and load case index of the current panel. */
   leftLoadCase: number;
+  /**
+   * Right joint and load case index of the current panel or  zero if leftLoadCase is
+   * maxLoadCaseIndex. Appropriate because load case 0 is "no live load.""
+   */
   rightLoadCase: number;
 };
 
-/** Wrapper for interpolation logic that refers to a given bound joint displacement source. */
-export class Interpolator {
+/** Wrapper for interpolation logic that refers to a given source. */
+class AnalysisInterpolator implements Interpolator {
   // Result buffers.
   private readonly post: CenterlinePost = { elevation: 0, xNormal: 0, yNormal: 1 };
   private readonly tmpJointA = vec2.create();
   private readonly tmpJointB = vec2.create();
-  private readonly tmpDisplacementA = vec2.create();
-  private readonly tmpDisplacementB = vec2.create();
   private readonly tmpDiff = vec2.create();
   private readonly tmpContext: InterpolatorContext = {} as InterpolatorContext;
+
+  // Member status info is cached here while advancing the parameter to save redundant
+  // computation across simulation state machine and frame rendering.
+  public readonly memberForceStrengthRatios = new Float32Array(DesignConditions.MAX_MEMBER_COUNT);
+  public readonly failedMemberMask = new BitVector(DesignConditions.MAX_MEMBER_COUNT);
+  public isTestFailed: boolean = false;
 
   private readonly ctx: InterpolatorContext = {} as InterpolatorContext;
 
   constructor(
     private readonly service: InterpolationService,
-    private readonly interpolationSource: InterpolationSource,
+    private readonly interpolationSource: InterpolatorSource,
   ) {}
 
+  /** Sets the context for interpolations by all other methods. */
   public withParameter(t: number): Interpolator {
-    return this.getContext(this.ctx, t);
-  }
-
-  public refreshContext(t: number): Interpolator {
-    return this.getContext(this.ctx, t);
+    return this.setContextForParameter(this.ctx, t).updateMemberFailureStatus();
   }
 
   public get parameter(): number {
@@ -52,10 +85,9 @@ export class Interpolator {
       out[0] = ctx.t;
       out[1] = this.service.terrainModelService.getRoadCenterlinePostAtX(this.post, ctx.t).elevation;
     } else {
-      this.getDisplacedJointLocation(this.tmpJointA, ctx.leftLoadCase, ctx);
-      this.getDisplacedJointLocation(this.tmpJointB, ctx.leftLoadCase + 1, ctx);
-      // TODO: Use vec2.lerp.
-      intepolateVec2(out, this.tmpJointA, this.tmpJointB, ctx.tPanel);
+      this.getExaggeratedDisplacedJointLocation(this.tmpJointA, ctx.leftLoadCase, ctx);
+      this.getExaggeratedDisplacedJointLocation(this.tmpJointB, ctx.leftLoadCase + 1, ctx);
+      vec2.lerp(out, this.tmpJointA, this.tmpJointB, ctx.tPanel);
       // Offset result by deck height along the member perpendicular.
       const diff = this.tmpDiff;
       vec2.sub(diff, this.tmpJointB, this.tmpJointA);
@@ -67,17 +99,17 @@ export class Interpolator {
   }
 
   /** Finds the front and rear load way points corresponding to the given front one; returns the rear.  */
-  public getLoadPosition(frontOut: vec2, rotation: vec2): void {
+  public getLoadPosition(frontOut: vec2, rotationOut: vec2): void {
     this.getWayPoint(frontOut);
     // Find a point one truck-length behind the load location by binary search.
     const truckLength = DesignConditions.PANEL_SIZE_WORLD;
     let t0 = this.ctx.t - truckLength;
     // Use rotation vector as a buffer for the rear point.
-    const rear = rotation;
+    const rear = rotationOut;
     // Move t0 left until the bracket must include the rear wheel. Normally a single iteration.
     do {
       t0 -= truckLength;
-      this.getContext(this.tmpContext, t0);
+      this.setContextForParameter(this.tmpContext, t0);
       this.getWayPoint(rear, this.tmpContext);
     } while (frontOut[0] - rear[0] < truckLength);
     let t1 = this.ctx.t;
@@ -88,7 +120,7 @@ export class Interpolator {
     // Bail at a fixed limit for safety e.g. for elevation discontinuities at bridge ends, where no solution may exist.
     for (let i = 0; i < 20; ++i) {
       const t = (t0 + t1) * 0.5;
-      this.getContext(this.tmpContext, t);
+      this.setContextForParameter(this.tmpContext, t);
       this.getWayPoint(rear, this.tmpContext);
       const d2 = Geometry.distanceSquared2D(frontOut[0], frontOut[1], rear[0], rear[1]);
       if (d2 > hiLimit) {
@@ -99,31 +131,16 @@ export class Interpolator {
         break;
       }
     }
-    vec2.sub(rotation, frontOut, rear);
-    vec2.normalize(rotation, rotation);
+    vec2.sub(rotationOut, frontOut, rear);
+    vec2.normalize(rotationOut, rotationOut);
   }
 
-  /**
-   *  Returns the interpolated displaced joint location for given joint index and, by default, the current parameter.
-   * An alternate context is optional.
-   */
-  public getDisplacedJointLocation(pt: vec2, index: number, ctx: InterpolatorContext = this.ctx): vec2 {
-    this.getJointDisplacement(pt, index, ctx);
-    const joint = this.service.bridgeService.bridge.joints[index];
-    pt[0] += joint.x;
-    pt[1] += joint.y;
-    return pt;
-  }
-
-  /** Returns the interpolated displaced joint location for the current parameter. */
-  public getAllDisplacedJointLocations(
-    out: Float32Array,
-    ctx: InterpolatorContext = this.ctx,
-  ): Float32Array {
+  /** Returns the interpolated displaced joint location for the current parameter. Exaggeration is incorporated. */
+  public getAllDisplacedJointLocations(out: Float32Array): Float32Array {
     const joints = this.service.bridgeService.bridge.joints;
     let i2 = 0;
     for (const joint of joints) {
-      const v = this.getJointDisplacement(this.tmpJointA, joint.index, ctx);
+      const v = this.getExaggeratedJointDisplacement(this.tmpJointA, joint.index, this.ctx);
       out[i2] = v[0] + joint.x;
       out[i2 + 1] = v[1] + joint.y;
       i2 += 2;
@@ -131,33 +148,27 @@ export class Interpolator {
     return out;
   }
 
-  /** Returns the interpolated joint displacement for the given parameter. */
-  private getJointDisplacement(v: vec2, index: number, ctx: InterpolatorContext = this.ctx): vec2 {
-    if (isNaN(ctx.tBridge)) {
-      this.interpolationSource.getJointDisplacement(v, 0, index);
-    } else {
-      const left = this.interpolationSource.getJointDisplacement(this.tmpDisplacementA, ctx.leftLoadCase, index);
-      const right = this.interpolationSource.getJointDisplacement(this.tmpDisplacementB, ctx.rightLoadCase, index);
-      intepolateVec2(v, left, right, ctx.tPanel);
-    }
-    return vec2.scale(v, v, this.service.parametersService.exaggeration);
+  public getMemberForce(index: number): number {
+    return this.interpolationSource.getMemberForce(index, this.ctx);
   }
 
-  public getMemberForce(index: number): number {
-    const ctx = this.ctx;
-    if (isNaN(ctx.tBridge)) {
-      return this.interpolationSource.getMemberForce(0, index);
-    }
-    const leftLoadCaseForce = this.interpolationSource.getMemberForce(ctx.leftLoadCase, index);
-    const rightLoadCaseForce = this.interpolationSource.getMemberForce(ctx.rightLoadCase, index);
-    return leftLoadCaseForce + ctx.tPanel * (rightLoadCaseForce - leftLoadCaseForce);
+  /**
+   * Returns the interpolated displaced joint location for given joint index and, by default, the current parameter.
+   * An alternate context is optional.
+   */
+  private getExaggeratedDisplacedJointLocation(pt: vec2, index: number, ctx: InterpolatorContext = this.ctx): vec2 {
+    this.getExaggeratedJointDisplacement(pt, index, ctx);
+    const joint = this.service.bridgeService.bridge.joints[index];
+    pt[0] += joint.x;
+    pt[1] += joint.y;
+    return pt;
   }
 
   /** Fills a wrapper for calculations common to several methods. */
-  getContext(ctx: InterpolatorContext, t: number): Interpolator {
-    const leftmostJointX = this.getDisplacedJointXForDeadLoadOnly(0);
+  private setContextForParameter(ctx: InterpolatorContext, t: number): AnalysisInterpolator {
+    const leftmostJointX = this.getExaggeratedJointDisplacementXForDeadLoadOnly(0);
     const panelIndexMax = this.service.bridgeService.designConditions.loadedJointCount - 1;
-    const rightmostJointX = this.getDisplacedJointXForDeadLoadOnly(panelIndexMax);
+    const rightmostJointX = this.getExaggeratedJointDisplacementXForDeadLoadOnly(panelIndexMax);
     const tBridge =
       leftmostJointX <= t && t < rightmostJointX
         ? ((t - leftmostJointX) / (rightmostJointX - leftmostJointX)) * panelIndexMax
@@ -176,103 +187,209 @@ export class Interpolator {
     return this;
   }
 
+  private updateMemberFailureStatus(): AnalysisInterpolator {
+    const members = this.service.bridgeService.bridge.members;
+    this.isTestFailed = false;
+    this.failedMemberMask.clearAll();
+    for (let i = 0; i < members.length; ++i) {
+      const force = this.getMemberForce(i);
+      const strength =
+        force < 0
+          ? this.service.analysisService.getMemberCompressiveStrength(i)
+          : this.service.analysisService.getMemberTensileStrength(i);
+      const ratio = force / strength;
+      this.memberForceStrengthRatios[i] = ratio;
+      if (Math.abs(ratio) > 1) {
+        this.isTestFailed = true;
+        this.failedMemberMask.setBit(i);
+      }
+    }
+    return this;
+  }
+
+  private getExaggeratedJointDisplacement(out: vec2, index: number, ctx: InterpolatorContext): vec2 {
+    this.interpolationSource.getJointDisplacement(out, index, ctx);
+    return vec2.scale(out, out, this.service.parametersService.exaggeration);
+  }
+
   /** Gets a displaced joint's x-coordinate for the dead load only case. */
-  private getDisplacedJointXForDeadLoadOnly(index: number): number {
+  private getExaggeratedJointDisplacementXForDeadLoadOnly(index: number): number {
     const joint = this.service.bridgeService.bridge.joints[index];
     const exaggeration = this.service.parametersService.exaggeration;
-    return joint.x + this.interpolationSource.getJointDisplacementX(0, index) * exaggeration;
+    return joint.x + this.interpolationSource.getJointDisplacementXForDeadLoadOnly(index) * exaggeration;
   }
 }
 
-/** An interpolation source that interpolates two others. */
-export class BiInterpolationSource implements InterpolationSource {
-  private t: number = 0;
+/**
+ * Interpolator for the bridge collapse animation. Bi-interpolates positions between a "base" interpolator
+ * (in practice one where a member fails) and a "dummy" analysis interpolator (in practice one with the
+ * same failed members severely weakend). The dummy will have extreme joint displacements, a gross
+ * approximation of collapse. For non-position values, i.e. those related to member forces, delegates
+ * to the base interpolator, since forces in the dummy aren't useful.
+ */
+class CollapseInterpolator implements Interpolator {
+  private readonly collapseSource: BiInterpolatorSource;
+  private readonly interpolator: Interpolator;
+
+  constructor(
+    private readonly service: InterpolationService,
+    private readonly failedInterpolator: Interpolator,
+  ) {
+    // base source
+    const failedAnalysisAdapter = new AnalysisInterpolationSourceAdapter(this.service.analysisService);
+    // dummy source
+    const collapsedAnalysisAdapter = new AnalysisInterpolationSourceAdapter(this.service.collapseAnalysisService);
+    // bi-interpolation source for positions
+    this.collapseSource = new BiInterpolatorSource(failedAnalysisAdapter, collapsedAnalysisAdapter);
+    // bi-interpolator frozen at the failure point
+    const t = failedInterpolator.parameter;
+    this.interpolator = new AnalysisInterpolator(service, this.collapseSource).withParameter(t);
+  }
+
+  public get memberForceStrengthRatios(): Float32Array {
+    return this.failedInterpolator.memberForceStrengthRatios;
+  }
+
+  /** Sets the source parameter: zero is the base, one is the dummy collapse. Advancing approximates collapse.  */
+  public withParameter(t: number): Interpolator {
+    this.collapseSource.withParameter(t);
+    return this;
+  }
+
+  public get parameter(): number {
+    return this.interpolator.parameter;
+  }
+
+  public getLoadPosition(frontOut: vec2, rotationOut: vec2): void {
+    return this.interpolator.getLoadPosition(frontOut, rotationOut);
+  }
+
+  public getAllDisplacedJointLocations(out: Float32Array): Float32Array {
+    return this.interpolator.getAllDisplacedJointLocations(out);
+  }
+
+  public get isTestFailed(): boolean {
+    return this.failedInterpolator.isTestFailed;
+  }
+
+  public get failedMemberMask(): BitVector {
+    return this.failedInterpolator.failedMemberMask;
+  }
+
+  getMemberForce(index: number): number {
+    return this.failedInterpolator.getMemberForce(index);
+  }
+}
+
+/** A source adapter for interpolating between analysis load cases. */
+class AnalysisInterpolationSourceAdapter implements InterpolatorSource {
+  private readonly tmpDisplacementA = vec2.create();
+  private readonly tmpDisplacementB = vec2.create();
+
+  constructor(private readonly analysisService: AnalysisService) {}
+
+  /** Returns the interpolated joint displacement for the given parameter. */
+  getJointDisplacement(out: vec2, index: number, ctx: InterpolatorContext): vec2 {
+    if (isNaN(ctx.tBridge)) {
+      this.analysisService.getJointDisplacement(out, 0, index);
+    } else {
+      const left = this.analysisService.getJointDisplacement(this.tmpDisplacementA, ctx.leftLoadCase, index);
+      const right = this.analysisService.getJointDisplacement(this.tmpDisplacementB, ctx.rightLoadCase, index);
+      vec2.lerp(out, left, right, ctx.tPanel);
+    }
+    return out;
+  }
+
+  getJointDisplacementXForDeadLoadOnly(index: number): number {
+    return this.analysisService.getJointDisplacementX(0, index);
+  }
+
+  getMemberForce(index: number, ctx: InterpolatorContext): number {
+    if (isNaN(ctx.tBridge)) {
+      return this.analysisService.getMemberForce(0, index);
+    }
+    const leftLoadCaseForce = this.analysisService.getMemberForce(ctx.leftLoadCase, index);
+    const rightLoadCaseForce = this.analysisService.getMemberForce(ctx.rightLoadCase, index);
+    return leftLoadCaseForce + ctx.tPanel * (rightLoadCaseForce - leftLoadCaseForce);
+  }
+}
+
+/** A source that interpolates two other sources. */
+class BiInterpolatorSource implements InterpolatorSource {
+  public t: number = 0;
   private readonly tmpVecA = vec2.create();
   private readonly tmpVecB = vec2.create();
 
   constructor(
-    private readonly sourceA: InterpolationSource,
-    private readonly sourceB: InterpolationSource,
+    private readonly sourceA: InterpolatorSource,
+    private readonly sourceB: InterpolatorSource,
   ) {}
 
-  public withParameter(t: number): BiInterpolationSource {
+  getJointDisplacementXForDeadLoadOnly(index: number): number {
+    const dxA = this.sourceA.getJointDisplacementXForDeadLoadOnly(index);
+    const dxB = this.sourceB.getJointDisplacementXForDeadLoadOnly(index);
+    return dxA + this.t * (dxB - dxA);
+  }
+
+  getJointDisplacement(out: vec2, index: number, ctx: InterpolatorContext): vec2 {
+    const aDisplacement = this.sourceA.getJointDisplacement(this.tmpVecA, index, ctx);
+    const bDisplacement = this.sourceB.getJointDisplacement(this.tmpVecB, index, ctx);
+    return vec2.lerp(out, aDisplacement, bDisplacement, this.t);
+  }
+
+  getMemberForce(index: number, ctx: InterpolatorContext): number {
+    const aForce = this.sourceA.getMemberForce(index, ctx);
+    const bForce = this.sourceB.getMemberForce(index, ctx);
+    return aForce + this.t * (bForce - aForce);
+  }
+
+  public withParameter(t: number): BiInterpolatorSource {
     this.t = t;
     return this;
-  }
-
-  getJointDisplacement(out: vec2, loadCase: number, jointIndex: number): vec2 {
-    const a = this.sourceA.getJointDisplacement(this.tmpVecA, loadCase, jointIndex);
-    const b = this.sourceB.getJointDisplacement(this.tmpVecB, loadCase, jointIndex);
-    return intepolateVec2(out, a, b, this.t);
-  }
-
-  getJointDisplacementX(loadCase: number, jointIndex: number): number {
-    const a = this.sourceA.getJointDisplacementX(loadCase, jointIndex);
-    const b = this.sourceB.getJointDisplacementX(loadCase, jointIndex);
-    return a + (b - a) * this.t;
-  }
-  getJointDisplacementY(loadCase: number, jointIndex: number): number {
-    const a = this.sourceA.getJointDisplacementY(loadCase, jointIndex);
-    const b = this.sourceB.getJointDisplacementY(loadCase, jointIndex);
-    return a + (b - a) * this.t;
-  }
-
-  getMemberForce(loadCase: number, memberIndex: number): number {
-    const a = this.sourceA.getMemberForce(loadCase, memberIndex);
-    const b = this.sourceB.getMemberForce(loadCase, memberIndex);
-    return a + (b - a) * this.t;
   }
 }
 
 @Injectable({ providedIn: 'root' })
 export class InterpolationService {
-  public static readonly ZERO_FORCE_JOINT_DISPLACEMENT_SOURCE: InterpolationSource = {
-    getJointDisplacement: (out: vec2, _loadCase: number, _jointIndex: number): vec2 => {
-      out[0] = out[1] = 0;
-      return out;
-    },
-    getJointDisplacementX: (_loadCase: number, _jointIndex: number): number => {
-      return 0;
-    },
-    getJointDisplacementY: (_loadCase: number, _jointIndex: number): number => {
-      return 0;
-    },
-    getMemberForce: (_loadCase: number, _memberIndex: number): number => {
-      return 0;
-    },
+  /** An interpolation source simulating a bridge with no loads applied, including dead loads. */
+  private static readonly ZERO_FORCE_INTERPOLATION_SOURCE: InterpolatorSource = {
+    getJointDisplacement: (out: vec2, _index: number, _ctx: InterpolatorContext): vec2 => vec2.zero(out),
+    getJointDisplacementXForDeadLoadOnly: (_index: number): number => 0,
+    getMemberForce: (_index: number, _ctx: InterpolatorContext): number => 0,
   };
 
   constructor(
+    readonly analysisService: AnalysisService,
+    @Inject(COLLAPSE_ANALYSIS) readonly collapseAnalysisService: AnalysisService,
     readonly bridgeService: BridgeService,
     readonly parametersService: SimulationParametersService,
     readonly terrainModelService: TerrainModelService,
   ) {}
 
-  /** Creates an interpolator for the given joint displacement source. Sources are e.g. analyses (normal or failure) or the zero force case. */
-  public createInterpolator(source: InterpolationSource) {
-    return new Interpolator(this, source);
+  /** Creates an interpolator for the given analysis service, which defaults to the current analysis. */
+  public createAnalysisInterpolator(): Interpolator {
+    const sourceAdapter = new AnalysisInterpolationSourceAdapter(this.analysisService);
+    return new AnalysisInterpolator(this, sourceAdapter);
   }
 
-  /**
-   * Returns a new bi-interpolator of two given sources, both at the given parameter value. The returned interpolator's
-   * parameter setter affects source weighting only, not the load position.
-   */
-  public createBiInterpolator(sourceA: InterpolationSource, sourceB: InterpolationSource, t: number): Interpolator {
-    const biSource = new BiInterpolationSource(sourceA, sourceB);
-    const interpolator = this.createInterpolator(biSource);
+  public createDeadLoadingInterpolator(t: number): Interpolator {
+    const sourceAdapter = new AnalysisInterpolationSourceAdapter(this.analysisService);
+    const deadLoadingSource = new BiInterpolatorSource(
+      InterpolationService.ZERO_FORCE_INTERPOLATION_SOURCE,
+      sourceAdapter,
+    );
+    const interpolator = new AnalysisInterpolator(this, deadLoadingSource).withParameter(t);
     // Monkey patch the interpolator's parameter setter to operate on the bi-source.
+    const interpolatorWithParameter = interpolator.withParameter.bind(interpolator);
     interpolator.withParameter = tSource => {
-      biSource.withParameter(tSource);
-      // Lazily set or restore the context. Bridge deck limits were probably affected by underlying source change.
-      return interpolator.refreshContext(t);
+      deadLoadingSource.withParameter(tSource);
+      interpolatorWithParameter(t); // Refresh interpolator internal state with new source value
+      return interpolator;
     };
     return interpolator;
   }
-}
 
-function intepolateVec2(v: vec2, a: vec2, b: vec2, t: number): vec2 {
-  // TODO: r = a * t + b * (1 - t) would be a bit more stable, but a bit slower.
-  v[0] = a[0] + t * (b[0] - a[0]);
-  v[1] = a[1] + t * (b[1] - a[1]);
-  return v;
+  public createCollapseInterpolator(failedInterpolator: Interpolator): Interpolator {
+    return new CollapseInterpolator(this, failedInterpolator);
+  }
 }

@@ -5,7 +5,7 @@ import { routes } from './app.routes';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getAnalytics, provideAnalytics, ScreenTrackingService } from '@angular/fire/analytics';
 import { GlobalErrorHandlerService } from './shared/core/global-error-handler.service';
-import { FAILED_BRIDGE_ANALYSIS } from './features/fly-thru/pane/constants';
+import { COLLAPSE_ANALYSIS  } from './features/fly-thru/pane/constants';
 import { AnalysisService } from './shared/services/analysis.service';
 
 export const appConfig: ApplicationConfig = {
@@ -26,8 +26,8 @@ export const appConfig: ApplicationConfig = {
     provideAnalytics(() => getAnalytics()),
     ScreenTrackingService,
     // Need a second bridge analysis for animation. Would like to provide in 
-    // FlyThruPaneComponent, but that doesn't work.
-    { provide: FAILED_BRIDGE_ANALYSIS, useClass: AnalysisService},
+    // FlyThruPaneComponent, but that doesn't work because its injections can't be at component level.
+    { provide: COLLAPSE_ANALYSIS, useClass: AnalysisService},
     { provide: ErrorHandler, useClass: GlobalErrorHandlerService },
   ],
 };

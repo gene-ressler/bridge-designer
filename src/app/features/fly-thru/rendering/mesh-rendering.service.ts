@@ -218,20 +218,40 @@ export class MeshRenderingService {
   }
 
   /**
-   * Replace the instancce transform data of the given mesh.
+   * Replaces the instancce transform data of the given mesh.
    * It will often be convenient to update and resend meshData.instanceModelTransforms.
    */
   public updateInstanceModelTransforms(
+    meshOrWire: Mesh | Wire,
+    data: ArrayBufferView,
+    usage: number = this.glService.gl.STREAM_DRAW,
+  ): void {
+    if (!meshOrWire.instanceModelTransformBuffer) {
+      return;
+    }
+    const gl = this.glService.gl;
+    gl.bindVertexArray(meshOrWire.vertexArray);
+    gl.bindBuffer(gl.ARRAY_BUFFER, meshOrWire.instanceModelTransformBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, data, usage, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.bindVertexArray(null);
+  }
+
+  /**
+   * Replaces the instancce colors of the given mesh.
+   * It will often be convenient to update and resend meshData.instanceColors.
+   */
+  public updateInstanceColors(
     mesh: Mesh,
     data: ArrayBufferView,
     usage: number = this.glService.gl.STREAM_DRAW,
   ): void {
-    if (!mesh.instanceModelTransformBuffer) {
+    if (!mesh.instanceColorBuffer) {
       return;
     }
     const gl = this.glService.gl;
     gl.bindVertexArray(mesh.vertexArray);
-    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.instanceModelTransformBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.instanceColorBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, data, usage, 0);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     gl.bindVertexArray(null);

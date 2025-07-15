@@ -5,6 +5,10 @@ export class BitVector {
     this.bits = new Uint32Array(Math.trunc((_width + 31) / 32));
   }
 
+  public clearAll(): void {
+    this.bits.fill(0);
+  }
+
   public get width(): number {
     return this._width;
   }

@@ -23,16 +23,8 @@ export const enum AnalysisStatus {
   PASSES,
 }
 
-/** Source of information used for interpolation, etc. Implemented by the analysis service and others. */
-export interface InterpolationSource {
-  getJointDisplacement(out: vec2, loadCase: number, jointIndex: number): vec2;
-  getJointDisplacementX(loadCase: number, jointIndex: number): number;
-  getJointDisplacementY(loadCase: number, jointIndex: number): number;
-  getMemberForce(loadCase: number, memberIndex: number): number;
-}
-
 @Injectable({ providedIn: 'root' })
-export class AnalysisService implements InterpolationSource {
+export class AnalysisService {
   constructor(
     private readonly bridgeService: BridgeService,
     private readonly eventBrokerService: EventBrokerService,
