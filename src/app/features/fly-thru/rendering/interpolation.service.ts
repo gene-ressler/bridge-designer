@@ -7,8 +7,8 @@ import { Geometry } from '../../../shared/classes/graphics';
 import { AnalysisService } from '../../../shared/services/analysis.service';
 import { SimulationParametersService } from './simulation-parameters.service';
 import { SiteConstants } from '../../../shared/classes/site.model';
-import { BitVector } from '../../../shared/core/bitvector';
 import { COLLAPSE_ANALYSIS } from '../pane/constants';
+import { FailedMemberKind } from '../../../shared/classes/types';
 
 /** Source data for an interpolator. Has several purpose-built implementations. */
 interface InterpolatorSource {
@@ -24,7 +24,7 @@ export interface Interpolator {
   /** Count of members failed during the last parameter advance. */
   readonly failedMemberCount: number;
   /** Which members failed during the last parameter advance. */
-  readonly failedMemberMask: BitVector;
+  readonly failedMemberKinds: Uint8Array;
   /** Member force/strength ratios after the last parameter advance. */
   readonly memberForceStrengthRatios: Float32Array;
   /** Returns the interpolator advanced to a new parameter value. */
@@ -69,7 +69,7 @@ class SourceInterpolator implements Interpolator {
   // Member status info is cached here upon advancing the parameter to save redundant
   // computation across simulation state machine and frame rendering.
   public readonly memberForceStrengthRatios = new Float32Array(DesignConditions.MAX_MEMBER_COUNT);
-  public readonly failedMemberMask = new BitVector(DesignConditions.MAX_MEMBER_COUNT);
+  public readonly failedMemberKinds = new Uint8Array(DesignConditions.MAX_MEMBER_COUNT); // FailedMemberKind[].
   public failedMemberCount: number = 0;
 
   private readonly ctx: InterpolatorContext = {} as InterpolatorContext;
@@ -90,7 +90,7 @@ class SourceInterpolator implements Interpolator {
   }
 
   /**
-   *  Finds the way point (truck front wheel contact) and load rotation (to place rear wheels on the road) 
+   *  Finds the way point (truck front wheel contact) and load rotation (to place rear wheels on the road)
    * for the current parameter. The rotation vector isn't normalized.
    */
   public getLoadPosition(frontOut: vec2, rotationOut: vec2): void {
@@ -112,7 +112,7 @@ class SourceInterpolator implements Interpolator {
     const eps2 = 0.08; // ~1 cm accuracy
     const hiLimit = squaredTruckLength + eps2;
     const loLimit = squaredTruckLength - eps2;
-    // Bail at a fixed limit for safety e.g. for elevation discontinuities at bridge ends, where 
+    // Bail at a fixed limit for safety e.g. for elevation discontinuities at bridge ends, where
     // no solution may exist.  Since the resulting point is still on the way, it's the best we can do.
     for (let i = 0; i < 16; ++i) {
       const t = (t0 + t1) * 0.5;
@@ -146,8 +146,8 @@ class SourceInterpolator implements Interpolator {
     return this.interpolationSource.getMemberForce(index, this.ctx);
   }
 
-  /** 
-   * Returns the current position of the load along its path. An optional context is 
+  /**
+   * Returns the current position of the load along its path. An optional context is
    * used for fetching position data within the current load case.
    */
   private getWayPoint(out: vec2, ctx: InterpolatorContext = this.ctx): vec2 {
@@ -206,8 +206,8 @@ class SourceInterpolator implements Interpolator {
 
   private updateMemberFailureStatus(): SourceInterpolator {
     const members = this.service.bridgeService.bridge.members;
-    this.failedMemberCount = 0
-    this.failedMemberMask.clearAll();
+    this.failedMemberCount = 0;
+    this.failedMemberKinds.fill(0); // NONE
     for (let i = 0; i < members.length; ++i) {
       const force = this.getMemberForce(i);
       const strength =
@@ -216,10 +216,13 @@ class SourceInterpolator implements Interpolator {
           : this.service.analysisService.getMemberTensileStrength(i);
       const ratio = force / strength;
       this.memberForceStrengthRatios[i] = ratio;
-      if (Math.abs(ratio) > 1) {
+      if (ratio < -1) {
         this.failedMemberCount++;
-        this.failedMemberMask.setBit(i);
-      }
+        this.failedMemberKinds[i] = FailedMemberKind.COMPRESSION;
+      } else if (ratio > 1) {
+        this.failedMemberCount++;
+        this.failedMemberKinds[i] = FailedMemberKind.TENSION;
+      } 
     }
     return this;
   }
@@ -289,8 +292,8 @@ class CollapseInterpolator implements Interpolator {
     return this.failedInterpolator.failedMemberCount;
   }
 
-  public get failedMemberMask(): BitVector {
-    return this.failedInterpolator.failedMemberMask;
+  public get failedMemberKinds(): Uint8Array /* FailedMemberKind[] */ {
+    return this.failedInterpolator.failedMemberKinds;
   }
 
   getMemberForce(index: number): number {

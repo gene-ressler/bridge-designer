@@ -151,14 +151,14 @@ export class AnalysisService {
    * @param bridge bridge to analyze
    * @param failureStatus status of failed members: FAILED, NOT_FAILED, base member getLength, which implies FAILED.
    */
-  public analyze(options?: { degradeMembersMask?: BitVector; populateBridgeMembers?: boolean }): void {
+  public analyze(options?: { degradeMembersMask?: Uint8Array; populateBridgeMembers?: boolean }): void {
     this.analyzeImpl(options || {});
     if (options?.populateBridgeMembers) {
       this.eventBrokerService.analysisCompletion.next({ origin: EventOrigin.SERVICE, data: this._status });
     }
   }
 
-  private analyzeImpl(options: { degradeMembersMask?: BitVector; populateBridgeMembers?: boolean }): void {
+  private analyzeImpl(options: { degradeMembersMask?: Uint8Array; populateBridgeMembers?: boolean }): void {
     const bridge = this.bridgeService.bridge;
     const conditions = this.bridgeService.designConditions;
     this._status = AnalysisStatus.NONE;
@@ -250,7 +250,7 @@ export class AnalysisService {
     const stiffness = Utility.create2dFloat64Array(nEquations, nEquations);
     for (let im = 0; im < nMembers; im++) {
       let e = members[im].material.e;
-      if (options?.degradeMembersMask?.getBit(im)) {
+      if (options?.degradeMembersMask?.[im]) {
         e *= AnalysisService.failedMemberDegradation;
       }
       const aEOverL = (members[im].shape.area * e) / length[im];
@@ -341,7 +341,7 @@ export class AnalysisService {
       for (let im = 0; im < nMembers; im++) {
         const member = members[im];
         let e = member.material.e;
-        if (options?.degradeMembersMask?.getBit(im)) {
+        if (options?.degradeMembersMask?.[im]) {
           e *= AnalysisService.failedMemberDegradation;
         }
         this.getJointDisplacement(displacementA, ilc, member.a.index);

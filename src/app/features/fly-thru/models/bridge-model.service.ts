@@ -126,11 +126,11 @@ export class BridgeModelService {
     trussCenterlineOffset: number,
   ): Float32Array {
     const members = this.bridgeService.bridge.members;
-    const failed = this.simulationStateService.interpolator.failedMemberMask;
+    const failed = this.simulationStateService.interpolator.failedMemberKinds;
     transformsOut ||= new Float32Array(members.length * 32);
     let offset = 0;
     for (let i = 0; i < members.length; ++i) {
-      if (failed.getBit(i)) {
+      if (failed[i]) {
         continue;
       }
       const member = members[i];
@@ -166,10 +166,10 @@ export class BridgeModelService {
   public buildMemberInstanceColors(colorsOut: Float32Array | undefined): Float32Array {
     const forceStrengthRatios = this.simulationStateService.interpolator.memberForceStrengthRatios;
     const members = this.bridgeService.bridge.members;
-    const failed = this.simulationStateService.interpolator.failedMemberMask;
+    const failed = this.simulationStateService.interpolator.failedMemberKinds;
     colorsOut ||= new Float32Array(members.length * 6);
     for (let i = 0, offset = 0; i < members.length; ++i) {
-      if (failed.getBit(i)) {
+      if (failed[i]) {
         continue;
       }
       const ratio = forceStrengthRatios[i];

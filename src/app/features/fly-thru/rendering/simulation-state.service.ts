@@ -94,7 +94,7 @@ export class SimulationStateService {
     }
     // Advance to the collapsing phase after setting up the collapse analysis.
     const startCollapsing = (failedInterpolator: Interpolator): void => {
-      this.collapseAnalysisService.analyze({ degradeMembersMask: failedInterpolator.failedMemberMask });
+      this.collapseAnalysisService.analyze({ degradeMembersMask: failedInterpolator.failedMemberKinds });
       this.collapsingInterpolator = this.interpolationService.createCollapseInterpolator(failedInterpolator);
       this.phase = SimulationPhase.COLLAPSING;
       this.phaseStartClockMillis = clockMillis;

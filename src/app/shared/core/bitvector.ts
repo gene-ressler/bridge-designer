@@ -1,47 +1,43 @@
 export class BitVector {
   private readonly bits: Uint32Array;
 
-  constructor(private readonly _width: number) {
-    this.bits = new Uint32Array(Math.trunc((_width + 31) / 32));
+  constructor(public readonly width: number) {
+    this.bits = new Uint32Array(Math.trunc((width + 31) / 32));
   }
 
   public clearAll(): void {
     this.bits.fill(0);
   }
 
-  public get width(): number {
-    return this._width;
-  }
-
   public setBit(i: number): BitVector {
     this.checkIndex(i);
-    this.bits[Math.trunc(i / 32)] |= 1 << i % 32;
+    this.bits[i >>> 5] |= 1 << (i & 0x1f);
     return this;
   }
 
   public clearBit(i: number): BitVector {
     this.checkIndex(i);
-    this.bits[Math.trunc(i / 32)] &= ~(1 << i % 32);
+    this.bits[i >>> 5] &= ~(1 << (i & 0x1f));
     return this;
   }
 
   public setBitValue(i: number, value: boolean): BitVector {
     this.checkIndex(i);
     if (value) {
-      this.bits[Math.trunc(i / 32)] |= 1 << i % 32;
+      this.bits[i >>> 5] |= 1 << (i & 0x1f);
     } else {
-      this.bits[Math.trunc(i / 32)] &= ~(1 << i % 32);
+      this.bits[i >>> 5] &= ~(1 << (i & 0x1f));
     }
     return this;
   }
 
   public getBit(i: number): boolean {
     this.checkIndex(i);
-    return (this.bits[Math.trunc(i / 32)] & (1 << i % 32)) !== 0;
+    return (this.bits[i >>> 5] & (1 << (i & 0x1f))) !== 0;
   }
 
   private checkIndex(i: number) {
-    if (i < 0 || i >= this._width) {
+    if (i < 0 || i >= this.width) {
       throw new Error(`BitVector index oob: ${i}`);
     }
   }
