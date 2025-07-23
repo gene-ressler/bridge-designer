@@ -1,4 +1,47 @@
 // This file is generated. Edit .vert and .frag files instead.
+export const BUCKLED_MEMBER_VERTEX_SHADER = 
+`#version 300 es
+layout(std140)uniform Transforms{
+mat4 modelView;
+mat4 modelViewProjection;}transforms;
+layout(location=0)in vec3 inPosition;
+layout(location=1)in uint inNormalRef;
+layout(location=4)in mat4 inModelTransform;
+const mat4 UNIT_SQUARE=mat4(0,0,0,1,1,0,0,1,1,1,0,1,0,1,0,1);
+out vec3 vertex;
+out vec3 normal;
+void main(){
+vec4 p=inModelTransform*vec4(inPosition,1.0f);
+vec4 position=vec4(p.x/p.w,p.y/p.w,p.z,1.0);
+mat4 u=inModelTransform*UNIT_SQUARE;
+vec3 rawNormal=inNormalRef==0u ? vec3(0,0,1): inNormalRef==1u ? vec3(0,0,-1): inNormalRef==2u ? vec3(u[2][0]/u[2][3]-u[1][0]/u[1][3],u[2][1]/u[2][3]-u[1][1]/u[1][3],0): inNormalRef==3u ? vec3(u[3][0]/u[3][3]-u[0][0]/u[0][3],u[3][1]/u[3][3]-u[0][1]/u[0][3],0): inNormalRef==4u ? vec3(u[1][0]/u[1][3]-u[2][0]/u[2][3],u[1][1]/u[1][3]-u[2][1]/u[2][3],0): vec3(u[0][0]/u[0][3]-u[3][0]/u[3][3],u[0][1]/u[0][3]-u[3][1]/u[3][3],0);
+gl_Position=transforms.modelViewProjection*position;
+vertex=vec3(transforms.modelView*position);
+normal=mat3(transforms.modelView)*normalize(rawNormal);}`;
+
+export const BUCKLED_MEMBER_FRAGMENT_SHADER = 
+`#version 300 es
+precision mediump float;
+layout(std140)uniform LightConfig{
+vec3 unitDirection;
+vec3 color;
+float ambientIntensity;}light;
+in vec3 vertex;
+in vec3 normal;
+out vec4 fragmentColor;
+const vec3 COLOR=vec3(1.0,0.0,0.0);
+const float SHININESS=20.0;
+void main(){
+vec3 unitNormal=normalize(normal);
+float normalDotLight=dot(unitNormal,light.unitDirection);
+vec3 unitReflection=normalize(2.0f*normalDotLight*unitNormal-light.unitDirection);
+vec3 unitEye=normalize(-vertex);
+float specularIntensity=pow(max(dot(unitReflection,unitEye),0.0f),SHININESS);
+vec3 specularColor=specularIntensity*light.color;
+float diffuseIntensity=(1.0f-light.ambientIntensity)*clamp(normalDotLight,0.0f,1.0f)+light.ambientIntensity;
+vec3 diffuseColor=diffuseIntensity*COLOR*light.color*(1.0f-specularIntensity);
+fragmentColor=vec4(specularColor+diffuseColor,1);}`;
+
 export const COLORED_MESH_VERTEX_SHADER = 
 `#version 300 es
 layout(std140)uniform Transforms{
@@ -28,7 +71,7 @@ struct MaterialSpec{
 vec4 spec;};
 layout(std140)uniform MaterialConfig{
 float globalAlpha;
-MaterialSpec specs[11];}materialConfig;
+MaterialSpec specs[12];}materialConfig;
 in vec3 vertex;
 in vec3 normal;
 flat in uint materialRef;
@@ -53,7 +96,7 @@ mat4 modelViewProjection;}transforms;
 layout(location=0)in vec3 inPosition;
 layout(location=1)in vec3 inNormal;
 layout(location=2)in uint inMaterialRef;
-layout(location=4)in mat4x4 inModelTransform;
+layout(location=4)in mat4 inModelTransform;
 out vec3 vertex;
 out vec3 normal;
 flat out uint materialRef;
@@ -72,7 +115,7 @@ mat4 modelViewProjection;}transforms;
 layout(location=0)in vec3 inPosition;
 layout(location=1)in vec3 inNormal;
 layout(location=2)in vec3 inColor;
-layout(location=4)in mat4x4 inModelTransform;
+layout(location=4)in mat4 inModelTransform;
 out vec3 vertex;
 out vec3 normal;
 out vec3 color;
@@ -276,7 +319,7 @@ mat4 modelViewProjection;}transforms;
 layout(location=0)in vec3 inPosition;
 layout(location=1)in vec3 inNormal;
 layout(location=3)in vec2 inTexCoord;
-layout(location=4)in mat4x4 inModelTransform;
+layout(location=4)in mat4 inModelTransform;
 out vec3 normal;
 out vec2 texCoord;
 void main(){
@@ -331,7 +374,7 @@ mat4 modelView;
 mat4 modelViewProjection;}transforms;
 layout(location=0)in vec3 inPosition;
 layout(location=1)in vec3 inDirection;
-layout(location=4)in mat4x4 inModelTransform;
+layout(location=4)in mat4 inModelTransform;
 out vec3 vertex;
 out vec3 direction;
 void main(){

@@ -26,6 +26,11 @@ export class ShaderService {
     const shaders = this.compileShaders(gl);
     const programSpecs: ProgramSpec[] = [
       {
+        name: 'buckling_member',
+        vertexShader: shaders['BUCKLED_MEMBER_VERTEX_SHADER'],
+        fragmentShader: shaders['BUCKLED_MEMBER_FRAGMENT_SHADER'],
+      },
+      {
         name: 'colored_mesh',
         vertexShader: shaders['COLORED_MESH_VERTEX_SHADER'],
         fragmentShader: shaders['COLORED_MESH_FRAGMENT_SHADER'],

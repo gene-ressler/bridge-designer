@@ -4,6 +4,7 @@ import { Geometry } from '../../../shared/classes/graphics';
 import { Member } from '../../../shared/classes/member.model';
 import { MeshData } from '../rendering/mesh-rendering.service';
 import { BUCKLED_MEMBER_MESH_DATA } from './buckled-member';
+import { GlService } from '../rendering/gl.service';
 
 export type BuckledMemberMeshData = {
   meshData: MeshData;
@@ -16,8 +17,8 @@ export type BuckledMemberMeshData = {
 export class FailedMemberModelService {
   /** Number of points used to approximate the appearance of buckled members. Must be odd. */
   private static readonly PARABOLA_POINT_COUNT = 33;
-  // visible-for-testing
-  static readonly SEGMENT_TRANSFORM_FLOAT_COUNT = 32 * (FailedMemberModelService.PARABOLA_POINT_COUNT - 1);
+  /** Number of floats in a segment (instance) transform for updating transform backing arrays.  */
+  public static readonly SEGMENT_TRANSFORM_FLOAT_COUNT = 32 * (FailedMemberModelService.PARABOLA_POINT_COUNT - 1);
   /** Widths of parabolas with unit arc length, where corresponding element of PARABOLA_HEIGHT gives the height. */
   private static readonly PARABOLA_WIDTHS = [
     0.0, 0.0625, 0.125, 0.15625, 0.1875, 0.21875, 0.25, 0.28125, 0.3125, 0.34375, 0.375, 0.40625, 0.4375, 0.46875, 0.5,
@@ -41,11 +42,13 @@ export class FailedMemberModelService {
   private readonly modelTransform = mat3.create();
   private readonly modelTranslation = vec2.create();
 
+  constructor(private readonly glService: GlService) {}
+
   /**
    * Builds mesh data for a list of buckled members. Assumes the given displaced joint locations make the member shorter
    * than its no-load length.
    */
-  public buildMeshDataForMembers(
+  public buildMeshDataForBuckledMembers(
     members: Member[],
     jointLocations: Float32Array,
     trussCenterlineOffset: number,
@@ -56,8 +59,10 @@ export class FailedMemberModelService {
       this.buildSegmentTransformsForMember(transforms, member, jointLocations, trussCenterlineOffset, offset);
       offset += FailedMemberModelService.SEGMENT_TRANSFORM_FLOAT_COUNT;
     }
-    const meshData = {
+    const gl = this.glService.gl;
+    const meshData: MeshData = {
       instanceModelTransforms: transforms,
+      usage: { instanceModelTransforms: gl.STREAM_DRAW },
       ...BUCKLED_MEMBER_MESH_DATA,
     };
     return {
@@ -68,25 +73,12 @@ export class FailedMemberModelService {
     };
   }
 
-  /** Updates the instance transforms of buckled member mesh data for presumablye new joint locations. */
-  public updateMeshDataForMembers(buckledMemberMeshData: BuckledMemberMeshData): BuckledMemberMeshData {
-    const transforms = buckledMemberMeshData.meshData.instanceModelTransforms!;
-    const jointLocations = buckledMemberMeshData.jointLocations;
-    const trussCenterlineOffset = buckledMemberMeshData.trussCenterlineOffset;
-    let offset = 0;
-    for (const member of buckledMemberMeshData.members) {
-      this.buildSegmentTransformsForMember(transforms, member, jointLocations, trussCenterlineOffset, offset);
-      offset += FailedMemberModelService.SEGMENT_TRANSFORM_FLOAT_COUNT;
-    }
-    return buckledMemberMeshData;
-  }
-
   /**
    * Builds transforms in the given array to represent the given member in the buckled state in both front
    * and rear trusses of the bridge. Each transform takes a prototypical unit cube to a trapezoidal prism
    * along the axis of a parabola.
    */
-  private buildSegmentTransformsForMember(
+  public buildSegmentTransformsForMember(
     out: Float32Array,
     member: Member,
     jointLocations: Float32Array,
@@ -153,7 +145,7 @@ export class FailedMemberModelService {
       addDimensionZ(mRightFront, this.segmentTransform, size, trussCenterlineOffset);
       addDimensionZ(mRightRear, this.segmentTransform, size, -trussCenterlineOffset);
 
-      // Prepare for next riight segment.
+      // Prepare for next right segment.
       vec2.copy(this.prevInnerRight, this.inner);
       vec2.copy(this.prevOuterRight, this.outer);
     }

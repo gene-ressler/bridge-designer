@@ -127,33 +127,29 @@ export class SimulationStateService {
         this.advanceLoad(clockMillis);
         break;
       case SimulationPhase.TRAVERSING:
-        {
-          const remainingTraverseMillis =
-            (this.endParameter - this.traversingInterpolator.parameter) * this.parameterService.elapsedMillisPerMeter;
-          if (remainingTraverseMillis * SimulationStateService.INV_MATERIALIZING_MILLIS < 1) {
-            this.phase = SimulationPhase.FADING_OUT;
-            // Don't reset the clock.
-            return this.advance(clockMillis);
-          }
-          this.advanceLoad(clockMillis);
-          if (this.traversingInterpolator.failedMemberCount > 0) {
-            startCollapsing(this.traversingInterpolator);
-            return;
-          }
+        const remainingTraverseMillis =
+          (this.endParameter - this.traversingInterpolator.parameter) * this.parameterService.elapsedMillisPerMeter;
+        if (remainingTraverseMillis * SimulationStateService.INV_MATERIALIZING_MILLIS < 1) {
+          this.phase = SimulationPhase.FADING_OUT;
+          // Don't reset the clock.
+          return this.advance(clockMillis);
+        }
+        this.advanceLoad(clockMillis);
+        if (this.traversingInterpolator.failedMemberCount > 0) {
+          startCollapsing(this.traversingInterpolator);
+          return;
         }
         break;
       case SimulationPhase.FADING_OUT:
-        {
-          const remainingTraverseMillis =
-            (this.endParameter - this.traversingInterpolator.parameter) * this.parameterService.elapsedMillisPerMeter;
-          if (remainingTraverseMillis < 0) {
-            this.phaseStartClockMillis = clockMillis;
-            this.phase = SimulationPhase.FADING_IN;
-            return this.advance(clockMillis);
-          }
-          this.loadAlpha = remainingTraverseMillis * SimulationStateService.INV_MATERIALIZING_MILLIS;
-          this.advanceLoad(clockMillis);
+        const remainingFadeOutMillis =
+          (this.endParameter - this.traversingInterpolator.parameter) * this.parameterService.elapsedMillisPerMeter;
+        if (remainingFadeOutMillis < 0) {
+          this.phaseStartClockMillis = clockMillis;
+          this.phase = SimulationPhase.FADING_IN;
+          return this.advance(clockMillis);
         }
+        this.loadAlpha = remainingFadeOutMillis * SimulationStateService.INV_MATERIALIZING_MILLIS;
+        this.advanceLoad(clockMillis);
         break;
       case SimulationPhase.COLLAPSING:
         const tRaw = (clockMillis - this.phaseStartClockMillis) * SimulationStateService.INV_COLLAPSING_MILLIS;

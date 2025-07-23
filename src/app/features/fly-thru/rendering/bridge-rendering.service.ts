@@ -7,6 +7,7 @@ import { SimulationStateService } from './simulation-state.service';
 import { DesignConditions } from '../../../shared/services/design-conditions.service';
 import { BitVector } from '../../../shared/core/bitvector';
 import { Gusset } from '../models/gussets.service';
+import { BuckledMemberMesh, FailedMemberRenderingService } from './failed-member-rendering.service';
 
 type BridgeMesh = {
   membersMesh: Mesh;
@@ -15,6 +16,9 @@ type BridgeMesh = {
   stiffeningWires: Wire;
   gussetMeshes: Mesh[];
   pinsMesh: Mesh;
+  /** Mesh for all bucked members bending in parabola shapes. Added when/if bridge fails. */
+  buckledMembersMesh?: BuckledMemberMesh;
+  tornMemberMesh?: Mesh;
   gussets: Gusset[];
   trussCenterlineOffset: number;
   membersNotTransectingRoadwayClearance: BitVector;
@@ -23,10 +27,11 @@ type BridgeMesh = {
 @Injectable({ providedIn: 'root' })
 export class BridgeRenderingService {
   private mesh!: BridgeMesh;
-  private readonly jointLocationsTmp = new Float32Array(2 * DesignConditions.MAX_JOINT_COUNT);
+  private readonly tmpJointLocations = new Float32Array(2 * DesignConditions.MAX_JOINT_COUNT);
 
   constructor(
     private readonly bridgeModelService: BridgeModelService,
+    private readonly failedMemberRenderingService: FailedMemberRenderingService,
     private readonly meshRenderingService: MeshRenderingService,
     private readonly simulationStateService: SimulationStateService,
     private readonly uniformService: UniformService,
@@ -34,7 +39,8 @@ export class BridgeRenderingService {
 
   public prepare(): void {
     this.deleteExistingMesh(this.mesh);
-    const meshData = this.bridgeModelService.createForCurrentBridge();
+    const jointLocations = this.getJointLocations();
+    const meshData = this.bridgeModelService.createForCurrentBridge(jointLocations);
     this.mesh = this.prepareMesh(meshData);
   }
 
@@ -56,6 +62,12 @@ export class BridgeRenderingService {
       this.meshRenderingService.updateInstanceModelTransforms(gussetMesh);
     }
     this.meshRenderingService.updateInstanceModelTransforms(mesh.pinsMesh);
+    if (mesh.buckledMembersMesh) {
+      this.meshRenderingService.updateInstanceModelTransforms(mesh.buckledMembersMesh.mesh);
+    }
+    if (mesh.tornMemberMesh) {
+      this.meshRenderingService.updateInstanceModelTransforms(mesh.tornMemberMesh);
+    }
     this.renderMesh(mesh);
   }
 
@@ -84,10 +96,18 @@ export class BridgeRenderingService {
 
   /** Updates the model transforms in the given bridge mesh for current joint positions. */
   private updateMeshForCurrentLoading(mesh: BridgeMesh): void {
-    const jointLocations = this.simulationStateService.interpolator.getAllDisplacedJointLocations(
-      this.jointLocationsTmp,
-    );
+    const jointLocations = this.getJointLocations();
     const failedMemberCount = this.simulationStateService.interpolator.failedMemberCount;
+    if (failedMemberCount > 0) {
+      if (mesh.buckledMembersMesh) {
+        // TODO: Handle torn member updates.
+        this.failedMemberRenderingService.update(mesh.buckledMembersMesh, jointLocations);
+      } else {
+        const [buckled, torn] = this.failedMemberRenderingService.prepare(jointLocations);
+        mesh.buckledMembersMesh = buckled;
+        mesh.tornMemberMesh = torn;
+      }
+    }
     this.bridgeModelService.buildMemberInstanceTransforms(
       mesh.membersMesh.instanceModelTransforms,
       jointLocations,
@@ -118,6 +138,10 @@ export class BridgeRenderingService {
     }
   }
 
+  private getJointLocations(): Float32Array {
+    return this.simulationStateService.interpolator.getAllDisplacedJointLocations(this.tmpJointLocations);
+  }
+
   private renderMesh(mesh: BridgeMesh): void {
     // Render with meshes most likely to be occluded last to save work.
     this.meshRenderingService.renderColoredMesh(mesh.deckSlabsMesh);
@@ -126,6 +150,12 @@ export class BridgeRenderingService {
     mesh.gussetMeshes.forEach(mesh => this.meshRenderingService.renderColoredMesh(mesh));
     this.meshRenderingService.renderWire(mesh.stiffeningWires);
     this.meshRenderingService.renderColoredMesh(mesh.pinsMesh);
+    if (mesh.buckledMembersMesh) {
+      this.failedMemberRenderingService.render(mesh.buckledMembersMesh);
+    }
+    if (mesh.tornMemberMesh) {
+      this.meshRenderingService.renderColoredMesh(mesh.tornMemberMesh);
+    }
   }
 
   private deleteExistingMesh(mesh: BridgeMesh | undefined): void {
@@ -138,5 +168,7 @@ export class BridgeRenderingService {
     this.meshRenderingService.deleteExistingMesh(mesh.membersMesh);
     this.meshRenderingService.deleteExistingMesh(mesh.pinsMesh);
     this.meshRenderingService.deleteExistingWire(mesh.stiffeningWires);
+    this.failedMemberRenderingService.deleteExistingBuckledMemberMesh(mesh.buckledMembersMesh);
+    this.meshRenderingService.deleteExistingMesh(mesh.tornMemberMesh);
   }
 }

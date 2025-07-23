@@ -8,7 +8,6 @@ import { BitVector } from '../../../shared/core/bitvector';
 import { SiteConstants } from '../../../shared/classes/site.model';
 import { DECK_BEAM_MESH_DATA } from './deck-beam';
 import { DECK_SLAB_MESH_DATA } from './deck-slab';
-import { DesignConditions } from '../../../shared/services/design-conditions.service';
 import { SimulationStateService } from '../rendering/simulation-state.service';
 import { GlService } from '../rendering/gl.service';
 import { Gusset, GussetsService } from './gussets.service';
@@ -62,7 +61,6 @@ export class BridgeModelService {
 
   private readonly vTmp = vec3.create();
   private readonly mTmp = mat4.create();
-  private readonly jointLocationsTmp = new Float32Array(2 * DesignConditions.MAX_JOINT_COUNT);
 
   constructor(
     private readonly bridgeService: BridgeService,
@@ -71,13 +69,10 @@ export class BridgeModelService {
     private readonly simulationStateService: SimulationStateService,
   ) {}
 
-  /** Creates mesh data for the current bridge. */
-  public createForCurrentBridge(): BridgeMeshData {
+  /** Creates mesh data for the current bridge with given, possibly displaced joint locations. */
+  public createForCurrentBridge(jointLocations: Float32Array): BridgeMeshData {
     const trussCenterlineOffset = this.bridgeService.trussCenterlineOffset;
     const membersNotTransectingRoadwayClearance = this.bridgeService.membersNotTransectingRoadwayClearance;
-    const jointLocations = this.simulationStateService.interpolator.getAllDisplacedJointLocations(
-      this.jointLocationsTmp,
-    );
     const gussets = this.gussetService.gussets;
     const gl = this.glService.gl;
     return {

@@ -19,7 +19,7 @@ export const BUCKLED_MEMBER_MESH_DATA = {
     1.000, 0.000, -0.500, // 14
     1.000, 0.000, 0.500, // 15
   ]),
-  normalIndices: new Uint16Array([
+  normalRefs: new Uint16Array([
     0,  // 0: 0, 0, 1
     0,  // 1: 0, 0, 1
     0,  // 2: 0, 0, 1

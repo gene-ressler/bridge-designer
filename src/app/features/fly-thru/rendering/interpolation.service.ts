@@ -8,13 +8,19 @@ import { AnalysisService } from '../../../shared/services/analysis.service';
 import { SimulationParametersService } from './simulation-parameters.service';
 import { SiteConstants } from '../../../shared/classes/site.model';
 import { COLLAPSE_ANALYSIS } from '../pane/constants';
-import { FailedMemberKind } from '../../../shared/classes/types';
 
 /** Source data for an interpolator. Has several purpose-built implementations. */
 interface InterpolatorSource {
   getJointDisplacementXForDeadLoadOnly(index: number): number;
   getJointDisplacement(out: vec2, index: number, ctx: InterpolatorContext): vec2;
   getMemberForce(index: number, ctx: InterpolatorContext): number;
+}
+
+/** Whether a member is failed and, if so, the kind of failure. */
+export enum FailedMemberKind {
+  NONE = 0, // Falsy
+  COMPRESSION,
+  TENSION,
 }
 
 /** Interpolator between various analysis states to drive the animation. */
@@ -24,7 +30,7 @@ export interface Interpolator {
   /** Count of members failed during the last parameter advance. */
   readonly failedMemberCount: number;
   /** Which members failed during the last parameter advance. */
-  readonly failedMemberKinds: Uint8Array;
+  readonly failedMemberKinds: Uint8Array; // FailedMemberKind[]
   /** Member force/strength ratios after the last parameter advance. */
   readonly memberForceStrengthRatios: Float32Array;
   /** Returns the interpolator advanced to a new parameter value. */

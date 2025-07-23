@@ -142,7 +142,7 @@ describe('FailedMemberModelService', () => {
   it('builds expected buckled member mesh data for member', () => {
     const members = [member];
     const trussCenterlineOffset = 4;
-    const buckledMemberMeshData = service.buildMeshDataForMembers(members, jointLocations, trussCenterlineOffset);
+    const buckledMemberMeshData = service.buildMeshDataForBuckledMembers(members, jointLocations, trussCenterlineOffset);
     const transforms = buckledMemberMeshData.meshData.instanceModelTransforms!;
     expect(transforms[transform.length - 1]).not.toBe(0);
     expect(buckledMemberMeshData.jointLocations).toBe(jointLocations);

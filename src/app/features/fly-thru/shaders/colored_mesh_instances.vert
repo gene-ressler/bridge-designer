@@ -18,7 +18,7 @@ layout(std140) uniform Transforms {
 layout(location = IN_POSITION_LOCATION) in vec3 inPosition;
 layout(location = IN_NORMAL_LOCATION) in vec3 inNormal;
 layout(location = IN_MATERIAL_REF_LOCATION) in uint inMaterialRef;
-layout(location = IN_INSTANCE_MODEL_TRANSFORM_LOCATION) in mat4x4 inModelTransform;
+layout(location = IN_INSTANCE_MODEL_TRANSFORM_LOCATION) in mat4 inModelTransform;
 
 out vec3 vertex;
 out vec3 normal;

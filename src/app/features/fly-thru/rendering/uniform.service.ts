@@ -59,6 +59,7 @@ export class UniformService {
    */
   public prepareUniforms(): void {
     const gl = this.glService.gl;
+    const bucklingMemberProgram = this.shaderService.getProgram('buckling_member');
     const facetMeshProgram = this.shaderService.getProgram('colored_mesh');
     const facetMeshInstancesProgram = this.shaderService.getProgram('colored_mesh_instances');
     const instanceColoredMeshProgram = this.shaderService.getProgram('instance_colored_mesh');
@@ -73,6 +74,7 @@ export class UniformService {
 
     this.transformsBuffer = this.setUpUniformBlock(
       [
+        bucklingMemberProgram,
         facetMeshProgram,
         facetMeshInstancesProgram,
         instanceColoredMeshProgram,
@@ -97,6 +99,7 @@ export class UniformService {
 
     this.lightConfigBuffer = this.setUpUniformBlock(
       [
+        bucklingMemberProgram,
         facetMeshProgram,
         facetMeshInstancesProgram,
         instanceColoredMeshProgram,

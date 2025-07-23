@@ -1,5 +1,7 @@
 export const IN_POSITION_LOCATION = 0;
 export const IN_NORMAL_LOCATION = 1;
+// Normal reference is alias for normal.
+export const IN_NORMAL_REF_LOCATION = 1;
 // Direction is alias for normal.
 export const IN_DIRECTION_LOCATION = 1;
 export const IN_MATERIAL_REF_LOCATION = 2;

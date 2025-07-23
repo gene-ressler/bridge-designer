@@ -7,6 +7,7 @@ import {
   IN_TEX_COORD_LOCATION,
   IN_DIRECTION_LOCATION,
   IN_INSTANCE_COLOR_LOCATION,
+  IN_NORMAL_REF_LOCATION,
 } from '../shaders/constants';
 import { ShaderService } from '../shaders/shader.service';
 import { GlService } from './gl.service';
@@ -17,6 +18,7 @@ import { FACIA_TEXTURE_UNIT, WATER_TEXTURE_UNIT } from './constants';
 export type MeshData = {
   positions: Float32Array;
   normals?: Float32Array;
+  normalRefs?: Uint16Array;
   texCoords?: Float32Array;
   materialRefs?: Uint16Array;
   indices: Uint16Array;
@@ -26,6 +28,7 @@ export type MeshData = {
   usage?: {
     positions?: number;
     normals?: number;
+    normalRefs?: number;
     texCoords?: number;
     materialRefs?: number;
     instanceModelTransforms?: number;
@@ -40,6 +43,7 @@ export type Mesh = {
 
   positionBuffer?: WebGLBuffer;
   normalBuffer?: WebGLBuffer;
+  normalRefBuffer?: WebGLBuffer;
   materialRefBuffer?: WebGLBuffer;
   texture?: WebGLTexture;
   textureUniformLocation?: WebGLUniformLocation;
@@ -89,7 +93,6 @@ export class MeshRenderingService {
   /** Prepares a colored mesh for drawing. Optionially retains backing data for future updates. */
   public prepareColoredMesh(meshData: MeshData, updatable: boolean = false): Mesh {
     const gl = this.glService.gl;
-
     const vertexArray = gl.createVertexArray()!;
     gl.bindVertexArray(vertexArray);
     const positionBuffer = this.prepareBuffer(IN_POSITION_LOCATION, meshData.positions, meshData.usage?.positions);
@@ -169,6 +172,51 @@ export class MeshRenderingService {
       gl.drawElements(gl.TRIANGLES, mesh.elementCount, gl.UNSIGNED_SHORT, 0);
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.bindVertexArray(null);
+  }
+
+  /** Prepares a mesh for an updateable buckled member bending in a parabola. */
+  public prepareBuckledMemberMesh(meshData: MeshData): Mesh {
+    const gl = this.glService.gl;
+    const vertexArray = gl.createVertexArray()!;
+    gl.bindVertexArray(vertexArray);
+    const positionBuffer = this.prepareBuffer(IN_POSITION_LOCATION, meshData.positions, meshData.usage?.positions);
+    const normalRefBuffer = this.prepareBuffer(
+      IN_NORMAL_REF_LOCATION,
+      meshData.normalRefs!,
+      meshData.usage?.normalRefs,
+      1,
+      gl.UNSIGNED_SHORT,
+    );
+    const indexBuffer = this.prepareIndexBuffer(meshData.indices);
+    const instanceModelTransformBuffer = this.prepareInstanceModelTransformBuffer(
+      meshData.instanceModelTransforms,
+      meshData.usage?.instanceModelTransforms,
+    );
+    const elementCount = meshData.indices.length;
+    const instanceCount = meshData.instanceModelTransforms ? meshData.instanceModelTransforms.length / 16 : 0;
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+    gl.bindVertexArray(null);
+    return {
+      vertexArray,
+      indexBuffer,
+      elementCount,
+      instanceCount,
+      positionBuffer,
+      normalRefBuffer,
+      instanceModelTransformBuffer,
+      instanceModelTransforms: meshData.instanceModelTransforms,
+    };
+  }
+
+  /** Renders a buckled member mesh. */
+  public renderBuckledMemberMesh(mesh: Mesh) {
+    const gl = this.glService.gl;
+    gl.useProgram(this.shaderService.getProgram('buckling_member'));
+    gl.bindVertexArray(mesh.vertexArray);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
+    gl.drawElementsInstanced(gl.TRIANGLES, mesh.elementCount, gl.UNSIGNED_SHORT, 0, mesh.instanceCount!);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
     gl.bindVertexArray(null);
   }
 
@@ -405,6 +453,9 @@ export class MeshRenderingService {
     }
     if (mesh.normalBuffer) {
       gl.deleteBuffer(mesh.normalBuffer);
+    }
+    if (mesh.normalRefBuffer) {
+      gl.deleteBuffer(mesh.normalRefBuffer);
     }
     if (mesh.materialRefBuffer) {
       gl.deleteBuffer(mesh.materialRefBuffer);

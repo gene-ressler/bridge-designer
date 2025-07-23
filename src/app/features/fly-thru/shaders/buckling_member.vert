@@ -1,1 +1,0 @@
-// Special purpose for animating buckling members as red square tubes bent in parabolas.

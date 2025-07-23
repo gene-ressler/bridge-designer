@@ -8,7 +8,13 @@ newmtl Red
 Kd 1 0 0  # Diffuse color
 Ka 1 0 0  # Ambient color
 Ks 1 0 0  # Specular color
-Ns 100.0  # Shininess
+Ns 20.0  # Shininess
+
+newmtl Blue
+Kd 0 0 1  # Diffuse color
+Ka 0 0 1  # Ambient color
+Ks 0 0 1  # Specular color
+Ns 20.0  # Shininess
 
 newmtl Orange
 Kd 1 .54 0  # Diffuse color
