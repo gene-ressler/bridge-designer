@@ -1,16 +1,11 @@
 import { Injectable } from '@angular/core';
 import { mat4 } from 'gl-matrix';
-import { ImageService } from '../../../shared/core/image.service';
 import { ShaderService } from '../shaders/shader.service';
 import { GlService } from './gl.service';
 import { Mesh, MeshRenderingService } from './mesh-rendering.service';
-import { OVERLAY_ICONS } from './overlay-icons';
-import { OverlayContext, OverlayRenderingService } from './overlay-rendering.service';
-import { OverlayUiService } from './overlay-ui.service';
 import { ProjectionService } from './projection.service';
 import { UniformService } from './uniform.service';
 import { ViewService } from './view.service';
-import { ViewportService } from './viewport.service';
 import { TruckRenderingService } from './truck-rendering.service';
 import { TerrainModelService } from '../models/terrain-model.service';
 import { UtilityLineRenderingService } from './utility-line-rendering.service';
@@ -21,6 +16,7 @@ import { BridgeRenderingService } from './bridge-rendering.service';
 import { PierRenderingService } from './pier-rendering.service';
 import { WindTurbineRenderingService } from '../../../shared/services/wind-turbine-rendering.service';
 import { SimulationStateService } from './simulation-state.service';
+import { AnimationControlsOverlayService } from './animation-controls-overlay.service';
 
 /** Rendering functionality for fly-thrus. */
 @Injectable({ providedIn: 'root' })
@@ -30,16 +26,13 @@ export class RenderingService {
   private prepared: boolean = false;
   private roadwayMesh!: Mesh;
   private terrainMesh!: Mesh;
-  private controlsOverlay!: OverlayContext;
 
   constructor(
     private readonly abutmentRenderingService: AbutmentRenderingService,
+    private readonly animationControlsOverlayService: AnimationControlsOverlayService,
     private readonly bridgeRenderingService: BridgeRenderingService,
     private readonly glService: GlService,
-    private readonly imageService: ImageService,
     private readonly meshRenderingService: MeshRenderingService,
-    private readonly overlayService: OverlayRenderingService,
-    private readonly overlayUiService: OverlayUiService,
     private readonly pierRenderingService: PierRenderingService,
     private readonly projectionService: ProjectionService,
     private readonly riverRenderingService: RiverRenderingService,
@@ -51,7 +44,6 @@ export class RenderingService {
     private readonly uniformService: UniformService,
     private readonly utilityLineRenderingService: UtilityLineRenderingService,
     private readonly viewService: ViewService,
-    private readonly viewportService: ViewportService,
     private readonly windTurbineRenderingService: WindTurbineRenderingService,
   ) {}
 
@@ -69,9 +61,9 @@ export class RenderingService {
       this.uniformService.prepareUniforms();
     }
 
-    // Per-design conditions setups.
+    // Per-bridge setups.
     this.setDefaultView();
-    // TODO: Most of these can be done only on design conditions changes to save some GC.
+    // TODO: Some of these can be done only on design conditions changes to save some GC.
     this.terrainModelService.initializeForBridge();
     this.meshRenderingService.deleteExistingMesh(this.terrainMesh);
     this.meshRenderingService.deleteExistingMesh(this.roadwayMesh);
@@ -89,26 +81,11 @@ export class RenderingService {
       return;
     }
 
-    // Set up meshes that remain constant.
+    // Set up objects that remain between animations.
     this.riverRenderingService.prepare();
     this.skyRenderingService.prepare();
     this.truckRenderingService.prepare();
-
-    // Set up overlay icons with click/drag.
-    const iconsLoader = this.imageService.createImagesLoader(OVERLAY_ICONS);
-    this.controlsOverlay = this.overlayService.prepare(iconsLoader, overlaysByUrl => {
-      const iconSize = 64;
-      let y = 0.5 * (this.viewportService.height - OVERLAY_ICONS.length * iconSize);
-      for (const url of OVERLAY_ICONS) {
-        const overlay = overlaysByUrl[url];
-        overlay.x0 = 100;
-        overlay.y0 = y;
-        y += iconSize;
-        Object.assign(overlay, this.viewService.getOverlayUiHandler(url));
-      }
-      this.overlayUiService.registerOverlays(this.controlsOverlay.overlaysByUrl);
-    });
-
+    this.animationControlsOverlayService.prepare();
     this.prepared = true;
   }
 
@@ -147,6 +124,6 @@ export class RenderingService {
     this.windTurbineRenderingService.render(this.viewMatrix, this.projectionMatrix, clockMillis);
     this.bridgeRenderingService.render(this.viewMatrix, this.projectionMatrix);
     this.skyRenderingService.render(this.viewMatrix, this.projectionMatrix);
-    this.overlayService.render(this.controlsOverlay);
+    this.animationControlsOverlayService.render();
   }
 }

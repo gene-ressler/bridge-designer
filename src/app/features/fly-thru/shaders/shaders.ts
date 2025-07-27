@@ -152,28 +152,30 @@ fragmentColor=vec4(specularColor+diffuseColor,1.0);}`;
 export const OVERLAY_VERTEX_SHADER = 
 `#version 300 es
 precision mediump float;
-layout(std140)uniform Overlay{
-uniform mat3 projection;
-float alpha;}overlay;
-layout(location=0)in vec2 inPosition;
-out vec2 texCoord;
+layout(location=0)in vec4 inPosition;
+layout(location=2)in float inAlpha;
+layout(location=3)in vec2 inTexCoord;
+out vec3 texCoord;
+out float alpha;
 void main(){
-vec2 position2D=(overlay.projection*vec3(inPosition,1)).xy;
-gl_Position=vec4(position2D,0,1);
-texCoord=inPosition;}`;
+float xScale=inPosition[2];
+float yScale=inPosition[3];
+gl_Position=vec4(inTexCoord.x*xScale+inPosition.x,inTexCoord.y*yScale+inPosition.y,0,1);
+texCoord=vec3(inTexCoord,gl_InstanceID);
+alpha=inAlpha;}`;
 
 export const OVERLAY_FRAGMENT_SHADER = 
 `#version 300 es
 precision mediump float;
-layout(std140)uniform Overlay{
-uniform mat3 projection;
-float alpha;}overlay;
-uniform sampler2D icon;
-in vec2 texCoord;
+precision mediump sampler2DArray;
+uniform sampler2DArray icons;
+in vec3 texCoord;
+in float alpha;
 out vec4 fragmentColor;
 void main(){
-fragmentColor=texture(icon,texCoord);
-fragmentColor.a*=overlay.alpha;}`;
+if(alpha < 0.01){
+discard;}fragmentColor=texture(icons,texCoord);
+fragmentColor.a*=alpha;}`;
 
 export const RIVER_VERTEX_SHADER = 
 `#version 300 es

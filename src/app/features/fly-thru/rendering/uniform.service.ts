@@ -6,11 +6,10 @@ import {
   TRANSFORMS_UBO_BINDING_INDEX,
   LIGHT_CONFIG_UBO_BINDING_INDEX,
   MATERIAL_CONFIG_UBO_BINDING_INDEX,
-  OVERLAY_UBO_BINDING_INDEX,
   TIME_UBO_BINDING_INDEX,
   SKYBOX_TRANSFORMS_UBO_BINDING_INDEX,
 } from '../shaders/constants';
-import { mat3, mat4, vec4 } from 'gl-matrix';
+import { mat4, vec4 } from 'gl-matrix';
 import { GlService } from './gl.service';
 
 /** std124 padding. */
@@ -22,7 +21,6 @@ export class UniformService {
   public static UNIT_LIGHT_DIRECTION = vec4.fromValues(0.0572181596, 0.68661791522, 0.72476335496, 0);
   private lightConfigBuffer!: WebGLBuffer;
   private materialConfigBuffer!: WebGLBuffer;
-  private overlayBuffer!: WebGLBuffer;
   private skyboxTransformsBuffer!: WebGLBuffer;
   private timeBuffer!: WebGLBuffer;
   private transformsBuffer!: WebGLBuffer;
@@ -42,10 +40,6 @@ export class UniformService {
     0.5, // ambient intensity
   ]);
   private readonly lightDirection = new Float32Array(this.lightConfig.buffer, 0, 4);
-  // std140 layout w/ mij = i'th row, j'th column of projection:
-  // m00 m10 m20 _ m01 m11 m21 _ m02 m12 m22 __ alpha __ __ __
-  //  0   1   2  3  4   5   6  7  8   9  10  11   12  13 14 15
-  public readonly overlayFloats = new Float32Array(16);
   public readonly timeFloats = new Float32Array(4);
 
   constructor(
@@ -53,17 +47,13 @@ export class UniformService {
     private readonly shaderService: ShaderService,
   ) {}
 
-  /**
-   * Does uniform setups that need occur only once per animation.
-   * Currently includes transformations, lighting config, materials, and overlay icon projection.
-   */
+  /** Sets up all uniforms except textures. */
   public prepareUniforms(): void {
     const gl = this.glService.gl;
     const bucklingMemberProgram = this.shaderService.getProgram('buckling_member');
     const facetMeshProgram = this.shaderService.getProgram('colored_mesh');
     const facetMeshInstancesProgram = this.shaderService.getProgram('colored_mesh_instances');
     const instanceColoredMeshProgram = this.shaderService.getProgram('instance_colored_mesh');
-    const overlayProgram = this.shaderService.getProgram('overlay');
     const riverProgram = this.shaderService.getProgram('river');
     const skyProgram = this.shaderService.getProgram('sky');
     const terrainProgram = this.shaderService.getProgram('terrain');
@@ -122,9 +112,6 @@ export class UniformService {
     );
     gl.bufferData(gl.UNIFORM_BUFFER, MATERIAL_CONFIG, gl.STATIC_DRAW);
 
-    this.overlayBuffer = this.setUpUniformBlock([overlayProgram], 'Overlay', OVERLAY_UBO_BINDING_INDEX);
-    gl.bufferData(gl.UNIFORM_BUFFER, this.overlayFloats.buffer.byteLength, gl.DYNAMIC_DRAW);
-
     this.timeBuffer = this.setUpUniformBlock([riverProgram], 'Time', TIME_UBO_BINDING_INDEX);
     gl.bufferData(gl.UNIFORM_BUFFER, this.timeFloats, gl.DYNAMIC_DRAW);
   }
@@ -177,16 +164,6 @@ export class UniformService {
     gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.lightConfig);
   }
 
-  /** Updates the overlay uniform block contents. */
-  public updateOverlayUniform(projection: mat3, alpha: number = 1): void {
-    UniformService.copyMat3ToStd140(this.overlayFloats, projection);
-    this.overlayFloats[12] = alpha;
-
-    const gl = this.glService.gl;
-    gl.bindBuffer(gl.UNIFORM_BUFFER, this.overlayBuffer);
-    gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.overlayFloats.buffer);
-  }
-
   public updateSkyboxTransformsUniform(viewMatrix: mat4, projectionMatrix: mat4) {
     // Use the transform buffer to hold the view rotation initially.
     const viewRotation = this.skyboxTransformsFloats;
@@ -217,18 +194,5 @@ export class UniformService {
     gl.bindBufferBase(gl.UNIFORM_BUFFER, bindingIndex, buffer);
     programs.forEach(program => gl.uniformBlockBinding(program, gl.getUniformBlockIndex(program, name), bindingIndex));
     return buffer;
-  }
-
-  /** Copies the columns of a given source mat3 to a std140 block of three 4-float chunks. Padding isn't set. */
-  private static copyMat3ToStd140(dst: Float32Array, src: mat3) {
-    dst[0] = src[0];
-    dst[1] = src[1];
-    dst[2] = src[2];
-    dst[4] = src[3];
-    dst[5] = src[4];
-    dst[6] = src[5];
-    dst[8] = src[6];
-    dst[9] = src[7];
-    dst[10] = src[8];
   }
 }

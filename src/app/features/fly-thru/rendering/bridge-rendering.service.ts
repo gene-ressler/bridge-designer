@@ -48,7 +48,7 @@ export class BridgeRenderingService {
     // Push the current view to the GPU.
     this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
 
-    // Update the instance transforms for bridge elements.
+    // Update the instance transforms for bridge elements. May add buckled/torn meshes.
     this.updateMeshForCurrentLoading(this.mesh);
 
     // Send updated values to the GPU.

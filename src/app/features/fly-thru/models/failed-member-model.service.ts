@@ -7,6 +7,7 @@ import { BUCKLED_MEMBER_MESH_DATA } from './buckled-member';
 import { GlService } from '../rendering/gl.service';
 import { TORN_MEMBER_MESH_DATA } from './torn-member';
 import { SimulationStateService } from '../rendering/simulation-state.service';
+import { Utility } from '../../../shared/classes/utility';
 
 export type BuckledMemberMeshData = {
   meshData: MeshData;
@@ -52,7 +53,10 @@ export class FailedMemberModelService {
   private readonly tmpV2 = vec2.create();
   private readonly tmpV3 = vec3.create();
 
-  constructor(private readonly glService: GlService, private readonly simulationStateService: SimulationStateService) {}
+  constructor(
+    private readonly glService: GlService,
+    private readonly simulationStateService: SimulationStateService,
+  ) {}
 
   /**
    * Builds mesh data for a list of buckled members. Assumes the given displaced joint locations make the member shorter
@@ -116,9 +120,9 @@ export class FailedMemberModelService {
     return {
       meshData,
       members,
-      jointLocations, 
+      jointLocations,
       trussCenterlineOffset,
-    }
+    };
   }
 
   /** Builds instance transformations for the ends of members torn by failure in tension. */
@@ -129,7 +133,7 @@ export class FailedMemberModelService {
     trussCenterlineOffset: number,
     offset: number,
   ): void {
-    // Splay the broken member ends by rotating at joints. 
+    // Splay the broken member ends by rotating at joints.
     // Not too much, else occulsion of/by other members is a problem.
     const rotationRate = 0.005; // radians per milli
     const rotationMax = 0.4; // radians
@@ -361,12 +365,14 @@ function addDimensionZ(out: mat4, a: mat3, zSize: number, zOffset: number): mat4
 }
 
 /**
- * Returns point pairs at fixed offset `size/2` outside and inside a parabolic axis having
- * end points (0,0), (`width`, 0) and apex at (`width`/2, `height`). The pair is at the apex
- * followed by successsive pairs left then right. The pairs are evenly spaced on the x-axis for
- * low, flat parabolas and along the y-axis for taller, thinner ones. The geneator returns the
- * top point of each pair, but it's expected to be ignored. Insteady, users copy from the
- * `vec2` buffers furnished when the generator is created.
+ * Returns point pairs at fixed offset `halfSize` outside and inside a parabolic axis having
+ * end points (0,0), (`width`, 0) and apex at (`width`/2, `height`). First pair is at the apex
+ * followed by successsive pairs left then right.  The geneator returns the top point of 
+ * each pair, but it's expected to be ignored. Instead, users copy from the `vec2` buffers 
+ * furnished when the generator is created.
+ *
+ * The points are distributed such that the parabola's tangent changes angle by the same 
+ * amount at each. Requires some trig, but makes for smooth rendering.
  */
 // visible-for-testing
 export function* parabolaPoints(
@@ -381,18 +387,14 @@ export function* parabolaPoints(
   const twiceHeight = 2 * height;
   yield setOutputs(0);
   const pairCount = pointCount >>> 1;
-  const delta = 1 / pairCount;
-  if (width > 2 * height) {
-    for (let i = 0, t = delta; i < pairCount; ++i, t += delta) {
-      yield setOutputs(-t);
-      yield setOutputs(t);
-    }
-  } else {
-    for (let i = 0, u = delta; i < pairCount; ++i, u += delta) {
-      const t = Math.sqrt(u);
-      yield setOutputs(-t);
-      yield setOutputs(t);
-    }
+  // Clamping manages degeneracies for straight and doubled over cases.
+  const c = Utility.clamp(halfWidth / (2 * height), 0.001, 1000.0);
+  const thetaMax = Math.atan(1 / c);
+  const dTheta = thetaMax / pairCount;
+  for (let i = 0, theta = dTheta; i < pairCount; ++i, theta += dTheta) {
+    const t = c * Math.tan(theta);
+    yield setOutputs(-t);
+    yield setOutputs(t);
   }
   function setOutputs(t: number): vec2 {
     const x = (t + 1) * halfWidth;

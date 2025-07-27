@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { GlService } from './gl.service';
 import { ProjectionService } from './projection.service';
 import { mat3 } from 'gl-matrix';
+import { EventBrokerService, EventOrigin } from '../../../shared/services/event-broker.service';
 
 /** Manager for the WegGL viewport and projections into it: graphical and mouse coords. */
 @Injectable({ providedIn: 'root' })
@@ -11,12 +12,16 @@ export class ViewportService {
   public height: number = 0;
 
   constructor(
+    private readonly eventBrokerService: EventBrokerService,
     private readonly glService: GlService,
     private readonly projectionService: ProjectionService,
   ) {}
 
   /* Sets up state related to viewport using given canvas and wrapper css pixel sizes. */
   public setViewport(_canvasWidth: number, canvasHeight: number, viewportWidth: number, viewportHeight: number) {
+    if (this.width === viewportWidth && this.height === viewportHeight) {
+      return;
+    }
     this.width = viewportWidth;
     this.height = viewportHeight;
     // WebGL's mapping of clip coordinates to device.
@@ -25,5 +30,6 @@ export class ViewportService {
     this.projectionService.setFrustum(45, viewportWidth / viewportHeight, 0.333333, 400, 0.5);
     // Mapping from css (mouse) to WebGL clip coordinates.
     mat3.projection(this.mouseProjection, this.width, this.height);
+    this.eventBrokerService.flyThruViewportChange.next({ origin: EventOrigin.SERVICE, data: undefined });
   }
 }

@@ -3,9 +3,9 @@ import { mat4, vec3 } from 'gl-matrix';
 import { BridgeService } from '../../../shared/services/bridge.service';
 import { Utility } from '../../../shared/classes/utility';
 import { TerrainModelService } from '../models/terrain-model.service';
-import { OverlayHandlers } from './overlay-ui.service';
-import { HEAD_ICON, HOME_ICON, PAN_ICON, TRUCK_ICON, WALK_ICON } from './overlay-icons';
 import { SimulationStateService } from './simulation-state.service';
+import { OverlayUi } from './overlay.service';
+import { OverlayIcon } from './animation-controls-overlay.service';
 
 /** Container for the fly-thru and driver view transforms and associated update logic. */
 @Injectable({ providedIn: 'root' })
@@ -21,7 +21,7 @@ export class ViewService {
   /** Pixel to world rotation rate ratio. */
   private static readonly UI_RATE_ROTATIONAL = (0.05 * 2.0 * Math.PI) / 100.0;
   /** Pixel to world tilt rate ratio. */
-  private static readonly UI_RATE_TILT = Math.PI / 400;
+  private static readonly UI_RATE_TILT = Math.PI / 800.0;
 
   public readonly eye = vec3.create();
   private readonly up = vec3.fromValues(0, 1, 0);
@@ -49,6 +49,52 @@ export class ViewService {
     private readonly simulationStateService: SimulationStateService,
     private readonly terrainService: TerrainModelService,
   ) {}
+
+  public provideUiHandlers(overlayUi: OverlayUi): void {
+    // Install the animation controls handlers that vary the view via overlay icons.
+    const handlerSets = overlayUi.iconHandlerSets;
+    const walk = handlerSets[OverlayIcon.WALK];
+    walk.handlePointerDown = () => {
+      this.isMovingLaterally = false;
+      this.isDriving = false;
+    };
+    walk.handlePointerDrag = (dx: number, dy: number) => {
+      this.xzEyeVelocity = dy * ViewService.UI_RATE_LINEAR;
+      this.thetaEyeRate = dx * ViewService.UI_RATE_ROTATIONAL;
+    };
+
+    const pan = handlerSets[OverlayIcon.HAND];
+    pan.handlePointerDown = () => {
+      this.isMovingLaterally = true;
+      this.isDriving = false;
+    };
+    pan.handlePointerDrag = (dx: number, dy: number) => {
+      this.xzEyeVelocity = dx * ViewService.UI_RATE_LINEAR;
+      this.yEyeVelocity = dy * ViewService.UI_RATE_LINEAR;
+    };
+    const head = handlerSets[OverlayIcon.HEAD];
+    head.handlePointerDown = () => {
+      this.isMovingLaterally = false;
+      this.isDriving = false;
+    };
+    head.handlePointerDrag = (dx: number, dy: number) => {
+      this.phiEyeRate = dy * ViewService.UI_RATE_ROTATIONAL;
+      this.thetaEyeRate = dx * ViewService.UI_RATE_ROTATIONAL;
+    };
+    const home = handlerSets[OverlayIcon.HOME];
+    home.handlePointerDown = () => {
+      this.isDriving = false;
+      this.resetView();
+    };
+    const truck = handlerSets[OverlayIcon.TRUCK];
+    truck.handlePointerDown = () => {
+      this.isDriving = true;
+    };
+    truck.handlePointerDrag = (dx: number, dy: number) => {
+      this.phiDriverHead = Utility.clamp(dy * ViewService.UI_RATE_TILT, -Math.PI * 0.25, Math.PI * 0.1);
+      this.thetaDriverHead = Utility.clamp(1.5 * dx * ViewService.UI_RATE_TILT, -Math.PI * 0.3, Math.PI * 0.3);
+    };
+  }
 
   /** Apply a heuristic to set a reasonable view of the current bridge. */
   public resetView(): void {
@@ -138,62 +184,5 @@ export class ViewService {
       return mat4.multiply(m, this.driverRotation, m);
     }
     return mat4.lookAt(m, this.eye, this.center, this.up);
-  }
-
-  /** For given icon URL, returns a set of handlers for icon UI events. */
-  public getOverlayUiHandler(url: string): OverlayHandlers {
-    switch (url) {
-      case WALK_ICON:
-        return {
-          handlePointerDown: () => {
-            this.isMovingLaterally = false;
-            this.isDriving = false;
-          },
-          handlePointerDrag: (dx: number, dy: number) => {
-            this.xzEyeVelocity = dy * ViewService.UI_RATE_LINEAR;
-            this.thetaEyeRate = dx * ViewService.UI_RATE_ROTATIONAL;
-          },
-        };
-      case PAN_ICON:
-        return {
-          handlePointerDown: () => {
-            this.isMovingLaterally = true;
-            this.isDriving = false;
-          },
-          handlePointerDrag: (dx: number, dy: number) => {
-            this.xzEyeVelocity = dx * ViewService.UI_RATE_LINEAR;
-            this.yEyeVelocity = dy * ViewService.UI_RATE_LINEAR;
-          },
-        };
-      case HEAD_ICON:
-        return {
-          handlePointerDown: () => {
-            this.isMovingLaterally = false;
-            this.isDriving = false;
-          },
-          handlePointerDrag: (dx: number, dy: number) => {
-            this.phiEyeRate = dy * ViewService.UI_RATE_ROTATIONAL;
-            this.thetaEyeRate = dx * ViewService.UI_RATE_ROTATIONAL;
-          },
-        };
-      case HOME_ICON:
-        return {
-          handlePointerDown: () => {
-            this.isDriving = false;
-            this.resetView();
-          },
-        };
-      case TRUCK_ICON:
-        return {
-          handlePointerDown: () => {
-            this.isDriving = true;
-          },
-          handlePointerDrag: (dx: number, dy: number) => {
-            this.phiDriverHead = Utility.clamp(dy * ViewService.UI_RATE_TILT, -Math.PI * 0.25, Math.PI * 0.1);
-            this.thetaDriverHead = Utility.clamp(1.5 * dx * ViewService.UI_RATE_TILT, -Math.PI * 0.3, Math.PI * 0.3);
-          },
-        };
-    }
-    throw new Error(`Unknown overlay url: {url}`);
   }
 }

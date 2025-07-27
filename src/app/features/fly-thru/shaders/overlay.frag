@@ -1,18 +1,19 @@
 #version 300 es
 
 precision mediump float;
+precision mediump sampler2DArray;
 
-layout(std140) uniform Overlay {
-  uniform mat3 projection;
-  float alpha;
-} overlay;
+uniform sampler2DArray icons;
 
-uniform sampler2D icon;
-
-in vec2 texCoord;
+in vec3 texCoord;
+in float alpha;
 out vec4 fragmentColor;
 
 void main() {
-  fragmentColor = texture(icon, texCoord);
-  fragmentColor.a *= overlay.alpha;
+  if (alpha < 0.01) {
+    discard;
+  }
+  fragmentColor = texture(icons, texCoord);
+  fragmentColor.a *= alpha;
+  // fragmentColor = vec4(1.0, 0.0, 0.0, 1.0);
 }

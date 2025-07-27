@@ -4,23 +4,27 @@
 
 precision mediump float;
 
-layout(std140) uniform Overlay {
-  uniform mat3 projection;
-  float alpha;
-} overlay;
-
 // Make VScode happy.
 #ifndef IN_POSITION_LOCATION
-#define IN_POSITION_LOCATION 3
+#define IN_POSITION_LOCATION 0
+#define IN_ALPHA_LOCATION 2
+#define IN_TEX_COORD_LOCATION 3
 #endif
 
-// Serves as both tex coord and positions of overlay corners.
-layout(location = IN_POSITION_LOCATION) in vec2 inPosition;
+// Per instance
+layout(location = IN_POSITION_LOCATION) in vec4 inPosition; // (x, y, xScale, yScale)
+layout(location = IN_ALPHA_LOCATION) in float inAlpha; // (depthIndex, alpha)
 
-out vec2 texCoord;
+// Fixed
+layout(location = IN_TEX_COORD_LOCATION) in vec2 inTexCoord; 
+
+out vec3 texCoord;
+out float alpha;
 
 void main() {
-  vec2 position2D = (overlay.projection * vec3(inPosition, 1)).xy;
-  gl_Position = vec4(position2D, 0, 1);
-  texCoord = inPosition;
+  float xScale = inPosition[2];
+  float yScale = inPosition[3];
+  gl_Position = vec4(inTexCoord.x * xScale + inPosition.x, inTexCoord.y * yScale + inPosition.y, 0, 1);
+  texCoord = vec3(inTexCoord, gl_InstanceID);
+  alpha = inAlpha;
 }

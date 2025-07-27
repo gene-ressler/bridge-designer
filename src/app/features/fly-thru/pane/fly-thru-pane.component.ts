@@ -12,7 +12,7 @@ import { Utility } from '../../../shared/classes/utility';
 import { AnimationService } from '../rendering/animation.service';
 import { GlService } from '../rendering/gl.service';
 import { ViewportService } from '../rendering/viewport.service';
-import { OverlayUiService } from '../rendering/overlay-ui.service';
+import { AnimationControlsOverlayService } from '../rendering/animation-controls-overlay.service';
 
 @Component({
   selector: 'fly-thru-pane',
@@ -35,28 +35,28 @@ export class FlyThruPaneComponent implements AfterViewInit {
     private readonly changeDetector: ChangeDetectorRef,
     private readonly eventBrokerService: EventBrokerService,
     private readonly glService: GlService,
-    private readonly overlayUiService: OverlayUiService,
+    private readonly animationControlsOverlayService: AnimationControlsOverlayService,
     private readonly viewportService: ViewportService,
   ) {}
 
   /** Delegates left button down to UI handler. */
   handlePointerDown(event: PointerEvent): void {
     if (event.button === 0) {
-      this.flyThruCanvas.nativeElement.setPointerCapture(event.pointerId)
-      this.overlayUiService.handlePointerDown(event.offsetX, event.offsetY);
+      this.flyThruCanvas.nativeElement.setPointerCapture(event.pointerId);
+      this.animationControlsOverlayService.overlayUi.acceptPointerDown(event.offsetX, event.offsetY);
     }
   }
 
   /** Delegates pointer move to UI handler. */
   handlePointerMove(event: PointerEvent): void {
-    this.overlayUiService.handlePointerMove(event.offsetX, event.offsetY);
+    this.animationControlsOverlayService.overlayUi.acceptPointerMove(event.offsetX, event.offsetY);
   }
 
   /** Delegates left button up to UI handler. */
   handlePointerUp(event: PointerEvent): void {
     if (event.button === 0) {
-      this.flyThruCanvas.nativeElement.releasePointerCapture(event.pointerId)
-      this.overlayUiService.handlePointerUp(event.offsetX, event.offsetY);
+      this.flyThruCanvas.nativeElement.releasePointerCapture(event.pointerId);
+      this.animationControlsOverlayService.overlayUi.acceptPointerUp(event.offsetX, event.offsetY);
     }
   }
 
@@ -74,7 +74,7 @@ export class FlyThruPaneComponent implements AfterViewInit {
       this.animationService.stop();
     }
   }
-  
+
   private handleResize(): void {
     const parent = Utility.assertNotNull(this.flyThruCanvas.nativeElement.parentElement);
     // Do nothing if canvas not yet visible.

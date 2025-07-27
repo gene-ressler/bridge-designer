@@ -33,7 +33,7 @@ void main() {
   // Segment transform and pseudo-perspective division that's the segment taper.
   vec4 p = inModelTransform * vec4(inPosition, 1.0f);
   vec4 position = vec4(p.x / p.w, p.y / p.w, p.z, 1.0);
-  // Extract the normal vector from the segment matrix. Probably expensive, but only runs for a second.
+  // Extract the normal vector from the segment matrix. Probably expensive.
   mat4 u = inModelTransform * UNIT_SQUARE;
   vec3 rawNormal = 
     inNormalRef == 0u ? vec3(0, 0, 1) : 

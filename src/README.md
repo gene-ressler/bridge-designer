@@ -87,20 +87,27 @@ We thank the providers now and forever.
 # Master TODO
 
 - Animation
+  - Controls
 - Complete help edit
+  - @ 50%
 - Legacy animation
+  - delete
+- Dirty edit save behavior
 - Member details
 - Printing, 2D
 - Printing, 3D
 
 # Issues
 
-- Set help height based on window size.
-- Maybe move toasts to app level.
+- Make help its own window.
+- Member edit dialog size changes don't update the hot layer.
+- Increment iteration on first edit of fresh load
+- Dirty edit save behavior missing
 
 # Build notes
 
 - `ng build` # builds production app
 - `npm run build` # advances version and builds
-- `cd src/app/features/fly-thru/shaders && python3 build.py --compress` # builds shaders
+- `firebase deploy` # sends build to external dev server
+- `cd src/app/features/fly-thru/shaders && python3 build.py` # builds shaders
 - `cd src/app/features/fly-thru/models && python3 build.py` # builds models from .obj files
