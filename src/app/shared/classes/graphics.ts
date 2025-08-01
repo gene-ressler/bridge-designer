@@ -188,26 +188,27 @@ export class Rectangle2D implements Rectangle2DInterface {
   /** Sets the this rectangle to exactly contain all the given points. */
   public setToExtent(pts: Point2DInterface[]): Rectangle2D {
     if (pts.length === 0) {
-      return this;
+      return this.makeEmpty();
     }
-    this.setFromDiagonal(pts[0].x, pts[0].y, pts[0].x, pts[0].y);
+    let ax = pts[0].x, bx = ax;
+    let ay = pts[0].y, by = ay;
     for (let i = 1; i < pts.length; ++i) {
       const x = pts[i].x;
       const y = pts[i].y;
-      if (x < this.x0) {
-        this.x0 = x;
+      if (x < ax) {
+        ax = x;
       }
-      if (x > this.x1) {
-        this.width = x - this.x0;
+      if (x > bx) {
+        bx = x;
       }
-      if (y < this.y0) {
-        this.y0 = y;
+      if (y < ay) {
+        ay = y;
       }
-      if (y > this.y1) {
-        this.height = y - this.y0;
+      if (y > by) {
+        by = y;
       }
     }
-    return this;
+    return this.setFromDiagonal(ax, ay, bx, by);
   }
 
   public setFromDiagonal(ax: number, ay: number, bx: number, by: number): Rectangle2D {

@@ -4,7 +4,7 @@ import { DOLLARS_FORMATTER, Utility } from '../../shared/classes/utility';
 import { EventBrokerService, EventOrigin } from '../../shared/services/event-broker.service';
 import { BridgeService } from '../../shared/services/bridge.service';
 import { DraftingPanelState, PersistenceService, SaveSet } from '../../shared/services/persistence.service';
-import { BridgeCostService } from '../costs/cost-report-dialog/bridge-cost.service';
+import { BridgeCostService } from '../../shared/services/bridge-cost.service';
 import { BridgeModel } from '../../shared/classes/bridge.model';
 import { SessionStateService } from '../../shared/services/session-state.service';
 

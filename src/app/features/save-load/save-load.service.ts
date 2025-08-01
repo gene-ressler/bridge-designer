@@ -59,7 +59,7 @@ export class LegacySaveLoadService implements SaveLoadService {
     anchorElement.click();
     document.body.removeChild(anchorElement);
     window.URL.revokeObjectURL(anchorElement.href);
-    this.saveMarkService.markSave();
+    this.saveMarkService.markDesignSaved(this._preferredNameObj.value);
     this.eventBrokerService.toastRequest.next({ origin: EventOrigin.SERVICE, data: 'fileSaveSuccess' });
   }
 
@@ -124,7 +124,7 @@ export class FileSystemSaveLoadService implements SaveLoadService {
       const text = this.bridgeService.saveSetText;
       await stream.write(text);
       await stream.close();
-      this.saveMarkService.markSave();
+      this.saveMarkService.markDesignSaved(this.currentFileHandle.name);
       this.eventBrokerService.toastRequest.next({ origin: EventOrigin.SERVICE, data: 'fileSaveSuccess' });
     } catch (error) {
       throw new ToastError(this.isUserCancel(error) ? 'noError' : 'fileWriteError');

@@ -6,7 +6,7 @@ import { UniformService } from './uniform.service';
 import { SimulationStateService } from './simulation-state.service';
 import { DesignConditions } from '../../../shared/services/design-conditions.service';
 import { BitVector } from '../../../shared/core/bitvector';
-import { Gusset } from '../models/gussets.service';
+import { Gusset } from '../../../shared/services/gussets.service';
 import { BuckledMemberMesh, FailedMemberRenderingService, TornMemberMesh } from './failed-member-rendering.service';
 import { EventBrokerService } from '../../../shared/services/event-broker.service';
 

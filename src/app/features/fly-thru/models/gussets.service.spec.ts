@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { GussetsService } from './gussets.service';
+import { GussetsService } from '../../../shared/services/gussets.service';
 import { BridgeService } from '../../../shared/services/bridge.service';
 import { ConvexHullService } from '../../../shared/services/convex-hull.service';
 import { Joint } from '../../../shared/classes/joint.model';

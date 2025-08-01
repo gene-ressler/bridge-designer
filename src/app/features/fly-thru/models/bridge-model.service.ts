@@ -10,7 +10,7 @@ import { DECK_BEAM_MESH_DATA } from './deck-beam';
 import { DECK_SLAB_MESH_DATA } from './deck-slab';
 import { SimulationStateService } from '../rendering/simulation-state.service';
 import { GlService } from '../rendering/gl.service';
-import { Gusset, GussetsService } from './gussets.service';
+import { Gusset, GussetsService } from '../../../shared/services/gussets.service';
 import { TRUSS_PIN_MESH_DATA } from './truss-pin';
 import { MEMBER_MESH_DATA } from './member';
 

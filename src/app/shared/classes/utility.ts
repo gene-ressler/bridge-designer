@@ -20,6 +20,8 @@ export const FIXED_FORMATTER = new Intl.NumberFormat('en-US', {
   useGrouping: true,
 });
 
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
 /** Generic static utility functions. */
 export class Utility {
   public static sqr(x: number): number {
@@ -157,6 +159,10 @@ export class Utility {
       a[i] = createElement();
     }
     return a;
+  }
+
+  public static getStandardDate(date: Date = new Date(Date.now())): string {
+    return `${date.getDate()} ${MONTH_NAMES[date.getMonth() - 1]} ${date.getFullYear()}`;
   }
 
   /* TODO: Not currently used. Remove?

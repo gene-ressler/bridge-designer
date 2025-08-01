@@ -155,6 +155,7 @@ export class ToolbarAComponent implements AfterViewInit {
     this.uiStateService.registerPlainToolbarButton(tools[Tools.LOAD_TEST_REPORT], eventBroker.analysisReportRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.NEW], eventBroker.newDesignRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.OPEN], eventBroker.loadBridgeFileRequest);
+    this.uiStateService.registerPlainToolbarButton(tools[Tools.PRINT], eventBroker.printRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.REDO], eventBroker.redoRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.SAVE], eventBroker.saveBridgeFileRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.SELECT_ALL], eventBroker.selectAllRequest);

@@ -31,9 +31,9 @@ export class CartoonSiteRenderingService {
     }
     if (options & CartoonOptionMask.ABUTMENTS) {
       SiteRenderingHelper2D.renderAbutmentsAndPier(
-        ctx,
         this.bridgeService.designConditions,
         this,
+        ctx,
         this.viewportTransform,
       );
     }
@@ -310,10 +310,10 @@ export class CartoonSiteRenderingService {
   };
 
   renderStandardAbutment(
-    ctx: CanvasRenderingContext2D,
     location: Point2D,
     side: AbutmentSide,
     _constraintCount: number,
+    ctx: CanvasRenderingContext2D,
     viewportTransform: ViewportTransform2D,
   ): void {
     SiteRenderingHelper2D.renderStandardAbutmentImpl(
@@ -328,10 +328,10 @@ export class CartoonSiteRenderingService {
   }
 
   renderArchAbutment(
-    ctx: CanvasRenderingContext2D,
     location: Point2D,
     side: AbutmentSide,
     archHeight: number,
+    ctx: CanvasRenderingContext2D,
     viewportTransform: ViewportTransform2D,
   ): void {
     SiteRenderingHelper2D.renderArchAbutmentImpl(
@@ -347,9 +347,9 @@ export class CartoonSiteRenderingService {
   }
 
   renderPier(
-    ctx: CanvasRenderingContext2D,
     location: Point2D,
     height: number,
+    ctx: CanvasRenderingContext2D,
     viewportTransform: ViewportTransform2D,
   ): void {
     SiteRenderingHelper2D.renderPierImpl(ctx, Colors.CONCRETE, 'black', location, height, viewportTransform);

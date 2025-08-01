@@ -19,9 +19,9 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     this.renderExcavatedCrossSection(ctx);
     this.renderInSituCrossSection(ctx);
     SiteRenderingHelper2D.renderAbutmentsAndPier(
-      ctx,
       this.bridgeService.designConditions,
       this,
+      ctx,
       this.viewportTransform,
     );
   }
@@ -234,10 +234,10 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
   }
 
   renderStandardAbutment(
-    ctx: CanvasRenderingContext2D,
     location: Point2D,
     side: AbutmentSide,
     _constraintCount: number,
+    ctx: CanvasRenderingContext2D,
     viewportTransform: ViewportTransform2D,
   ): void {
     SiteRenderingHelper2D.renderStandardAbutmentImpl(
@@ -252,10 +252,10 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
   }
 
   renderArchAbutment(
-    ctx: CanvasRenderingContext2D,
     location: Point2D,
     side: AbutmentSide,
     archHeight: number,
+    ctx: CanvasRenderingContext2D,
     viewportTransform: ViewportTransform2D,
   ): void {
     SiteRenderingHelper2D.renderArchAbutmentImpl(
@@ -271,9 +271,9 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
   }
 
   renderPier(
-    ctx: CanvasRenderingContext2D,
     location: Point2D,
     height: number,
+    ctx: CanvasRenderingContext2D,
     viewportTransform: ViewportTransform2D,
   ): void {
     SiteRenderingHelper2D.renderPierImpl(

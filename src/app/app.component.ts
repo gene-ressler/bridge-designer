@@ -33,6 +33,7 @@ import { UndoManagerSessionStateService } from './features/drafting/shared/undo-
 import { UnstableBridgeDialogComponent } from './features/testing/unstable-bridge-dialog/unstable-bridge-dialog.component';
 import { WelcomeDialogComponent } from './features/welcome/welcome-dialog/welcome-dialog.component';
 import { WorkflowManagementService } from './features/controls/management/workflow-management.service';
+import { DrawingsService } from './features/drawings/drawings.service';
 
 // ¯\_(ツ)_/¯
 
@@ -83,6 +84,7 @@ export class AppComponent implements AfterViewInit {
   constructor(
     private readonly eventBrokerService: EventBrokerService,
     private readonly sessionStateService: SessionStateService,
+    _drawingsService: DrawingsService, // Instantiate only.
     _undoManagerSessionStateService: UndoManagerSessionStateService, // Instantiate only.
     _workflowManagementService: WorkflowManagementService, // Instantiate only.
   ) {}

@@ -1,16 +1,14 @@
 import { Injectable } from '@angular/core';
-import { BridgeService } from '../../../shared/services/bridge.service';
+import { BridgeService } from './bridge.service';
 import {
   BridgeCostModel,
   MaterialSectionWeight,
   SizeMaterialSectionCount,
-} from '../../../shared/classes/bridge-cost.model';
-import { TreeMap } from '../../../shared/core/tree-map';
-import { DesignConditionsService } from '../../../shared/services/design-conditions.service';
+} from '../classes/bridge-cost.model';
+import { TreeMap } from '../core/tree-map';
+import { DesignConditionsService } from './design-conditions.service';
 
-/**
- * Container for logic that tabulates bridge cost information.
- */
+/** Container for logic that tabulates bridge cost information. */
 @Injectable({ providedIn: 'root' })
 export class BridgeCostService {
   private static readonly CONNECTION_FEE = 400.0;

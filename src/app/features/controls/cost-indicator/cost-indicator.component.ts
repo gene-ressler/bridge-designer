@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { BridgeCostService } from '../../costs/cost-report-dialog/bridge-cost.service';
+import { BridgeCostService } from '../../../shared/services/bridge-cost.service';
 import { DOLLARS_FORMATTER } from '../../../shared/classes/utility';
 
 @Component({

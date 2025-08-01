@@ -11,24 +11,24 @@ export const enum AbutmentSide {
 /** Interface to renderers of site details, normally implemented using methonds of this service. */
 export interface SiteDetailRenderers {
   renderStandardAbutment(
-    ctx: CanvasRenderingContext2D,
     location: Point2DInterface,
     side: AbutmentSide,
     constraintCount: number, // Number of constraints to depict in blueprint views: 1 or 2, i.e. roller or pivot.
-    viewportTransform: ViewportTransform2D
+    ctx?: CanvasRenderingContext2D,
+    viewportTransform?: ViewportTransform2D
   ): void;
   renderArchAbutment(
-    ctx: CanvasRenderingContext2D,
     location: Point2DInterface,
     side: AbutmentSide,
     archHeight: number,
-    viewportTransform: ViewportTransform2D
+    ctx?: CanvasRenderingContext2D,
+    viewportTransform?: ViewportTransform2D
   ): void;
   renderPier(
-    ctx: CanvasRenderingContext2D,
     location: Point2DInterface,
     height: number,
-    viewportTransform: ViewportTransform2D
+    ctx?: CanvasRenderingContext2D,
+    viewportTransform?: ViewportTransform2D
   ): void;
 }
 
@@ -137,50 +137,50 @@ export class SiteRenderingHelper2D {
   }
 
   public static renderAbutmentsAndPier(
-    ctx: CanvasRenderingContext2D,
     conditions: DesignConditions,
     siteDetailRenderers: SiteDetailRenderers,
-    viewportTransform: ViewportTransform2D
+    ctx?: CanvasRenderingContext2D,
+    viewportTransform?: ViewportTransform2D
   ) {
     const pLeft = conditions.prescribedJoints[0];
     const pRight = conditions.prescribedJoints[conditions.loadedJointCount - 1];
     if (conditions.isArch) {
       const archHeight = -conditions.underClearance;
       siteDetailRenderers.renderArchAbutment(
-        ctx,
         pLeft,
         AbutmentSide.LEFT,
         archHeight,
+        ctx,
         viewportTransform
       );
       siteDetailRenderers.renderArchAbutment(
-        ctx,
         pRight,
         AbutmentSide.RIGHT,
         archHeight,
+        ctx,
         viewportTransform
       );
     } else {
       siteDetailRenderers.renderStandardAbutment(
-        ctx,
         pLeft,
         AbutmentSide.LEFT,
         conditions.isHiPier ? 1 : 2,
+        ctx,
         viewportTransform
       );
       siteDetailRenderers.renderStandardAbutment(
-        ctx,
         pRight,
         AbutmentSide.RIGHT,
         1,
+        ctx,
         viewportTransform
       );
     }
     if (conditions.isPier) {
       siteDetailRenderers.renderPier(
-        ctx,
         conditions.prescribedJoints[conditions.pierJointIndex],
         conditions.pierHeight,
+        ctx,
         viewportTransform
       );
     }

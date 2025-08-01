@@ -3,7 +3,7 @@ import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, V
 import { jqxWindowComponent, jqxWindowModule } from 'jqwidgets-ng/jqxwindow';
 import { jqxButtonModule } from 'jqwidgets-ng/jqxbuttons';
 import { EventBrokerService } from '../../../shared/services/event-broker.service';
-import { BridgeCostService } from './bridge-cost.service';
+import { BridgeCostService } from '../../../shared/services/bridge-cost.service';
 import { BridgeCostModel } from '../../../shared/classes/bridge-cost.model';
 import { COUNT_FORMATTER, DOLLARS_FORMATTER, FIXED_FORMATTER } from '../../../shared/classes/utility';
 import { BridgeService } from '../../../shared/services/bridge.service';

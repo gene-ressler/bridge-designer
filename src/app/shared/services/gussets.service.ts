@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { ConvexHullService } from '../../../shared/services/convex-hull.service';
-import { BridgeService } from '../../../shared/services/bridge.service';
-import { Joint } from '../../../shared/classes/joint.model';
-import { Geometry, Point2DInterface } from '../../../shared/classes/graphics';
-import { Member } from '../../../shared/classes/member.model';
-import { SiteConstants } from '../../../shared/classes/site.model';
+import { ConvexHullService } from './convex-hull.service';
+import { BridgeService } from './bridge.service';
+import { Joint } from '../classes/joint.model';
+import { Geometry, Point2DInterface } from '../classes/graphics';
+import { Member } from '../classes/member.model';
+import { SiteConstants } from '../classes/site.model';
 
 /**
  * Geometry of one member adjacent to a given gusset. The coordinate origin as at the
