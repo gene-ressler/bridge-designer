@@ -65,6 +65,7 @@ export class EventBrokerService {
   public readonly draftingViewportPendingChange = new Subject<EventInfo>();
   public readonly editCommandCompletion = new Subject<TypedEventInfo<EditCommandCompletionInfo>>();
   public readonly editModeSelection = new Subject<EventInfo>();
+  public readonly editModeChange = new Subject<TypedEventInfo<number>>();
   public readonly flyThruAnimationPauseRequest = new Subject<TypedEventInfo<boolean>>();
   public readonly flyThruViewportChange = new Subject<TypedEventInfo<void>>();
   public readonly gridDensityChange = new Subject<EventInfo>();

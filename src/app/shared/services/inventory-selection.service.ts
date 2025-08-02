@@ -47,4 +47,9 @@ export class InventorySelectionService {
   public get shape(): Shape | undefined {
     return this._shape;
   }
+
+  /** Returns whether the current stock selection is completely defined. */
+  public get isValid(): boolean {
+    return this._material !== undefined && this._crossSection !== undefined && this._shape !== undefined;
+  }
 }

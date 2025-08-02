@@ -26,12 +26,20 @@ import { Draggable, HotElementDragService } from '../shared/hot-element-drag.ser
 import { ContextMenuComponent } from '../context-menu/context-menu.component';
 import { ContextWidgetService } from './context-widget.service';
 
+/** Indexes of cursor mode controls. Must mirror order of select widgets in UI. */
+export const enum CursorMode {
+  JOINTS,
+  MEMBERS,
+  SELECT,
+  ERASE,
+}
+
 @Component({
-    selector: 'cursor-overlay',
-    templateUrl: './cursor-overlay.component.html',
-    styleUrl: './cursor-overlay.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [ContextMenuComponent]
+  selector: 'cursor-overlay',
+  templateUrl: './cursor-overlay.component.html',
+  styleUrl: './cursor-overlay.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [ContextMenuComponent],
 })
 export class CursorOverlayComponent implements AfterViewInit {
   @Input({ transform: numberAttribute }) width: number = screen.availWidth;
@@ -103,18 +111,21 @@ export class CursorOverlayComponent implements AfterViewInit {
   /** Translates UI selector element (menu and toolbar buttons) index to respective mode. */
   private setCursorModeByControlSelectedIndex(i: number | undefined) {
     switch (i) {
-      case 0:
+      case CursorMode.JOINTS:
         this.setJointsMode();
         break;
-      case 1:
+      case CursorMode.MEMBERS:
         this.setMembersMode();
         break;
-      case 2:
+      case CursorMode.SELECT:
         this.setSelectMode();
         break;
-      case 3:
+      case CursorMode.ERASE:
         this.setEraseMode();
         break;
+    }
+    if (i !== undefined) {
+      this.eventBrokerService.editModeChange.next({ origin: EventOrigin.CURSOR_OVERLAY, data: i });
     }
   }
 

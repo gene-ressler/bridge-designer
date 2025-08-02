@@ -12,6 +12,8 @@ import { EditEffect } from '../../../shared/classes/editing';
 import { Member } from '../../../shared/classes/member.model';
 import { DesignConditionsService } from '../../../shared/services/design-conditions.service';
 import { BridgeAutoFixService } from '../../../shared/services/bridge-auto-fix.service';
+import { CursorMode } from '../../drafting/cursor-overlay/cursor-overlay.component';
+import { InventorySelectionService } from '../../../shared/services/inventory-selection.service';
 
 /**
  * Container for the state of the user's design workflow and associated logic.
@@ -25,6 +27,7 @@ export class WorkflowManagementService {
     bridgeAutoFixServicce: BridgeAutoFixService,
     bridgeService: BridgeService,
     eventBrokerService: EventBrokerService,
+    inventorySelectionService: InventorySelectionService,
     selectedElementsService: SelectedElementsService,
     uiStateService: UiStateService,
     undoManagerService: UndoManagerService,
@@ -61,7 +64,7 @@ export class WorkflowManagementService {
     // Auto-fix option to fix or not.
     eventBrokerService.autoCorrectToggle.subscribe(eventInfo => {
       autoFix = eventInfo.data;
-    })
+    });
 
     // Design iterations change.
     eventBrokerService.designIterationChange.subscribe(eventInfo => {
@@ -94,10 +97,16 @@ export class WorkflowManagementService {
       uiStateService.disable(eventBrokerService.redoRequest, eventInfo.data.undoneCount === 0);
       if (eventInfo.data.effectsMask & EditEffect.MEMBERS) {
         disableMemberSizeIncrementWidgets();
-        const selectedMembers = selectedElementsService.selectedElements.selectedMembers;
+      }
+    });
+
+    // Edit mode change.
+    eventBrokerService.editModeChange.subscribe(eventInfo => {
+      // Complete the inventory selector if one more more stock selection items are undefined.
+      if (eventInfo.data == CursorMode.MEMBERS && !inventorySelectionService.isValid) {
         eventBrokerService.loadInventorySelectorRequest.next({
           origin: EventOrigin.SERVICE,
-          data: bridgeService.getUsefulStockId(selectedMembers),
+          data: bridgeService.getMostCommonStockId(),
         });
       }
     });
@@ -126,6 +135,7 @@ export class WorkflowManagementService {
       uiStateService.disable(eventBrokerService.undoRequest);
       uiStateService.disable(eventBrokerService.redoRequest);
       eventBrokerService.uiModeRequest.next({ origin: EventOrigin.SERVICE, data: 'drafting' });
+      eventBrokerService.editModeSelection.next({ origin: EventOrigin.SERVICE, data: CursorMode.JOINTS });
       eventBrokerService.loadInventorySelectorRequest.next({
         origin: EventOrigin.SERVICE,
         data: bridgeService.getMostCommonStockId(),
@@ -139,11 +149,14 @@ export class WorkflowManagementService {
     // Selected elements change.
     eventBrokerService.selectedElementsChange.subscribe(_eventInfo => {
       const selectedMembers = selectedElementsService.selectedElements.selectedMembers;
+      // Let the material selector alone if nothing is selected.
+      if (selectedMembers.size > 0) {
+        eventBrokerService.loadInventorySelectorRequest.next({
+          origin: EventOrigin.SERVICE,
+          data: bridgeService.getUsefulStockId(selectedMembers),
+        });
+      }
       const selectedJoints = selectedElementsService.selectedElements.selectedJoints;
-      eventBrokerService.loadInventorySelectorRequest.next({
-        origin: EventOrigin.SERVICE,
-        data: bridgeService.getUsefulStockId(selectedMembers),
-      });
       uiStateService.disable(
         eventBrokerService.deleteSelectionRequest,
         selectedMembers.size === 0 && selectedJoints.size === 0,
