@@ -29,7 +29,6 @@ import { TemplateSelectionDialogComponent } from './features/template/template-s
 import { TipDialogComponent } from './features/tips/tip-dialog/tip-dialog.component';
 import { ToolbarAComponent } from './features/controls/toolbar-a/toolbar-a.component';
 import { ToolbarBComponent } from './features/controls/toolbar-b/toolbar-b.component';
-import { UndoManagerSessionStateService } from './features/drafting/shared/undo-manager-session-state.service';
 import { UnstableBridgeDialogComponent } from './features/testing/unstable-bridge-dialog/unstable-bridge-dialog.component';
 import { WelcomeDialogComponent } from './features/welcome/welcome-dialog/welcome-dialog.component';
 import { WorkflowManagementService } from './features/controls/management/workflow-management.service';
@@ -85,7 +84,6 @@ export class AppComponent implements AfterViewInit {
     private readonly eventBrokerService: EventBrokerService,
     private readonly sessionStateService: SessionStateService,
     _drawingsService: DrawingsService, // Instantiate only.
-    _undoManagerSessionStateService: UndoManagerSessionStateService, // Instantiate only.
     _workflowManagementService: WorkflowManagementService, // Instantiate only.
   ) {}
 

@@ -4,7 +4,7 @@
   [autoOpen]="false"
   [width]="640"
   [height]="590"
-  (onOpen)="dialogOpenHandler($event)"
+  (onOpen)="handleDialogOpen($event)"
 >
   <div
     #header
@@ -27,7 +27,7 @@
         [source]="source"
         [selectedIndex]="0"
         [displayMember]="'description'"
-        (onSelect)="selectHandler($event)"
+        (onSelect)="handleSelect($event)"
       >
       </jqxListBox>
       <div class="dialog-topic">Preview:</div>
@@ -62,7 +62,7 @@
       <div>
         <jqxButton
           #okButton
-          (onClick)="okClickHandler()"
+          (onClick)="handleOkClick()"
           style="float: right; margin-top: 16px; margin-right: 8px"
           [width]="'110px'"
           >OK</jqxButton

@@ -36,6 +36,8 @@ export class InventorySelectorComponent implements AfterViewInit {
     WidgetHelper.setDropdownListSelection(this.materialSelector, stockId.materialIndex);
     WidgetHelper.setDropdownListSelection(this.crossSectionSelector, stockId.sectionIndex);
     WidgetHelper.setDropdownListSelection(this.sizeSelector, stockId.sizeIndex);
+    // The event handlers arem't reliably triggered by the above.
+    this.sendStockId();
   }
 
   public disable(value: boolean) {

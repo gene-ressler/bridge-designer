@@ -36,7 +36,7 @@ export class BridgePdfRenderingService {
     const verticalDimensionMargin = SUPPORT_HALF_WIDTH + verticalDimensionCount * DIMENSION_GAP;
     const pageWidth = doc.internal.pageSize.getWidth();
     const drawingWidthMm = pageWidth - 2 * (DRAWING_MARGIN_MM + verticalDimensionMargin);
-    const drawingHeightMm = doc.internal.pageSize.getHeight() * 0.6 - DRAWING_MARGIN_MM;
+    const drawingHeightMm = doc.internal.pageSize.getHeight() * 0.5 - DRAWING_MARGIN_MM;
     this.scale = Math.min(drawingWidthMm / bridgeExtent.width, drawingHeightMm / bridgeExtent.height);
     this.translateX = 0.5 * (pageWidth - this.scale * bridgeExtent.width) - bridgeExtent.x0 * this.scale;
     this.translateY = DRAWING_MARGIN_MM + this.scale * (bridgeExtent.height + bridgeExtent.y0);

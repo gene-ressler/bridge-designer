@@ -32,6 +32,7 @@ type MemberGeometry = {
   halfSizeM: number; // M is for meters.
 };
 
+/** Builds a gusset member geometry for an adjacent member. */
 function buildMemberGeometry(gussetJoint: Joint, member: Member): MemberGeometry {
   const otherJoint = member.getOtherJoint(gussetJoint);
   const vx = otherJoint.x - gussetJoint.x;
@@ -51,6 +52,7 @@ function buildMemberGeometry(gussetJoint: Joint, member: Member): MemberGeometry
   return { x0, y0, x1, y1, x2, y2, ux, uy, upx, upy, halfSizeM };
 }
 
+/** A gusset covering the intersection of members at a joint. */
 export type Gusset = {
   joint: Joint;
   memberGeometries?: MemberGeometry[]; // Temporary accumulator deleted after gusset is complete.
@@ -83,6 +85,7 @@ export class GussetsService {
       gussets[member.a.index].memberGeometries!.push(buildMemberGeometry(member.a, member));
       gussets[member.b.index].memberGeometries!.push(buildMemberGeometry(member.b, member));
     }
+    // Use the member geometries to compute potential gusset vertices.
     for (const gusset of gussets) {
       this.convexHullService.clear();
       for (const geometry of gusset.memberGeometries!) {
@@ -117,7 +120,7 @@ export class GussetsService {
           }
         }
       }
-      // Create the hull and delete temporary member geometry.
+      // Create a hull around all points to determine gusset vertices. Delete member geometries no longer needed.
       this.convexHullService.createHull(gusset.hull);
       delete gusset.memberGeometries;
     }

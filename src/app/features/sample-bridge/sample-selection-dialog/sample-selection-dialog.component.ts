@@ -16,25 +16,25 @@ import { ViewportTransform2D } from '../../../shared/services/viewport-transform
 import { DesignSketchRenderingService } from '../../../shared/services/design-sketch-rendering.service';
 
 @Component({
-    selector: 'sample-selection-dialog',
-    imports: [jqxListBoxModule, jqxWindowModule, jqxButtonModule],
-    /** Component-level injections of stateful services. Root versions are hidden. */
-    // TODO: Bug. We see sketches in sample preview that shouldn't be there. Maybe missing a sketch provider?
-    providers: [
-        BridgeService,
-        { provide: BridgeServiceSessionStateKey, useValue: { key: undefined } },
-        DesignBridgeRenderingService,
-        DesignJointRenderingService,
-        DesignMemberRenderingService,
-        DesignRenderingService,
-        DesignSiteRenderingService,
-        DesignSketchRenderingService,
-        SelectedElementsService,
-        ViewportTransform2D,
-    ],
-    templateUrl: './sample-selection-dialog.component.html',
-    styleUrl: './sample-selection-dialog.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'sample-selection-dialog',
+  imports: [jqxListBoxModule, jqxWindowModule, jqxButtonModule],
+  /** Component-level injections of stateful services. Root versions are hidden. */
+  // TODO: Bug. We see sketches in sample preview that shouldn't be there. Maybe missing a sketch provider?
+  providers: [
+    BridgeService,
+    { provide: BridgeServiceSessionStateKey, useValue: { key: undefined } },
+    DesignBridgeRenderingService,
+    DesignJointRenderingService,
+    DesignMemberRenderingService,
+    DesignRenderingService,
+    DesignSiteRenderingService,
+    DesignSketchRenderingService,
+    SelectedElementsService,
+    ViewportTransform2D,
+  ],
+  templateUrl: './sample-selection-dialog.component.html',
+  styleUrl: './sample-selection-dialog.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SampleSelectionDialogComponent implements AfterViewInit {
   private static readonly PREVIEW_SCALE: number = 0.5;
@@ -65,7 +65,7 @@ export class SampleSelectionDialogComponent implements AfterViewInit {
     this.designRenderingService.render(ctx);
   }
 
-  okClickHandler(): void {
+  handleOkClick(): void {
     this.dialog.close();
     this.eventBrokerService.loadBridgeRequest.next({
       origin: EventOrigin.SAMPLE_DIALOG,
@@ -76,25 +76,30 @@ export class SampleSelectionDialogComponent implements AfterViewInit {
     });
   }
 
-  dialogOpenHandler(_event: any): void {
+  handleDialogOpen(_event: any): void {
     this.renderPreview();
     this.sampleList.focus();
   }
 
   keyDownHandler(event: KeyboardEvent): void {
     if (event.key === 'Enter') {
-      this.okClickHandler();
+      this.handleOkClick();
     }
   }
 
-  selectHandler(_event: any): void {
+  handleSelect(_event: any): void {
     this.renderPreview();
+  }
+
+  loadSampleSafely(): void {
+    // Invoke the load file dialog with a continuation opening this one after save dirty file opportunity. 
+    this.eventBrokerService.loadBridgeFileRequest.next({ origin: EventOrigin.SERVICE, data: () => this.dialog.open() });
   }
 
   source: any[] = SAMPLE_BRIDGES;
 
   ngAfterViewInit(): void {
-    this.eventBrokerService.loadSampleRequest.subscribe(_eventInfo => this.dialog.open());
+    this.eventBrokerService.loadSampleRequest.subscribe(_eventInfo => this.loadSampleSafely());
     const w = this.preview.nativeElement.width / SampleSelectionDialogComponent.PREVIEW_SCALE;
     const h = this.preview.nativeElement.height / SampleSelectionDialogComponent.PREVIEW_SCALE;
     this.viewportTransform.setViewport(0, h - 1, w - 1, 1 - h);
@@ -103,6 +108,6 @@ export class SampleSelectionDialogComponent implements AfterViewInit {
     sampleListElement.addEventListener('keydown', (event: KeyboardEvent) => this.keyDownHandler(event));
     sampleListElement
       .querySelectorAll('jqxlistbox .jqx-listitem-element')
-      .forEach((item: Element) => item.addEventListener('dblclick', () => this.okClickHandler()));
+      .forEach((item: Element) => item.addEventListener('dblclick', () => this.handleOkClick()));
   }
 }

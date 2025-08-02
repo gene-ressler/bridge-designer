@@ -19,7 +19,7 @@ export class MemberTablePdfRenderingService {
     const availableWidthMm = doc.internal.pageSize.getWidth() - 2 * DRAWING_MARGIN_MM;
     const maxTableCount = Math.trunc((availableWidthMm - MIN_X_GAP) / (TABLE_WIDTH + MIN_X_GAP));
     const rowHeightMm = this.getRowHeightMm(doc);
-    const availableHeightMm = Math.max(0, endY - startY);
+    const availableHeightMm = Math.max(0, endY - startY - 5); // 5mm margin atop title box
     const maxRowCount = Math.trunc(availableHeightMm / rowHeightMm) - 2; // -2 for header rows
     const members = this.bridgeService.bridge.members;
     const tableCount = Math.min(maxTableCount, Math.ceil(members.length / maxRowCount));

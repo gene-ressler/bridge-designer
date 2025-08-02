@@ -19,22 +19,34 @@ import { InputDialogComponent } from '../../../shared/components/input-dialog/in
 export class DesignSaverLoaderComponent implements AfterViewInit {
   @ViewChild('saveBeforeLoadConfirmationDialog') saveBeforeLoadConfirmationDialog!: ConfirmationDialogComponent;
   @ViewChild('fileNameInputDialog') fileNameInputDialog!: InputDialogComponent;
+  // What happens after the user clicks "yes" in the save before load confirmation.
+  private loadFileContinuation: () => void;
+  private readonly defaultLoadFileContinuation: () => void;
 
   constructor(
     private readonly eventBrokerService: EventBrokerService,
     @Inject('SaveLoadService') private readonly saveLoadService: SaveLoadService,
     private readonly saveMarkService: SaveMarkService,
-  ) {}
-
-  public async saveBridgeFileSafely(forceGetFile: boolean): Promise<void> {
-    this.saveLoadService.saveBridgeFile(forceGetFile, (value) => this.fileNameInputDialog.getInput(value));
+  ) {
+    this.loadFileContinuation = this.defaultLoadFileContinuation = async () => {
+      await this.saveLoadService.loadBridgeFile();
+    };
   }
 
-  public async loadBridgeFileSafely(): Promise<void> {
+  private async saveBridgeFileSafely(forceGetFile: boolean): Promise<void> {
+    await this.saveLoadService.saveBridgeFile(forceGetFile, value => this.fileNameInputDialog.getInput(value));
+  }
+
+  private async loadBridgeFileSafely(continuation: (() => void) | undefined): Promise<void> {
+    this.maybeSaveDirtyAndContinue(continuation ?? this.defaultLoadFileContinuation);
+  }
+
+  private maybeSaveDirtyAndContinue(continuation: () => void): void {
     if (this.saveMarkService.isDesignUnsaved) {
+      this.loadFileContinuation = continuation;
       this.saveBeforeLoadConfirmationDialog.open();
     } else {
-      await this.saveLoadService.loadBridgeFile();
+      continuation();
     }
   }
 
@@ -46,11 +58,11 @@ export class DesignSaverLoaderComponent implements AfterViewInit {
       case 'cancel':
         return;
     }
-    await this.saveLoadService.loadBridgeFile();
+    this.loadFileContinuation();
   }
 
   ngAfterViewInit(): void {
     this.eventBrokerService.saveBridgeFileRequest.subscribe(eventInfo => this.saveBridgeFileSafely(eventInfo.data));
-    this.eventBrokerService.loadBridgeFileRequest.subscribe(_eventInfo => this.loadBridgeFileSafely());
+    this.eventBrokerService.loadBridgeFileRequest.subscribe(eventInfo => this.loadBridgeFileSafely(eventInfo.data));
   }
 }

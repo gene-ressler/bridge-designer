@@ -6,7 +6,7 @@ Point Bridge Designer. Engineering Encounters no longer exists, so the new app i
 in Visual Basic for Windows (circa 2000) and then Java (2003 through present) for Windows and Mac OSX. Our purpose is to
 make the app useful on many more platforms, particularly Chromebooks, which have grown to be common in K-12 schools.
 
-# Design considerations
+## Design considerations
 
 BDCE is an Angular app with these goals and characteristics
 
@@ -15,7 +15,7 @@ BDCE is an Angular app with these goals and characteristics
 - **Small devices:** Run well on minimal hardware. Chromebooks in schools are often minimally spec'ed and/or old.
 - **Small host:** Put minimal load on the host. Host resources are dear to nil.
 
-# Top-level technical choices
+## Top-level technical choices
 
 The following are key, top-level design choices:
 
@@ -35,7 +35,7 @@ The following are key, top-level design choices:
   information needed by another. Most of them cause "Law of Demeter" violations: nasty dependency webs. I've chosen to
   use RxJ `Subject`s as broadcast event channels. Another way to think of them is in-app pubsub.
 
-# Use of RxJs Subjects
+## Use of RxJs Subjects
 
 Subject names are nouns. General categories are:
 
@@ -58,7 +58,7 @@ elements using subjects as keys. Hence all widges performing the same function a
 By convention, dialogs always open in response to a Subject event. They often broadcast a different Subject to effect
 results: loading a new bridge, users' saved bridge, sample bridge, sketch, etc.
 
-# Subordinate service instances
+## Subordinate service instances
 
 Most services require only a single instance in the root injector. In several cases, more are required; multiple
 versions of the state they contain are needed. A common example is dialogs with preview panes that show bridges. For
@@ -73,7 +73,7 @@ to get access? Injection tokens could work. But the simplest solution seems to b
 just a wrapper for a reference. When injected within component provider scope, it still refers to the root instance we
 need.
 
-# Dependencies
+## Dependencies
 
 Reliance on external libraries is intended to be minimal in order to reduce maintenance forced by others. Yet, some
 features were not worth the cost of re-inventing the wheel:
@@ -84,26 +84,7 @@ features were not worth the cost of re-inventing the wheel:
 
 We thank the providers now and forever.
 
-# Master TODO
-
-- Animation
-  - Controls
-- Complete help edit
-  - @ 50%
-- Legacy animation
-  - delete
-- Dirty edit save behavior
-- Member details
-- Printing, 2D
-- Printing, 3D
-
-# Issues
-
-- Make help its own window.
-- Increment iteration on first edit of fresh load
-- Dirty edit save behavior missing
-
-# Build notes
+## Build notes
 
 - `ng build` # builds production app
 - `npm run build` # advances version and builds

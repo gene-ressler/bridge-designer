@@ -28,7 +28,11 @@ export class UndoManagerSessionStateService {
     private readonly inventoryService: InventoryService,
     private readonly selectedElementsService: SelectedElementsService,
     sessionStateService: SessionStateService,
-    private readonly undoManagerService: UndoManagerService,
+    /** 
+     * The session's undo manager. Rehydrators that need undo manager rehydrated  first can 
+     * inject this service and use this attribute rather than injecting undo manager directly.
+     */
+    public readonly undoManagerService: UndoManagerService,
   ) {
     sessionStateService.register(
       'undoManager.service',
@@ -88,7 +92,7 @@ export class UndoManagerSessionStateService {
 
   dehydrate(): State {
     const dehydrationContext = DehydrationContext.forBridge(this.bridgeService.bridge);
-    const done =  this.undoManagerService.done.map(command => command.dehydrate(dehydrationContext));
+    const done = this.undoManagerService.done.map(command => command.dehydrate(dehydrationContext));
     const undone = this.undoManagerService.undone.map(command => command.dehydrate(dehydrationContext));
     const context = dehydrationContext.dehydrate();
     return { context, done, undone };

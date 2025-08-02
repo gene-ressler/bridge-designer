@@ -1,11 +1,17 @@
+import { TestBed } from '@angular/core/testing';
 import { Joint } from '../../../shared/classes/joint.model';
 import { Member } from '../../../shared/classes/member.model';
 import { projectLocalMatchers } from '../../../shared/test/jasmine-matchers';
+import { GlService } from '../rendering/gl.service';
+import { SimulationStateService } from '../rendering/simulation-state.service';
 import { FailedMemberModelService, parabolaPoints } from './failed-member-model.service';
 import { mat3, vec2, vec3 } from 'gl-matrix';
 
 describe('FailedMemberModelService', () => {
   let service: FailedMemberModelService;
+  let glServiceSpy: jasmine.SpyObj<GlService>;
+  let simulationStateServiceSpy: jasmine.SpyObj<SimulationStateService>;
+
   const s0 = vec2.fromValues(0, 0);
   const s1 = vec2.fromValues(1, 0);
   const s2 = vec2.fromValues(1, 1);
@@ -22,7 +28,16 @@ describe('FailedMemberModelService', () => {
 
   beforeEach(() => {
     jasmine.addMatchers(projectLocalMatchers);
-    service = new FailedMemberModelService();
+    glServiceSpy = jasmine.createSpyObj('GlService', [], { gl: {} });
+    simulationStateServiceSpy = jasmine.createSpyObj('SimulationStateService', [], { phaseClockMillis: 1000 });
+    TestBed.configureTestingModule({
+      providers: [
+        FailedMemberModelService,
+        { provide: GlService, useValue: glServiceSpy },
+        { provide: SimulationStateService, useValue: simulationStateServiceSpy },
+      ],
+    });
+    service = TestBed.inject(FailedMemberModelService);
   });
 
   it('creates a valid segment transform matrix for a random trapezoid', () => {
@@ -142,7 +157,11 @@ describe('FailedMemberModelService', () => {
   it('builds expected buckled member mesh data for member', () => {
     const members = [member];
     const trussCenterlineOffset = 4;
-    const buckledMemberMeshData = service.buildMeshDataForBuckledMembers(members, jointLocations, trussCenterlineOffset);
+    const buckledMemberMeshData = service.buildMeshDataForBuckledMembers(
+      members,
+      jointLocations,
+      trussCenterlineOffset,
+    );
     const transforms = buckledMemberMeshData.meshData.instanceModelTransforms!;
     expect(transforms[transform.length - 1]).not.toBe(0);
     expect(buckledMemberMeshData.jointLocations).toBe(jointLocations);

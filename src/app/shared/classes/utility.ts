@@ -165,6 +165,16 @@ export class Utility {
     return `${date.getDate()} ${MONTH_NAMES[date.getMonth() - 1]} ${date.getFullYear()}`;
   }
 
+  /** Returns the number of one bits in the integer n. */
+  public static countOnes(n: number) {
+    let count: number = 0;
+    while (n !== 0) {
+      ++count;
+      n &= (n - 1);
+    }
+    return count;
+  }
+
   /* TODO: Not currently used. Remove?
   public static setsEqual<T>(a: Set<T>, b: Set<T>) {
     if (a.size !== b.size) {

@@ -36,12 +36,12 @@ export class Deque<T> {
 
   /** Peeks at the rightmost item in the deque. */
   public peekRight(): T | undefined {
-    return this.right.peekLast();
+    return this.right.peekLast(this.left);
   }
 
   /** Peeks at the leftmost item in the deque. */
   public peekLeft(): T | undefined {
-    return this.left.peekLast();
+    return this.left.peekLast(this.right);
   }
 
   /** Clears the deque. */
@@ -131,8 +131,8 @@ class Side<T> {
     return undefined;
   }
 
-  peekLast(): T | undefined {
-    return this.data[this.data.length - 1];
+  peekLast(otherSide: Side<T>): T | undefined {
+    return this.data.length > 0 ? this.data[this.data.length - 1] : otherSide.data[otherSide.base];
   }
 
   private popBase(): T {

@@ -1,25 +1,32 @@
 import { Injectable } from '@angular/core';
 import { EventBrokerService } from '../../shared/services/event-broker.service';
-import { UndoManagerService } from '../drafting/shared/undo-manager.service';
+import { UndoManagerService, UndoStateToken } from '../drafting/shared/undo-manager.service';
+import { SessionStateService } from '../../shared/services/session-state.service';
+import { UndoManagerSessionStateService } from '../drafting/shared/undo-manager-session-state.service';
 
 /** A container for the bit that reflects whether the current design needs saving. */
 @Injectable({ providedIn: 'root' })
 export class SaveMarkService {
-  private savedMark: any = UndoManagerService.NO_EDIT_COMMAND;
-  // TODO: Dehydrate/rehydrate the name.
+  private savedMark: UndoStateToken = UndoManagerService.NO_EDIT_COMMAND;
   private _fileName: string | undefined;
+  private readonly undoManagerService;
 
   constructor(
     eventBrokerService: EventBrokerService,
-    private readonly undoManagerService: UndoManagerService,
+    sessionStateService: SessionStateService,
+    // Injected to ensure undo manager is already rehydrated.
+    undoManagerSessionStateService: UndoManagerSessionStateService,
   ) {
-    const reset = () => {
+    this.undoManagerService = undoManagerSessionStateService.undoManagerService;
+    // Set the saved bit to 1 for current undo state. Any edit wrt this one effectively resets it.
+    eventBrokerService.loadBridgeCompletion.subscribe(() => {
       this.savedMark = this.undoManagerService.stateToken;
-    }
-    // Reset the saved bit for current undo state. It's un-set by any edit wrt this one.
-    eventBrokerService.loadBridgeCompletion.subscribe(reset);
-    // Rehydrate.
-    eventBrokerService.sessionStateRestoreCompletion.subscribe(reset);
+    });
+    sessionStateService.register(
+      'savemark.service',
+      () => this.dehydrate(),
+      state => this.rehydrate(state),
+    );
   }
 
   /** Returns whether the current design is changed since last save. */
@@ -37,4 +44,24 @@ export class SaveMarkService {
     this.savedMark = this.undoManagerService.stateToken;
     this._fileName = fileName;
   }
+
+  dehydrate(): State {
+    return {
+      stateTokenIndex: this.undoManagerService.findStateTokenIndex(this.savedMark),
+      fileName: this._fileName,
+    };
+  }
+
+  rehydrate(state: State): void {
+    if (state.stateTokenIndex !== undefined) {
+      const token = this.undoManagerService.getStateToken(state.stateTokenIndex);
+      this.savedMark = token ?? UndoManagerService.NO_EDIT_COMMAND;
+    }
+    this._fileName = state.fileName;
+  }
 }
+
+type State = {
+  stateTokenIndex: number | undefined;
+  fileName: string | undefined;
+};

@@ -412,11 +412,16 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
     return this.localContestCodeInput.code;
   }
 
-  setLegendItemVisibility(item: LegendItemName, isVisible: boolean = true) {
+  setLegendItemVisibility(item: LegendItemName, isVisible: boolean = true): void {
     this.legendItemsByName.get(item)!.style.display = isVisible ? '' : 'none';
   }
 
-  // Start SetupWizardCardView methods.
+  private maybeSaveThenStartNewDesign(): void {
+    // Let the bridge file loader offer the user to save a dirty edit before opening.
+    this.eventBrokerService.loadBridgeFileRequest.next({origin: EventOrigin.SETUP_DIALOG, data: () => {
+      this.open(this.rootBridgeService.instance.designConditions);
+    }})
+  }
 
   ngAfterViewInit(): void {
     // Find all the elements associated with cards and hide all but 'card-1'.
@@ -436,8 +441,6 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
     const h = this.elevationCanvas.nativeElement.height;
     this.viewportTransform.setViewport(0, h - 1, w - 1, 1 - h);
     this.cardService.card.renderElevationCartoon();
-    this.eventBrokerService.newDesignRequest.subscribe(_eventInfo =>
-      this.open(this.rootBridgeService.instance.designConditions),
-    );
+    this.eventBrokerService.newDesignRequest.subscribe(() => this.maybeSaveThenStartNewDesign());
   }
 }
