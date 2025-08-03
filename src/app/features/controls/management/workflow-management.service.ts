@@ -95,8 +95,15 @@ export class WorkflowManagementService {
       uiStateService.disable(eventBrokerService.analysisReportRequest, !analysisValidityService.isLastAnalysisValid);
       uiStateService.disable(eventBrokerService.undoRequest, eventInfo.data.doneCount === 0);
       uiStateService.disable(eventBrokerService.redoRequest, eventInfo.data.undoneCount === 0);
-      if (eventInfo.data.effectsMask & EditEffect.MEMBERS) {
+      // Update the inventory selector only if members have been changed (not added).
+      const membersChange = EditEffect.MEMBERS | EditEffect.CHANGE;
+      if ((eventInfo.data.effectsMask & membersChange) === membersChange) {
         disableMemberSizeIncrementWidgets();
+        const selectedMembers = selectedElementsService.selectedElements.selectedMembers;
+        eventBrokerService.loadInventorySelectorRequest.next({
+          origin: EventOrigin.SERVICE,
+          data: bridgeService.getUsefulStockId(selectedMembers),
+        });
       }
     });
 

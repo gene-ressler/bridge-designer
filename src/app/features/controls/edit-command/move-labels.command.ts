@@ -5,7 +5,7 @@ import { DehydratedEditCommand } from './dehydration-context';
 import { EditCommandTag } from './dehydration-context';
 
 export class MoveLabelsCommand extends EditCommand {
-  public override readonly effectsMask: number = EditEffect.LABELS;
+  public override readonly effectsMask: number = EditEffect.LABELS | EditEffect.CHANGE;
 
   constructor(
     private readonly draftingPanelState: DraftingPanelState,

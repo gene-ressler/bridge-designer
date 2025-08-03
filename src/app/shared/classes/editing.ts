@@ -11,6 +11,8 @@ export const enum EditEffect {
   JOINTS = 0x1,
   LABELS = 0x2,
   MEMBERS = 0x4,
+  ADD = 0x8,
+  CHANGE = 0x10,
 }
 
 export abstract class EditCommand {

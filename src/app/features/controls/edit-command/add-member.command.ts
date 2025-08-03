@@ -12,7 +12,7 @@ import { EditCommandTag } from './dehydration-context';
 
 export class AddMemberCommand extends EditCommand {
   private members: Member[] = [];
-  public override readonly effectsMask: number = EditEffect.MEMBERS;
+  public override readonly effectsMask: number = EditEffect.MEMBERS | EditEffect.ADD;
 
   /** Constructs an add member command object. Even the description is empty because there are variants. */
   private constructor(

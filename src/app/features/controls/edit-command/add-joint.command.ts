@@ -33,7 +33,7 @@ export class AddJointCommand extends EditCommand {
 
   /** Returns what's affected by this command. Valid only after do(). */
   override get effectsMask(): number {
-    return this.memberSplitter.hasSplit ? EditEffect.MEMBERS | EditEffect.JOINTS : EditEffect.JOINTS;
+    return this.memberSplitter.hasSplit ? EditEffect.MEMBERS | EditEffect.JOINTS  | EditEffect.ADD : EditEffect.JOINTS | EditEffect.ADD;
   }
 
   public override do(): void {

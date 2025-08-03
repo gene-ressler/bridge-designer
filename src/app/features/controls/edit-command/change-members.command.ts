@@ -13,7 +13,7 @@ import { DehydratedEditCommand } from './dehydration-context';
 import { EditCommandTag } from './dehydration-context';
 
 export class ChangeMembersCommand extends EditCommand {
-  public override readonly effectsMask: number = EditEffect.MEMBERS;
+  public override readonly effectsMask: number = EditEffect.MEMBERS | EditEffect.CHANGE;
 
   private constructor(
     description: string,

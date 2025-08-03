@@ -38,8 +38,8 @@ export class MoveJointCommand extends EditCommand {
     if (isNaN(this._effectsMask)) {
       this._effectsMask =
         this.memberSplitter.hasSplit || this.bridge.members.some(member => member.hasJoint(this.joint))
-          ? EditEffect.JOINTS | EditEffect.MEMBERS
-          : EditEffect.JOINTS;
+          ? EditEffect.JOINTS | EditEffect.MEMBERS | EditEffect.CHANGE
+          : EditEffect.JOINTS | EditEffect.CHANGE;
     }
     return this._effectsMask;
   }
