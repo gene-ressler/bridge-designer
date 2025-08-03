@@ -64,13 +64,14 @@ export class SelectModeService {
       return;
     }
     this.maybeSwitchToJointMove(event);
-    if (this.selectCursorService.isAnchored || this.movingJoint) {
+    if (this.movingJoint) {
       this.hotElementService.clearRenderedHotElement(this.ctx);
     } else {
       this.hideKeyboardJointMoveCursor();
       this.hotElementService.updateRenderedHotElement(this.ctx, event.offsetX, event.offsetY, {
         excludeFixedJoints: true,
         considerOnly: [Joint, Member, GuideKnob, Labels],
+        invalidate: true, // rectangle cursor may erase
       });
     }
     // These do nothing if the respective cursor isn't in use.
@@ -156,11 +157,11 @@ export class SelectModeService {
   /** Changes from select to joint move if user is dragging the hot joint. */
   private maybeSwitchToJointMove(event: PointerEvent): void {
     if (
-      (event.buttons & (1 << 0)) === 0 || // dragging
-      this.movingJoint || // haven't already switched
-      !this.initialHotJoint || // hot joint at pointer down
-      !this.selectCursorService.isAnchored || // select rectangle valid
-      this.selectCursorService.diagonalSqr <= 9 // significant pointer movement
+      (event.buttons & (1 << 0)) === 0 || // not dragging
+      this.movingJoint || // already switched
+      !this.initialHotJoint || // no hot joint at pointer down
+      !this.selectCursorService.isAnchored || // no start of rectangle
+      this.selectCursorService.diagonalSqr <= 9 // no significant pointer movement
     ) {
       return;
     }

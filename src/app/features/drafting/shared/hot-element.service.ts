@@ -47,6 +47,7 @@ export class HotElementService {
       considerOnly?: HotElementClass[];
       excludeFixedJoints?: boolean;
       excludedJointIndices?: Set<number>;
+      invalidate?: boolean;
     } = {},
   ): void {
     const xWorld = this.viewportTransform.viewportToworldX(x);
@@ -119,6 +120,8 @@ export class HotElementService {
     if (hotElement !== this._hotElement) {
       this.erase(ctx, this._hotElement);
       this._hotElement = hotElement;
+      this.render(ctx, this._hotElement);
+    } else if (options.invalidate) {
       this.render(ctx, this._hotElement);
     }
     // TODO: If this is too expensive, track current setting to avoid redundant per-move-event setting.

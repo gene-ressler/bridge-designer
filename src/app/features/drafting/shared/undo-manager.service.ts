@@ -21,9 +21,9 @@ export class UndoManagerService {
   public readonly undone: Deque<EditCommand> = new Deque<EditCommand>();
 
   constructor(private readonly eventBrokerService: EventBrokerService) {
-    eventBrokerService.undoRequest.subscribe(info => this.undo(info.data));
-    eventBrokerService.redoRequest.subscribe(info => this.redo(info.data));
-    eventBrokerService.loadBridgeRequest.subscribe(_info => this.clear());
+    eventBrokerService.undoRequest.subscribe(eventInfo => this.undo(eventInfo.data));
+    eventBrokerService.redoRequest.subscribe(eventInfo => this.redo(eventInfo.data));
+    eventBrokerService.loadBridgeRequest.subscribe(() => this.clear());
   }
 
   /** Does the given command and adds it to the undo buffer. */

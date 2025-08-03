@@ -18,9 +18,9 @@ export class SaveMarkService {
     undoManagerSessionStateService: UndoManagerSessionStateService,
   ) {
     this.undoManagerService = undoManagerSessionStateService.undoManagerService;
-    // Set the saved bit to 1 for current undo state. Any edit wrt this one effectively resets it.
     eventBrokerService.loadBridgeCompletion.subscribe(() => {
-      this.savedMark = this.undoManagerService.stateToken;
+      this.savedMark = UndoManagerService.NO_EDIT_COMMAND;
+      this._fileName = undefined;
     });
     sessionStateService.register(
       'savemark.service',
@@ -43,6 +43,7 @@ export class SaveMarkService {
   public markDesignSaved(fileName: string): void {
     this.savedMark = this.undoManagerService.stateToken;
     this._fileName = fileName;
+    document.title = fileName.replace(/\.bdc$/, '');
   }
 
   dehydrate(): State {
@@ -58,6 +59,9 @@ export class SaveMarkService {
       this.savedMark = token ?? UndoManagerService.NO_EDIT_COMMAND;
     }
     this._fileName = state.fileName;
+    if (state.fileName !== undefined) {
+      document.title = state.fileName;
+    }
   }
 }
 

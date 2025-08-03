@@ -6,7 +6,6 @@ import { ToastError } from '../toast/toast/toast-error';
 import { SaveMarkService } from './save-mark.service';
 
 const DEFAULT_NAME = 'MyBridge.bdc';
-const DEFAULT_NAME_OBJ = { value: DEFAULT_NAME };
 const PICKER_ID = 'bridge-design';
 const PICKER_DIR = 'documents';
 const PICKER_TYPES = [
@@ -28,9 +27,6 @@ export interface SaveLoadService {
 /** File save/loader using long-available HTML download and upload features. Required e.g for Firefox. */
 @Injectable()
 export class LegacySaveLoadService implements SaveLoadService {
-  /** Wrapped name, allowing object equivalence check for default. */
-  private _preferredNameObj: { value: string } = DEFAULT_NAME_OBJ;
-
   constructor(
     private readonly bridgeService: BridgeService,
     private readonly eventBrokerService: EventBrokerService,
@@ -42,9 +38,10 @@ export class LegacySaveLoadService implements SaveLoadService {
     forceGetFile: boolean,
     fileNameGetter: (value: string) => Promise<string>,
   ): Promise<void> {
-    if (forceGetFile || this._preferredNameObj === DEFAULT_NAME_OBJ) {
+    let preferredName = this.saveMarkService.savedFileName ?? DEFAULT_NAME;
+    if (forceGetFile || this.saveMarkService.savedFileName === undefined) {
       try {
-        this.preferredName = await fileNameGetter(this._preferredNameObj.value);
+        preferredName = await fileNameGetter(preferredName);
       } catch (error) {
         throw new ToastError('noError');
       }
@@ -54,12 +51,12 @@ export class LegacySaveLoadService implements SaveLoadService {
     const anchorElement = window.document.createElement('a');
     const url = window.URL.createObjectURL(blob);
     anchorElement.href = url;
-    anchorElement.download = this._preferredNameObj.value;
+    anchorElement.download = preferredName;
     document.body.appendChild(anchorElement);
     anchorElement.click();
     document.body.removeChild(anchorElement);
     window.URL.revokeObjectURL(anchorElement.href);
-    this.saveMarkService.markDesignSaved(this._preferredNameObj.value);
+    this.saveMarkService.markDesignSaved(preferredName);
     this.eventBrokerService.toastRequest.next({ origin: EventOrigin.SERVICE, data: 'fileSaveSuccess' });
   }
 
@@ -85,26 +82,19 @@ export class LegacySaveLoadService implements SaveLoadService {
           origin: EventOrigin.SERVICE,
           data: saveSet,
         });
-        this.preferredName = file.name;
+        this.saveMarkService.markDesignSaved(file.name);
       };
       reader.readAsText(file);
     });
     inputElement.click();
     document.body.removeChild(inputElement);
   }
-
-  private set preferredName(fileName: string) {
-    this._preferredNameObj = { value: fileName };
-    document.title = fileName;
-  }
 }
 
 /** File save/loader using experimental (as of 2025) download and upload features. For Chromium-based browsers. */
 @Injectable()
 export class FileSystemSaveLoadService implements SaveLoadService {
-  // TODO: Dehydrate-rehydrate as much as possible. Probably preferred name and saved mark.
   private currentFileHandle: FileSystemFileHandle | undefined;
-  private _preferredName: string = DEFAULT_NAME;
 
   constructor(
     private readonly bridgeService: BridgeService,
@@ -115,12 +105,10 @@ export class FileSystemSaveLoadService implements SaveLoadService {
 
   public async saveBridgeFile(forceGetFile: boolean = false): Promise<void> {
     try {
-      if (forceGetFile || !this.currentFileHandle) {
-        this.currentFileHandle = await this.getSaveFile();
-        const file = await this.currentFileHandle.getFile();
-        this.preferredName = file.name;
+      if (forceGetFile || !this.currentFileHandle || this.saveMarkService.savedFileName === undefined) {
+        this.currentFileHandle = await this.getSaveFile(this.saveMarkService.savedFileName ?? DEFAULT_NAME);
       }
-      const stream = await this.currentFileHandle!.createWritable();
+      const stream = await this.currentFileHandle.createWritable();
       const text = this.bridgeService.saveSetText;
       await stream.write(text);
       await stream.close();
@@ -139,12 +127,6 @@ export class FileSystemSaveLoadService implements SaveLoadService {
       origin: EventOrigin.SERVICE,
       data: saveSet,
     });
-    // SaveMarkService marks upon load completion.
-  }
-
-  private set preferredName(fileName: string) {
-    this._preferredName = fileName;
-    document.title = fileName;
   }
 
   private async doLoad(): Promise<string> {
@@ -156,7 +138,7 @@ export class FileSystemSaveLoadService implements SaveLoadService {
     try {
       const [fileHandle]: FileSystemFileHandle[] = await (window as any).showOpenFilePicker(options);
       const file = await fileHandle.getFile();
-      this.preferredName = file.name;
+      this.saveMarkService.markDesignSaved(file.name);
       return file.text();
     } catch (error) {
       throw new ToastError(this.isUserCancel(error) ? 'noError' : 'fileReadError');
@@ -167,11 +149,11 @@ export class FileSystemSaveLoadService implements SaveLoadService {
     return error instanceof DOMException && error.name === 'AbortError';
   }
 
-  private async getSaveFile(): Promise<FileSystemFileHandle> {
+  private async getSaveFile(preferredName: string): Promise<FileSystemFileHandle> {
     const options = {
       id: PICKER_ID,
       startIn: PICKER_DIR,
-      suggestedName: this._preferredName,
+      suggestedName: preferredName,
       types: PICKER_TYPES,
     };
     return await (window as any).showSaveFilePicker(options);
