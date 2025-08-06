@@ -162,7 +162,7 @@ export class Utility {
   }
 
   public static getStandardDate(date: Date = new Date(Date.now())): string {
-    return `${date.getDate()} ${MONTH_NAMES[date.getMonth() - 1]} ${date.getFullYear()}`;
+    return `${date.getDate()} ${MONTH_NAMES[date.getMonth()]} ${date.getFullYear()}`;
   }
 
   /** Returns the number of one bits in the integer n. */
