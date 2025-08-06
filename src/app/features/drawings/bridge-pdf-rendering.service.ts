@@ -7,7 +7,7 @@ import { DRAWING_LINE_WIDTH_MM, DRAWING_MARGIN_MM } from './drawings.service';
 import { AbutmentSide, SiteRenderingHelper2D } from '../../shared/classes/site-rendering-helper-2d';
 import { Point2D, Point2DInterface, Rectangle2DInterface } from '../../shared/classes/graphics';
 import { DesignConditions } from '../../shared/services/design-conditions.service';
-import { MemberLabelPositionService } from '../../shared/services/MemberLabelPosition.service';
+import { MemberLabelPositionService } from '../../shared/services/member-label-position.service';
 
 const DIMENSION_GAP = 4;
 const DIMENSION_EXTENSION = 1.5;

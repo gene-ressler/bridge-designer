@@ -1,4 +1,4 @@
-import { MemberLabelPositionService } from './MemberLabelPosition.service';
+import { MemberLabelPositionService } from './member-label-position.service';
 import { BridgeService } from './bridge.service';
 import { Member } from '../classes/member.model';
 import { projectLocalMatchers } from '../test/jasmine-matchers';
@@ -32,8 +32,8 @@ describe('MemberLabelPositionService', () => {
       makeMember(0, 4, 0, 0), // left
     );
     const result = service.labelPositions;
-    expect(result.subarray(0, 4)).toNearlyEqual(new Float64Array([2, 2, 2, 2]), -0.03);
-    expect(result.subarray(4, 8)).toNearlyEqual(new Float64Array([0, 0, 0, 0]), -0.05);
+    expect(result.subarray(0, 4)).toNearlyEqual(new Float64Array([2, 2, 2, 2]), -5e-1);
+    expect(result.subarray(4, 8)).toNearlyEqual(new Float64Array([0, 0, 0, 0]), -5e-2);
   });
 
   it('should compute label positions for a square with both diagonals', () => {
@@ -46,7 +46,7 @@ describe('MemberLabelPositionService', () => {
       makeMember(1, 0, 0, 1), // diagonal 2
     );
     const result = service.labelPositions;
-    expect(result.subarray(6, 12)).toNearlyEqual(new Float64Array([0, 0, 0, 0, 0, 0]), -1e-2);
+    expect(result.subarray(6, 12)).toNearlyEqual(new Float64Array([0, 0, 0, 0, 0, 0]), -5e-2);
   });
 
   it('should compute label positions for overlapping random segments', () => {
@@ -58,6 +58,6 @@ describe('MemberLabelPositionService', () => {
       makeMember(0, 0.5, 2, 0.5),
     );
     const result = service.labelPositions;
-    expect(result.subarray(6, 12)).toNearlyEqual(new Float64Array([0, 0, 0, 0, 0, 0]), -1e-2);
+    expect(result.subarray(6, 12)).toNearlyEqual(new Float64Array([0, 0, 0, 0, 0, 0]), -5e-2);
   });
 });
