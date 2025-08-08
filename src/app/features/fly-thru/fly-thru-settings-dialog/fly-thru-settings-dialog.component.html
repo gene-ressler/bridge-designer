@@ -1,49 +1,19 @@
-<p>fly-thru-settings-dialog works!</p>
-,
 <jqxWindow
   #dialog
   [isModal]="false"
   [autoOpen]="false"
   [width]="344"
   [height]="300"
+  [initContent]="initDialogContent"
 >
   <div class="header">Animation settings</div>
-  <div class="container">
-    <div>
-      Speed (km/hr)
-      <jqxSlider
-        #speedSlider
-        [height]="60"
-        [min]="5"
-        [max]="30"
-        [value]="20"
-        [step]="10"
-        [mode]="'fixed'"
-        [showTickLabels]="true"
-        [tooltip]="true"
-        [ticksFrequency]="10"
-        (onChange)="handleSpeedSliderChange()"
-      >
-      </jqxSlider>
+  <div class="content">
+    <!-- documented, unfixed bug in jqWidgets: sliders must be programmatically built in initContent -->
+    <div class="speed">
+      Speed
+      <ng-container #speedSliderContainer></ng-container>{{ speed }} km/hr
     </div>
-    <div>
-      Brightness
-      <jqxSlider
-        #brightnessSlider
-        [height]="60"
-        [min]="0"
-        [max]="100"
-        [value]="50"
-        [step]="10"
-        [mode]="'fixed'"
-        [showTickLabels]="true"
-        [tooltip]="true"
-        [ticksFrequency]="10"
-        (onChange)="handleBrightnessSliderChange()"
-      >
-      </jqxSlider>
-    </div>
-    <div>
+    <div class="controls">
       <jqxCheckBox
         #shadowsCheckbox
         [width]="checkboxWidth"
@@ -67,6 +37,14 @@
         (onChange)="handleTerrainCheckboxChange()"
       >
         Terrain</jqxCheckBox
+      >
+      <jqxCheckBox
+        #windTurbineCheckbox
+        [width]="checkboxWidth"
+        [height]="checkboxHeight"
+        (onChange)="handleWindTurbineCheckboxChange()"
+      >
+        Wind turbine</jqxCheckBox
       >
       <jqxCheckBox
         #abutmentsCheckbox
@@ -100,6 +78,10 @@
       >
         Exaggeration</jqxCheckBox
       >
+      <div>
+        Brightness
+        <ng-container #brightnessSliderContainer></ng-container>
+      </div>
     </div>
   </div>
 </jqxWindow>

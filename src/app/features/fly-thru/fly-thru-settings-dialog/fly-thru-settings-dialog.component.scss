@@ -1,3 +1,25 @@
 :host {
   display: block;
 }
+
+.header {
+  font-weight: bold;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 360px 240px min-content;
+  grid-template-rows: min-content 160px;
+  padding: 8px;
+  background-color: rgb(238,238,238);
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  align-content: space-between;
+  height: 200px;
+}

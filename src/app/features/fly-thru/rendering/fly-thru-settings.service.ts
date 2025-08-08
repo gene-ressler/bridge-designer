@@ -11,6 +11,7 @@ export type FlyThruSettings = {
   noSky?: boolean;
   noTerrain?: boolean;
   noTruck?: boolean;
+  noWindTurbine?: boolean;
 };
 
 /** Holder for fly-thru settings for injection into all using services and componets. */
