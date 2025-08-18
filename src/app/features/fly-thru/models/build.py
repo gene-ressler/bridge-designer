@@ -63,6 +63,62 @@ class MaterialsLibrary:
             print("};", file=out_file)
 
 
+def unitNormal(polygon):
+    normal = [0, 0, 0]
+    if len(polygon) < 3:
+        return normal
+    vq = polygon[-1]
+    for vp in polygon:
+        normal[0] += (vq[1] - vp[1]) * (vq[2] + vp[2])
+        normal[1] += (vq[2] - vp[2]) * (vq[0] + vp[0])
+        normal[2] += (vq[0] - vp[0]) * (vq[1] + vp[1])
+        vq = vp
+    normalLen = math.sqrt(normal[0] ** 2 + normal[1] ** 2 + normal[2] ** 2)
+    return tuple(c / normalLen for c in normal)
+
+
+def buildFlattenToXyMatrix(n):
+    nx = n[0]
+    ny = n[1]
+    nz = n[2]
+    d = math.sqrt(ny**2 + nz**2)
+    if abs(d) < 1e-5:
+        return (
+            (0, 0, -nx),
+            (0, 1, 0),
+            (nx, 0, 0),
+        )
+    return (
+        (d, -nx * ny / d, -nx * nz / d),
+        (0, nz / d, -ny / d),
+        (nx, ny, nz),
+    )
+
+
+def dot(a, b):
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+
+
+def mulVec(a, x):
+    return (dot(a[0], x), dot(a[1], x), dot(a[2], x))
+
+
+def isLeftTurn(ax, ay, bx, by):
+    return ax * by - ay * bx >= 0
+
+
+def areSegmentsLeftTurn(r, q, p):
+    return isLeftTurn(q[0] - r[0], q[1] - r[1], p[0] - q[0], p[1] - q[1])
+
+
+def isPointInTriangle(p, t0, t1, t2):
+    return (
+        areSegmentsLeftTurn(t0, t1, p)
+        and areSegmentsLeftTurn(t1, t2, p)
+        and areSegmentsLeftTurn(t2, t0, p)
+    )
+
+
 class Processor:
     def __init__(self):
         self.vertices = [()]
@@ -77,6 +133,31 @@ class Processor:
 
     def get_material(self, name):
         return self.material_lib and self.material_lib.get(name)
+
+    def triangulate(self, face):
+        if len(face) <= 3:
+            return [face]
+        triangles = []
+        vertices = tuple(self.vertices[quad[0]] for quad in face)
+        n = unitNormal(vertices)
+        # Flatten to 2d in the x-y plane
+        m = buildFlattenToXyMatrix(n)
+        flat_vertices = [(mulVec(m, v)[0:2], i) for i, v in enumerate(vertices)]
+        while len(flat_vertices) >= 3:
+            # Find an ear. Assumes no holes or self-crossings.
+            r, q = flat_vertices[-2], flat_vertices[-1]
+            for p in flat_vertices:
+                if areSegmentsLeftTurn(r[0], q[0], p[0]) and not any(
+                    isPointInTriangle(x[0], r[0], q[0], p[0])
+                    for x in flat_vertices
+                    if x != q and x != r and x != p
+                ):
+                    # r, q, p is a left turn, so q is an ear
+                    triangles.append([face[r[1]], face[q[1]], face[p[1]]])
+                    flat_vertices.remove(q)
+                    break
+                r, q = q, p
+        return triangles
 
     def process(self, in_file, out_file, ignore_tex_coords=True):
         print(f"{in_file.name} -> {out_file.name}:")
@@ -105,14 +186,12 @@ class Processor:
                             for i in vertex_spec.split("/")
                         ) + (bool(material) and material["index"],)
                         face.append(quad)
-                        if len(quad) != 4:
-                            print(f"triangles required: {line}")
-                            return
                         quad_index = self.quad_index.get(quad)
                         if quad_index == None:
                             self.quad_index[quad] = len(self.quads)
                             self.quads.append(quad)
-                    self.faces.append(face)
+                    triangles = self.triangulate(face)
+                    self.faces.extend(triangles)
                 case "s":
                     if parts[1] != "off":
                         print(f"unknown smooth: {line}", file=sys.stderr)
@@ -125,6 +204,8 @@ class Processor:
                     self.material_lib = MaterialsLibrary(parts[1])
                 case "usemtl":
                     material = self.get_material(parts[1])
+                case "g":
+                    print(f"ignore: {line}", end='')
                 case _:
                     print(f"unknown command: {line}", file=sys.stderr)
                     continue
@@ -192,8 +273,9 @@ def normalize(v):
     return tuple(x / len for x in v)
 
 
-def main():
-    obj_files = [f for f in os.listdir(".") if f.endswith(".obj")]
+def main(obj_files=[]):
+    if len(obj_files) == 0:
+        obj_files = [f for f in os.listdir(".") if f.endswith(".obj")]
     for obj_file in obj_files:
         with open(obj_file, "r") as in_file:
             path = Path(obj_file).with_suffix(".ts")
@@ -201,4 +283,4 @@ def main():
                 Processor().process(in_file, out_file)
 
 
-main()
+main(sys.argv[1:])

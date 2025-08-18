@@ -8,6 +8,7 @@ import { UniformService } from './uniform.service';
 import { SimulationStateService } from './simulation-state.service';
 import { GlService } from './gl.service';
 import { Geometry } from '../../../shared/classes/graphics';
+import { TRUCK_CAB_MESH_DATA } from '../models/truck-cab';
 
 @Injectable({ providedIn: 'root' })
 export class TruckRenderingService {
@@ -15,6 +16,7 @@ export class TruckRenderingService {
   private bodyMesh!: Mesh;
   private wheelMesh!: Mesh;
   private dualWheelMesh!: Mesh;
+  private cabInteriorMesh!: Mesh;
 
   constructor(
     private readonly glService: GlService,
@@ -27,9 +29,10 @@ export class TruckRenderingService {
     this.bodyMesh = this.meshRenderingService.prepareColoredMesh(TRUCK_MESH_DATA);
     this.wheelMesh = this.meshRenderingService.prepareColoredMesh(WHEEL_MESH_DATA);
     this.dualWheelMesh = this.meshRenderingService.prepareColoredMesh(DUAL_WHEEL_MESH_DATA);
+    this.cabInteriorMesh = this.meshRenderingService.prepareColoredMesh(TRUCK_CAB_MESH_DATA);
   }
 
-  public render(viewMatrix: mat4, projectionMatrix: mat4): void {
+  public render(viewMatrix: mat4, projectionMatrix: mat4, cabOnly: boolean = false): void {
     let m: mat4;
 
     // Blend for fade in/out effect if needed.
@@ -50,56 +53,63 @@ export class TruckRenderingService {
     const truckRotation = this.simulationStateService.rotation;
     mat4.translate(m, m, vec3.set(this.offset, truckPosition[0], truckPosition[1], 0));
     Geometry.rotateZ(m, m, truckRotation[1], truckRotation[0]);
-    // Tire diameter is 1. A rotation through 2pi radians covers distance pi.
-    const wheelRotation = 2 * truckPosition[0];
+    if (cabOnly) {
+      gl.disable(gl.CULL_FACE);
+      this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
+      this.meshRenderingService.renderColoredMesh(this.cabInteriorMesh);
+      gl.enable(gl.CULL_FACE);
+    } else {
+      // Tire diameter is 1. A rotation through 2pi radians covers distance pi.
+      const wheelRotation = 2 * truckPosition[0];
 
-    const wheelbaseOffset = -4;
+      const wheelbaseOffset = -4;
 
-    // Right front.
-    m = this.uniformService.pushModelMatrix();
+      // Right front.
+      m = this.uniformService.pushModelMatrix();
 
-    mat4.translate(m, m, vec3.set(this.offset, 0, 0.5, 0.95));
-    mat4.rotateZ(m, m, -wheelRotation);
-    this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
-    this.meshRenderingService.renderColoredMesh(this.wheelMesh);
+      mat4.translate(m, m, vec3.set(this.offset, 0, 0.5, 0.95));
+      mat4.rotateZ(m, m, -wheelRotation);
+      this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
+      this.meshRenderingService.renderColoredMesh(this.wheelMesh);
 
-    this.uniformService.popModelMatrix();
+      this.uniformService.popModelMatrix();
 
-    // Right rear.
-    m = this.uniformService.pushModelMatrix();
+      // Right rear.
+      m = this.uniformService.pushModelMatrix();
 
-    mat4.translate(m, m, vec3.set(this.offset, wheelbaseOffset, 0.5, 1.05));
-    mat4.rotateZ(m, m, -wheelRotation);
-    this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
-    this.meshRenderingService.renderColoredMesh(this.dualWheelMesh);
+      mat4.translate(m, m, vec3.set(this.offset, wheelbaseOffset, 0.5, 1.05));
+      mat4.rotateZ(m, m, -wheelRotation);
+      this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
+      this.meshRenderingService.renderColoredMesh(this.dualWheelMesh);
 
-    this.uniformService.popModelMatrix();
+      this.uniformService.popModelMatrix();
 
-    // Left front.
-    m = this.uniformService.pushModelMatrix();
+      // Left front.
+      m = this.uniformService.pushModelMatrix();
 
-    mat4.translate(m, m, vec3.set(this.offset, 0, 0.5, -0.95));
-    mat4.rotateX(m, m, Math.PI);
-    mat4.rotateZ(m, m, wheelRotation);
-    this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
-    this.meshRenderingService.renderColoredMesh(this.wheelMesh);
+      mat4.translate(m, m, vec3.set(this.offset, 0, 0.5, -0.95));
+      mat4.rotateX(m, m, Math.PI);
+      mat4.rotateZ(m, m, wheelRotation);
+      this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
+      this.meshRenderingService.renderColoredMesh(this.wheelMesh);
 
-    this.uniformService.popModelMatrix();
+      this.uniformService.popModelMatrix();
 
-    // Left rear.
-    m = this.uniformService.pushModelMatrix();
+      // Left rear.
+      m = this.uniformService.pushModelMatrix();
 
-    mat4.translate(m, m, vec3.set(this.offset, wheelbaseOffset, 0.5, -1.05));
-    mat4.rotateX(m, m, Math.PI);
-    mat4.rotateZ(m, m, wheelRotation);
-    this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
-    this.meshRenderingService.renderColoredMesh(this.dualWheelMesh);
+      mat4.translate(m, m, vec3.set(this.offset, wheelbaseOffset, 0.5, -1.05));
+      mat4.rotateX(m, m, Math.PI);
+      mat4.rotateZ(m, m, wheelRotation);
+      this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
+      this.meshRenderingService.renderColoredMesh(this.dualWheelMesh);
 
-    this.uniformService.popModelMatrix();
+      this.uniformService.popModelMatrix();
 
-    // Body.
-    this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
-    this.meshRenderingService.renderColoredMesh(this.bodyMesh);
+      // Body.
+      this.uniformService.updateTransformsUniform(viewMatrix, projectionMatrix);
+      this.meshRenderingService.renderColoredMesh(this.bodyMesh);
+    }
 
     this.uniformService.popModelMatrix();
 

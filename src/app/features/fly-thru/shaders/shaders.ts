@@ -12,7 +12,7 @@ out vec3 vertex;
 out vec3 normal;
 void main(){
 vec4 p=inModelTransform*vec4(inPosition,1.0f);
-vec4 position=vec4(p.x/p.w,p.y/p.w,p.z,1.0);
+vec4 position=vec4(p.x/p.w,p.y/p.w,p.z,1.0f);
 mat4 u=inModelTransform*UNIT_SQUARE;
 vec3 rawNormal=inNormalRef==0u ? vec3(0,0,1): inNormalRef==1u ? vec3(0,0,-1): inNormalRef==2u ? vec3(u[2][0]/u[2][3]-u[1][0]/u[1][3],u[2][1]/u[2][3]-u[1][1]/u[1][3],0): inNormalRef==3u ? vec3(u[3][0]/u[3][3]-u[0][0]/u[0][3],u[3][1]/u[3][3]-u[0][1]/u[0][3],0): inNormalRef==4u ? vec3(u[1][0]/u[1][3]-u[2][0]/u[2][3],u[1][1]/u[1][3]-u[2][1]/u[2][3],0): vec3(u[0][0]/u[0][3]-u[3][0]/u[3][3],u[0][1]/u[0][3]-u[3][1]/u[3][3],0);
 gl_Position=transforms.modelViewProjection*position;

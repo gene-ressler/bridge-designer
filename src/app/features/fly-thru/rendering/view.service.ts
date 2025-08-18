@@ -7,6 +7,7 @@ import { SimulationStateService } from './simulation-state.service';
 import { OverlayUi } from './overlay.service';
 import { OverlayIcon } from './animation-controls-overlay.service';
 import { EventBrokerService, EventOrigin } from '../../../shared/services/event-broker.service';
+import { UNIT_LIGHT_DIRECTION } from './constants';
 
 /** Container for the fly-thru and driver view transforms and associated update logic. */
 @Injectable({ providedIn: 'root' })
@@ -52,7 +53,7 @@ export class ViewService {
     private readonly simulationStateService: SimulationStateService,
     private readonly terrainService: TerrainModelService,
   ) {
-    eventBrokerService.animationControlsToggle.subscribe(eventInfo => this.showControls = eventInfo.data);
+    eventBrokerService.animationControlsToggle.subscribe(eventInfo => (this.showControls = eventInfo.data));
   }
 
   public provideUiHandlers(overlayUi: OverlayUi): void {
@@ -195,7 +196,19 @@ export class ViewService {
     return mat4.lookAt(m, this.eye, this.center, this.up);
   }
 
+  /** Gets look-at matrix for parallel light with constant y-axis up vector. */
   public getLightLookAtMatrix(m: mat4 = mat4.create()): mat4 {
-    return m;
+    const ex = UNIT_LIGHT_DIRECTION[0];
+    const ey = UNIT_LIGHT_DIRECTION[1];
+    const ez = UNIT_LIGHT_DIRECTION[2];
+    const d = Math.hypot(ex, ez);
+    const id = 1 / d;
+    // prettier-ignore
+    return  mat4.set(m,
+      ez * id ,  -ex * ey * id, ex, 0,
+      0       ,  d            , ey, 0,
+      -ex * id,  -ey * ez * id, ez, 0,
+      0       ,  0            ,  0, 1,
+    )
   }
 }

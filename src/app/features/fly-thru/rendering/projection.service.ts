@@ -3,6 +3,7 @@ import { mat4, vec3 } from 'gl-matrix';
 import { ConvexHullService } from '../../../shared/services/convex-hull.service';
 import { Utility } from '../../../shared/classes/utility';
 import { Geometry, Point2D, Point2DInterface, Vector2D, Vector2DInterface } from '../../../shared/classes/graphics';
+import { TerrainModelService } from '../models/terrain-model.service';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectionService {
@@ -13,6 +14,7 @@ export class ProjectionService {
   private top: number = 1;
   private near: number = -1;
   private far: number = 1;
+  private aspect: number = 1;
 
   // Allocate all this stuff once so we aren't doing it 60 x per second.
   private readonly frustum = new Pyramid();
@@ -47,15 +49,32 @@ export class ProjectionService {
     this.bottom = -this.top;
     this.left = aspect * this.bottom;
     this.right = aspect * this.top;
+    this.aspect = aspect;
 
     // Set up the pyramids for the trapazoidal shadow mask algorithm.
     const shadowFar = far * 0.35; // Don't attempt distant shadows to get better resolution close up.
     this.frustum.set(this.left, this.right, this.bottom, this.top, near, shadowFar);
-    this.focusArea.set(this.left, this.right, this.bottom, this.top, near, focusRatio * shadowFar + (1 - focusRatio) * near);
+    this.focusArea.set(
+      this.left,
+      this.right,
+      this.bottom,
+      this.top,
+      near,
+      focusRatio * shadowFar + (1 - focusRatio) * near,
+    );
   }
 
+  /** Returns a projection matrix representing the current frustom settings. */
   public getPerspectiveProjection(m: mat4): void {
     mat4.frustum(m, this.left, this.right, this.bottom, this.top, this.near, this.far);
+  }
+
+  /** Returns a projection matrix affording a reasonable POV from the parallel light source. Not for user view rendering. */
+  public getLightProjection(m: mat4): void {
+    const halfGridSize = TerrainModelService.HALF_GRID_COUNT * TerrainModelService.METERS_PER_GRID;
+    const halfWidth = halfGridSize * 1.1;
+    const halfHeight = halfWidth / this.aspect;
+    mat4.ortho(m, -halfWidth, halfWidth, -halfHeight, halfHeight, -halfGridSize, halfGridSize);
   }
 
   public getTrapezoidalProjection(m: mat4, modelView: mat4, lightView: mat4, near: number, far: number): void {

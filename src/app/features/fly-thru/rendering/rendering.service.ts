@@ -95,6 +95,8 @@ export class RenderingService {
     this.prepared = true;
   }
 
+  projection: string =  'normal'; //'light';
+
   /**
    * Renders a single frame.
    *
@@ -109,10 +111,16 @@ export class RenderingService {
     // Advance clock-based state.
     this.simulationStateService.advance(clockMillis);
 
-    // TODO: Maybe call this getter once every time viewport is set.
-    this.projectionService.getPerspectiveProjection(this.projectionMatrix);
     this.viewService.updateWalkingView(elapsedNowMillis * 0.001);
-    this.viewService.getLookAtMatrix(this.viewMatrix);
+
+    if (this.projection === 'normal') {
+      // TODO: Maybe call this getter once every time viewport is set.
+      this.projectionService.getPerspectiveProjection(this.projectionMatrix);
+      this.viewService.getLookAtMatrix(this.viewMatrix);
+    } else {
+      this.projectionService.getLightProjection(this.projectionMatrix);
+      this.viewService.getLightLookAtMatrix(this.viewMatrix);
+    }
 
     const gl = this.glService.gl;
 
@@ -121,7 +129,9 @@ export class RenderingService {
     gl.enable(gl.CULL_FACE);
     gl.depthFunc(gl.LEQUAL);
     gl.clearColor(0, 0.4, 0.8, 1);
-    const clearMask = this.flyThruSettingsService.settings.noSky ? gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT : gl.DEPTH_BUFFER_BIT;
+    const clearMask = this.flyThruSettingsService.settings.noSky
+      ? gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT
+      : gl.DEPTH_BUFFER_BIT;
     gl.clear(clearMask);
 
     this.uniformService.updateTimeUniform(nowMillis);
@@ -146,8 +156,9 @@ export class RenderingService {
     if (!this.flyThruSettingsService.settings.noSky) {
       this.skyRenderingService.render(this.viewMatrix, this.projectionMatrix);
     }
+    // Models that use blending (transparency) must be last.
     if (!this.flyThruSettingsService.settings.noTruck) {
-      this.truckRenderingService.render(this.viewMatrix, this.projectionMatrix);
+      this.truckRenderingService.render(this.viewMatrix, this.projectionMatrix, this.viewService.isDriving);
     }
     this.animationControlsOverlayService.render();
   }
