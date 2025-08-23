@@ -18,6 +18,7 @@ import { WindTurbineRenderingService } from '../../../shared/services/wind-turbi
 import { SimulationStateService } from './simulation-state.service';
 import { AnimationControlsOverlayService } from './animation-controls-overlay.service';
 import { FlyThruSettingsService } from './fly-thru-settings.service';
+import { DepthBufferService } from './depth-buffer.service';
 
 /** Rendering functionality for fly-thrus. */
 @Injectable({ providedIn: 'root' })
@@ -32,6 +33,7 @@ export class RenderingService {
     private readonly abutmentRenderingService: AbutmentRenderingService,
     private readonly animationControlsOverlayService: AnimationControlsOverlayService,
     private readonly bridgeRenderingService: BridgeRenderingService,
+    private readonly depthBufferService: DepthBufferService,
     private readonly flyThruSettingsService: FlyThruSettingsService,
     private readonly glService: GlService,
     private readonly meshRenderingService: MeshRenderingService,
@@ -92,6 +94,7 @@ export class RenderingService {
     this.skyRenderingService.prepare();
     this.truckRenderingService.prepare();
     this.animationControlsOverlayService.prepare();
+    this.depthBufferService.prepare();
     this.prepared = true;
   }
 

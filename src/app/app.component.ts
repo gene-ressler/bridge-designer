@@ -1,13 +1,4 @@
 import { AfterViewInit, Component, ElementRef, HostListener, ViewChild, ViewEncapsulation } from '@angular/core';
-import { jqxGridModule } from 'jqwidgets-ng/jqxgrid';
-import { jqxMenuModule } from 'jqwidgets-ng/jqxmenu';
-import { jqxRibbonModule } from 'jqwidgets-ng/jqxribbon';
-import { jqxToolBarModule } from 'jqwidgets-ng/jqxtoolbar';
-import { jqxTreeModule } from 'jqwidgets-ng/jqxtree';
-import { jqxButtonModule } from 'jqwidgets-ng/jqxbuttons';
-import { jqxButtonGroupModule } from 'jqwidgets-ng/jqxbuttongroup';
-import { jqxDropDownButtonModule } from 'jqwidgets-ng/jqxdropdownbutton';
-import { jqxDropDownListModule } from 'jqwidgets-ng/jqxdropdownlist';
 import { AboutDialogComponent } from './features/about/about-dialog/about-dialog.component';
 import { CostReportDialogComponent } from './features/costs/cost-report-dialog/cost-report-dialog.component';
 import { DesignIterationDialogComponent } from './features/iterations/design-iteration-dialog/design-iteration-dialog.component';
@@ -60,15 +51,6 @@ import { DrawingsService } from './features/drawings/drawings.service';
     ToolbarBComponent,
     UnstableBridgeDialogComponent,
     WelcomeDialogComponent,
-    jqxDropDownButtonModule,
-    jqxDropDownListModule,
-    jqxGridModule,
-    jqxMenuModule,
-    jqxRibbonModule,
-    jqxToolBarModule,
-    jqxTreeModule,
-    jqxButtonModule, // don't reorder
-    jqxButtonGroupModule,
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
@@ -120,7 +102,7 @@ export class AppComponent implements AfterViewInit {
     }
   }
 
-  /** Takes the welcome step of the starup tip+welcome sequence. */
+  /** Takes the welcome step of the startup tip+welcome sequence. */
   handleTipDialogClose({ isStartupTip }: { isStartupTip: boolean }) {
     if (isStartupTip) {
       this.eventBrokerService.welcomeRequest.next({ origin: EventOrigin.APP });

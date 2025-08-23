@@ -283,10 +283,7 @@ export class MeshRenderingService {
     gl.bindVertexArray(null);
   }
 
-  /**
-   * Replaces the instance transform data of the given mesh.
-   * It will often be convenient to update and resend meshData.instanceModelTransforms.
-   */
+  /** Replaces the instance transform data of the given mesh. */
   public updateInstanceModelTransforms(meshOrWire: Mesh | Wire, usage: number = this.glService.gl.STREAM_DRAW): void {
     if (!meshOrWire.instanceModelTransforms) {
       return; // Not updateable
@@ -301,10 +298,7 @@ export class MeshRenderingService {
     gl.bindVertexArray(null);
   }
 
-  /**
-   * Replaces the instancce colors of the given mesh.
-   * It will often be convenient to update and resend meshData.instanceColors.
-   */
+  /** Replaces the instance colors of the given mesh. */
   public updateInstanceColors(mesh: Mesh, usage: number = this.glService.gl.STREAM_DRAW): void {
     if (!mesh.instanceColors) {
       return; // Not updateable
