@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { ToastError } from '../../toast/toast/toast-error';
 
-/** Container for shared WebGL context. */
+/** Container for shared WebGL context. Includes current rendering target buffer info. */
 @Injectable({ providedIn: 'root' })
 export class GlService {
   private _gl: WebGL2RenderingContext | null | undefined;
+  private _isDepthBuffer: boolean = false;
   private intTypes: Set<number> | undefined;
 
   initialize(canvas: HTMLCanvasElement): void {
@@ -22,6 +23,24 @@ export class GlService {
     }
   }
 
+  public get forDisplayBuffer(): WebGL2RenderingContext {
+    this._isDepthBuffer = false;
+    return this.gl;
+  }
+
+  public get forDepthBuffer(): WebGL2RenderingContext {
+    this._isDepthBuffer = true;
+    return this.gl;
+  }
+
+  public get isRenderingDepth(): boolean {
+    return this._isDepthBuffer;
+  }
+
+  public get isRenderingDisplay(): boolean {
+    return !this._isDepthBuffer;
+  }
+
   public get isWebGL2Supported(): boolean | undefined {
     if (this._gl === undefined) {
       return undefined;
@@ -36,8 +55,8 @@ export class GlService {
     return this._gl;
   }
 
-  /** 
-   * Returns true if the service is initialized, GL2 support exists, 
+  /**
+   * Returns true if the service is initialized, GL2 support exists,
    * and the given type is an integer type.
    */
   public isIntType(glType: number): boolean {

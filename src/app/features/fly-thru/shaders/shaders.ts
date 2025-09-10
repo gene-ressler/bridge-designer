@@ -109,6 +109,11 @@ vertex=vec3(transforms.modelView*position);
 normal=mat3(transforms.modelView)*mat3(inModelTransform)*inNormal;
 materialRef=inMaterialRef;}`;
 
+export const EMPTY_FRAGMENT_SHADER = 
+`#version 300 es
+void main(){
+}`;
+
 export const INSTANCE_COLORED_MESH_VERTEX_SHADER = 
 `#version 300 es
 layout(std140)uniform Transforms{
@@ -205,7 +210,8 @@ layout(std140)uniform LightConfig{
 vec3 unitDirection;
 float brightness;
 vec3 color;
-float ambientIntensity;}light;
+float ambientIntensity;
+float shadowWeight;}light;
 layout(std140)uniform Time{
 float clock;}time;
 uniform sampler2D water;
@@ -213,17 +219,17 @@ in vec3 vertex;
 in vec3 normal;
 in vec2 texCoord;
 out vec4 fragmentColor;
-const vec2 WATER_VELOCITY=vec2(1.0/32.0f,3.0/32.0);
+const vec2 WATER_VELOCITY=vec2(1.0f/32.0f,3.0f/32.0f);
 void main(){
 vec3 unitNormal=normalize(normal);
 float normalDotLight=dot(unitNormal,light.unitDirection);
 vec3 unitReflection=normalize(2.0f*normalDotLight*unitNormal-light.unitDirection);
 vec3 unitEye=normalize(-vertex);
 float specularIntensity=pow(max(dot(unitReflection,unitEye),0.0f),120.0f);
+float diffuseIntensity=(1.0f-light.ambientIntensity)*clamp(normalDotLight,0.0f,1.0f);
 vec3 specularColor=specularIntensity*light.color;
-float diffuseIntensity=(1.0f-light.ambientIntensity)*clamp(normalDotLight,0.0f,1.0f)+light.ambientIntensity;
 vec3 texColor=texture(water,fract(texCoord)+WATER_VELOCITY*time.clock).rgb;
-vec3 diffuseColor=diffuseIntensity*texColor*light.color*(1.0f-specularIntensity);
+vec3 diffuseColor=(diffuseIntensity+light.ambientIntensity)*texColor*light.color*(1.0f-specularIntensity);
 fragmentColor=light.brightness*vec4(specularColor+diffuseColor,1.0f);}`;
 
 export const SKY_VERTEX_SHADER = 

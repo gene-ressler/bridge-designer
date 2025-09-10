@@ -69,7 +69,7 @@ export class ProjectionService {
     mat4.frustum(m, this.left, this.right, this.bottom, this.top, this.near, this.far);
   }
 
-  /** Returns a projection matrix affording a reasonable POV from the parallel light source. Not for user view rendering. */
+  /** Returns a projection matrix affording a debug visualization of the scene from the parallel light source. Not for user view rendering. */
   public getLightProjection(m: mat4): void {
     const halfGridSize = TerrainModelService.HALF_GRID_COUNT * TerrainModelService.METERS_PER_GRID;
     const halfWidth = halfGridSize * 1.1;
@@ -77,7 +77,11 @@ export class ProjectionService {
     mat4.ortho(m, -halfWidth, halfWidth, -halfHeight, halfHeight, -halfGridSize, halfGridSize);
   }
 
-  public getTrapezoidalProjection(m: mat4, modelView: mat4, lightView: mat4, near: number, far: number): void {
+  public getTrapezoidalProjection(m: mat4, modelView: mat4, lightView: mat4): void {
+    const halfGridSize = TerrainModelService.HALF_GRID_COUNT * TerrainModelService.METERS_PER_GRID;
+    const near = -halfGridSize;
+    const far = halfGridSize;
+
     // Form the matrix that takes a canonical view volume to PPSL.
     mat4.invert(this.invModelView, modelView);
     mat4.multiply(this.tmpMatrix, lightView, this.invModelView);
@@ -144,11 +148,11 @@ export class ProjectionService {
             orthoR = ortho;
           }
         }
-        Geometry.orthoOffsetScaled2D(p0, this.pointQ, a, orthoL);
-        Geometry.orthoOffsetScaled2D(p1, this.pointQ, a, orthoR);
+        Geometry.perpOffsetScaled2D(p0, this.pointQ, a, orthoL);
+        Geometry.perpOffsetScaled2D(p1, this.pointQ, a, orthoR);
         Geometry.offsetScaled2D(this.pointQ, this.frustum.nearCenter, a, this.tBase);
-        Geometry.orthoOffsetScaled2D(p2, this.pointQ, a, orthoR);
-        Geometry.orthoOffsetScaled2D(p3, this.pointQ, a, orthoL);
+        Geometry.perpOffsetScaled2D(p2, this.pointQ, a, orthoR);
+        Geometry.perpOffsetScaled2D(p3, this.pointQ, a, orthoL);
       } else {
         // Otherwise we have a normal frustum calculation.
         // Find Q by offset from the near plane center.
@@ -269,8 +273,11 @@ export class ProjectionService {
 
 /** A view pyramid with TSM features. May be either for the viewer's eye or the light. */
 class Pyramid {
+  /** The user-specified perspective view volume in canonical view space, i.e. looking down -z axis. */
   private readonly vCanon = Utility.createArray(vec3.create, 10);
+  /** Transformed view volume in light view space. Orthogonal because the light is parallel. */
   private readonly vActual = Utility.createArray(() => new Point2D(), 10);
+
 
   public set(left: number, right: number, bottom: number, top: number, near: number, far: number): void {
     const zn = -near;
@@ -302,12 +309,12 @@ class Pyramid {
         xForm[0] * this.vCanon[i][0] +
         xForm[4] * this.vCanon[i][1] +
         xForm[8] * this.vCanon[i][2] +
-        xForm[12] * this.vCanon[i][3];
+        xForm[12];
       this.vActual[i].y =
         xForm[1] * this.vCanon[i][0] +
         xForm[5] * this.vCanon[i][1] +
         xForm[9] * this.vCanon[i][2] +
-        xForm[13] * this.vCanon[i][3];
+        xForm[13];
       // Perspective division for point light source would go here.
       convextHullService.addPoint(this.vActual[i]);
     }
@@ -322,7 +329,7 @@ class Pyramid {
     return this.vActual[9];
   }
 
-  public getAxis(axis: Vector2DInterface) {
+  public getAxis(axis: Vector2DInterface): Vector2DInterface {
     Geometry.subtract2D(axis, this.vActual[9], this.vActual[8]);
     let r = 1 / Geometry.length2D(axis);
     if (!Number.isFinite(r)) {
@@ -330,6 +337,7 @@ class Pyramid {
       Geometry.subtract2D(axis, this.vActual[5], this.vActual[4]);
       r = 1 / Geometry.length2D(axis);
     }
-    return Geometry.scale2D(axis, r);
+    Geometry.scale2D(axis, r);
+    return axis;
   }
 }

@@ -287,7 +287,7 @@ export class Geometry {
     result.y = p.y + v.y * s;
   }
 
-  public static orthoOffsetScaled2D(
+  public static perpOffsetScaled2D(
     result: Point2DInterface,
     p: Point2DInterface,
     v: Vector2DInterface,

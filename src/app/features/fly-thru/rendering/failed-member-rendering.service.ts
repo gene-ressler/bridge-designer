@@ -6,6 +6,7 @@ import { SimulationStateService } from './simulation-state.service';
 import { BridgeService } from '../../../shared/services/bridge.service';
 import { FailedMemberKind } from './interpolation.service';
 
+/** Wrapper for buckled member along with data sufficient to update it per frame. */
 export type BuckledMemberMesh = {
   mesh: Mesh;
   members: Member[];
@@ -13,6 +14,7 @@ export type BuckledMemberMesh = {
   trussCenterlineOffset: number;
 };
 
+/** Wrapper for torn member along with data sufficient to update it per frame. */
 export type TornMemberMesh = {
   mesh: Mesh;
   members: Member[];
@@ -126,18 +128,4 @@ export class FailedMemberRenderingService {
       offset += 64;
     }
   }
-
-  /** Render the failed member meshes. */
-  public render(buckledMemberMesh: BuckledMemberMesh): void {
-    this.meshRenderingService.renderBuckledMemberMesh(buckledMemberMesh.mesh);
-  }
-
-  public deleteExistingBuckledMemberMesh(mesh: BuckledMemberMesh | undefined): void {
-    this.meshRenderingService.deleteExistingMesh(mesh?.mesh);
-  }
-
-  public deleteExistingTornMemberMesh(mesh: TornMemberMesh | undefined): void {
-    this.meshRenderingService.deleteExistingMesh(mesh?.mesh);
-  }
 }
-

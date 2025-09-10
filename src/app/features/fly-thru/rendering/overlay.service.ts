@@ -44,6 +44,7 @@ export type Overlay = {
   icons: OverlayIcon[];
 };
 
+/** Web GL canvas overlay icons with button-like behavior. */
 @Injectable({ providedIn: 'root' })
 export class OverlayService {
   /** Two triangles for a quad double as texture coordinates. */
@@ -65,6 +66,7 @@ export class OverlayService {
     private readonly viewportService: ViewportService,
   ) {}
 
+  /** Prepares (one time) an overlay for rendering using given discriptor. */
   public prepare(descriptor: OverlayDescriptor): Overlay {
     const gl = this.glService.gl;
 
@@ -139,6 +141,7 @@ export class OverlayService {
     return overlay;
   }
 
+  /** Attaches a UI to the overlay to make it clickable. Given alpha value determines normal (not rollover) visibility. */
   public attachUi(overlay: Overlay, dimAlpha: number): OverlayUi {
     return new OverlayUi(overlay, dimAlpha, this.viewportService);
   }
@@ -214,8 +217,8 @@ export interface IconHandlerSet {
 }
 
 /**
- * Optional user interface attachable to an overlay to make it clickable. Some other entity (normally a
- * canvas) provides the pointer events. Use the service endpoint to create one.
+ * Optional user interface attachable to an overlay to make it clickable. The Web GL canvas 
+ * provides the pointer events. Don't create your own. Use the service endpoint.
  */
 export class OverlayUi {
   private activeIconIndex: number = -1;
@@ -246,6 +249,7 @@ export class OverlayUi {
     this.activeIconIndex = this.findIconIndex(this.lastFindX, this.lastFindY);
   }
 
+  /** Accepts a pointer down event from the canvas displaying the overlay. */
   public acceptPointerDown(x: number, y: number): void {
     const clickIconIndex = this.activeIconIndex;
     if (clickIconIndex !== -1) {
@@ -257,6 +261,7 @@ export class OverlayUi {
     }
   }
 
+  /** Accepts a pointer move event from the canvas displaying the overlay. */
   public acceptPointerMove(x: number, y: number): void {
     if (this.isPointerDown) {
       this.iconHandlerSets[this.activeIconIndex].handlePointerDrag?.(x - this.mouseDownX, this.mouseDownY - y);
@@ -275,6 +280,7 @@ export class OverlayUi {
     this.activeIconIndex = foundIconIndex;
   }
 
+  /** Accepts a pointer up event from the canvas displaying the overlay. */
   public acceptPointerUp(x: number, y: number): void {
     if (this.isPointerDown) {
       this.iconHandlerSets[this.activeIconIndex].handlePointerDrag?.(0, 0);
@@ -284,7 +290,7 @@ export class OverlayUi {
     }
   }
 
-  /** Returns a visible icon containing a mouse coordinate or undefined if none.  */
+  /** Returns the index of a visible icon containing a mouse coordinate or -1 if none.  */
   private findIconIndex(x: number, y: number): number {
     this.lastFindX = x;
     this.lastFindY = y;
@@ -302,10 +308,12 @@ export class OverlayUi {
   }
 }
 
-function getRelativeIconX0(icon: OverlayIcon, viewportService: ViewportService) {
+/** Converts possibly right-relative x0 to actual. */
+function getRelativeIconX0(icon: OverlayIcon, viewportService: ViewportService): number {
   return icon.x0 < 0 ? viewportService.width + icon.x0 - icon.width : icon.x0;
 }
 
+/** Converts possibly bottom-relative y0 to actual. */
 function getRelativeIconY0(icon: OverlayIcon, viewportService: ViewportService) {
   return icon.y0 < 0 ? viewportService.height + icon.y0 - icon.height : icon.y0;
 }

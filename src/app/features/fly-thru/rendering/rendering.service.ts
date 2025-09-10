@@ -19,12 +19,14 @@ import { SimulationStateService } from './simulation-state.service';
 import { AnimationControlsOverlayService } from './animation-controls-overlay.service';
 import { FlyThruSettingsService } from './fly-thru-settings.service';
 import { DepthBufferService } from './depth-buffer.service';
+import { KeyboardService } from '../pane/keyboard.service';
 
 /** Rendering functionality for fly-thrus. */
 @Injectable({ providedIn: 'root' })
 export class RenderingService {
   private readonly viewMatrix = mat4.create();
   private readonly projectionMatrix = mat4.create();
+  private readonly eyeMatrix = mat4.create();
   private prepared: boolean = false;
   private roadwayMesh!: Mesh;
   private terrainMesh!: Mesh;
@@ -36,6 +38,7 @@ export class RenderingService {
     private readonly depthBufferService: DepthBufferService,
     private readonly flyThruSettingsService: FlyThruSettingsService,
     private readonly glService: GlService,
+    private readonly keyboardService: KeyboardService,
     private readonly meshRenderingService: MeshRenderingService,
     private readonly pierRenderingService: PierRenderingService,
     private readonly projectionService: ProjectionService,
@@ -61,7 +64,7 @@ export class RenderingService {
   public prepareToRender(): void {
     // Setups needed one time and before the per-design conditions setups.
     if (!this.prepared) {
-      this.shaderService.prepareShaders(this.glService.gl);
+      this.shaderService.prepareShaders();
       this.uniformService.prepareUniforms();
     }
 
@@ -95,10 +98,9 @@ export class RenderingService {
     this.truckRenderingService.prepare();
     this.animationControlsOverlayService.prepare();
     this.depthBufferService.prepare();
+
     this.prepared = true;
   }
-
-  projection: string =  'normal'; //'light';
 
   /**
    * Renders a single frame.
@@ -116,29 +118,63 @@ export class RenderingService {
 
     this.viewService.updateWalkingView(elapsedNowMillis * 0.001);
 
-    if (this.projection === 'normal') {
-      // TODO: Maybe call this getter once every time viewport is set.
-      this.projectionService.getPerspectiveProjection(this.projectionMatrix);
-      this.viewService.getLookAtMatrix(this.viewMatrix);
-    } else {
-      this.projectionService.getLightProjection(this.projectionMatrix);
-      this.viewService.getLightLookAtMatrix(this.viewMatrix);
-    }
-
+    // Assumed defaults.
     const gl = this.glService.gl;
-
-    gl.clearDepth(1);
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
+    gl.clearDepth(1);
     gl.depthFunc(gl.LEQUAL);
-    gl.clearColor(0, 0.4, 0.8, 1);
+    gl.clearColor(0.3765, 0.4392, 0.502, 1); // Matches median sky map color.
+
+    // Set up uniforms that apply to both depth and display.
+    this.uniformService.updateTimeUniform(nowMillis);
+
+    // TODO: Uncomment.
+    // if (!this.flyThruSettingsService.settings.noShadows) {
+    //   this.renderDepthBuffer(nowMillis);
+    // }
+    this.renderDisplayBuffer(nowMillis);
+  }
+
+  // TODO: Make public.
+  // private 
+  renderDepthBuffer(_nowMillis: number): void {
+    const gl = this.glService.forDepthBuffer;
+    this.depthBufferService.bind();
+    gl.cullFace(gl.FRONT);
+    // TODO: Finish me.
+    this.bridgeRenderingService.render(this.viewMatrix, this.projectionMatrix);
+    this.depthBufferService.unbind();
+  }
+
+  private renderDisplayBuffer(nowMillis: number): void {
+    // Set up view wand projection matrices for normal or debugging view.
+    switch (this.keyboardService.debugState.projectionType) {
+      case 'normal':
+        this.viewService.getLookAtMatrix(this.viewMatrix);
+        this.projectionService.getPerspectiveProjection(this.projectionMatrix);
+        break;
+      case 'light':
+        // TODO: Maybe call this getter once every time viewport is set.
+        this.viewService.getLightLookAtMatrix(this.viewMatrix);
+        this.projectionService.getLightProjection(this.projectionMatrix);
+        break;
+      case 'trapezoidal':
+        this.viewService.getLookAtMatrix(this.eyeMatrix);
+        this.viewService.getLightLookAtMatrix(this.viewMatrix);
+        this.projectionService.getTrapezoidalProjection(this.projectionMatrix, this.eyeMatrix, this.viewMatrix);
+    }
+
+    const gl = this.glService.forDisplayBuffer;
+    gl.cullFace(gl.BACK);
+
     const clearMask = this.flyThruSettingsService.settings.noSky
       ? gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT
       : gl.DEPTH_BUFFER_BIT;
     gl.clear(clearMask);
 
-    this.uniformService.updateTimeUniform(nowMillis);
-    this.uniformService.updateLight(this.viewMatrix, this.flyThruSettingsService.brightness);
+    const shadowWeight = this.flyThruSettingsService.settings.noShadows ? 1 : 0.1;
+    this.uniformService.updateLight(this.viewMatrix, this.flyThruSettingsService.brightness, shadowWeight);
 
     // Render. The renderers can make no assumption about what's in the transforms uniform.
     this.uniformService.updateTransformsUniform(this.viewMatrix, this.projectionMatrix);

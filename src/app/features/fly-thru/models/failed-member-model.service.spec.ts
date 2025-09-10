@@ -16,11 +16,11 @@ describe('FailedMemberModelService', () => {
   const s1 = vec2.fromValues(1, 0);
   const s2 = vec2.fromValues(1, 1);
   const s3 = vec2.fromValues(0, 1);
-  const searchData = [
+  const searchData = new Float32Array([
     0.0, 0.0625, 0.125, 0.15625, 0.1875, 0.21875, 0.25, 0.28125, 0.3125, 0.34375, 0.375, 0.40625, 0.4375, 0.46875, 0.5,
     0.53125, 0.5625, 0.59375, 0.625, 0.65625, 0.6875, 0.71875, 0.75, 0.78125, 0.8125, 0.84375, 0.875, 0.90625, 0.9375,
     0.96875, 0.984375, 0.992188, 1.0,
-  ];
+  ]);
   const jointA = { index: 0 } as Joint;
   const jointB = { index: 1 } as Joint;
   const member = { a: jointA, b: jointB, materialSizeMm: 800, length: 14 } as Member;

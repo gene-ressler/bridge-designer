@@ -172,9 +172,15 @@ export class DraftingPanelComponent implements AfterViewInit {
   }
 
   moveJointRequestHandler({ joint, newLocation }: { joint: Joint; newLocation: Point2D }): void {
+    // Quietly do nothing for zero displacement move attempt.
     if (Geometry.areColocated2D(newLocation, joint)) {
+      throw new ToastError('noError');
+    }
+    // Don't allow move onto an existing joint.
+    if (this.bridgeService.findJointAt(newLocation)) {
       throw new ToastError('moveJointError');
     }
+    // Don't allow move onto high pier.
     if (this.bridgeService.isMovedJointIntersectingHighPier(joint, newLocation)) {
       throw new ToastError('highPierError');
     }

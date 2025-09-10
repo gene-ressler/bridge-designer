@@ -11,6 +11,7 @@ describe('InterpolationService', () => {
   let bridgeService: jasmine.SpyObj<BridgeService>;
   let analysisService: jasmine.SpyObj<AnalysisService>;
   let collapseAnalysisService: jasmine.SpyObj<AnalysisService>;
+  let settings: { exaggeration: number };
   let settingsService: jasmine.SpyObj<FlyThruSettingsService>;
   let terrainModelService: jasmine.SpyObj<TerrainModelService>;
   let service: InterpolationService;
@@ -43,7 +44,8 @@ describe('InterpolationService', () => {
       'getJointDisplacement',
       'getJointDisplacementX',
     ]);
-    settingsService = { exaggeration: 1 } as FlyThruSettingsService;
+    settings = { exaggeration: 1 };
+    settingsService = settings as FlyThruSettingsService;
     terrainModelService = jasmine.createSpyObj('TerrainModelService', ['getRoadCenterlinePostAtX']);
 
     analysisService.getJointDisplacement.and.callFake((out: vec2, loadCase: number, index: number) => {
@@ -109,7 +111,7 @@ describe('InterpolationService', () => {
 
   it('should honor exaggeration for load case zero', () => {
     const actualLocations = interpolator.withParameter(-4).getAllDisplacedJointLocations(new Float32Array(8));
-    settingsService.exaggeration = 2;
+    settings.exaggeration = 2;
     const exaggeratedLocations = interpolator.withParameter(-4).getAllDisplacedJointLocations(new Float32Array(8));
     expect(exaggeratedLocations[0]).toBe(2 * actualLocations[0]);
   });
@@ -122,7 +124,7 @@ describe('InterpolationService', () => {
 
     const actualLocations = interpolator.withParameter(6).getAllDisplacedJointLocations(new Float32Array(8));
 
-    settingsService.exaggeration = 2;
+    settings.exaggeration = 2;
     const exaggeratedLocations = interpolator.withParameter(6).getAllDisplacedJointLocations(new Float32Array(8));
 
     const actualDisplacement = vec2.sub([0, 0], actualLocations.slice(2, 2), zeroForceLocations.slice(2, 2));

@@ -5,6 +5,7 @@ import {
   Component,
   ElementRef,
   HostBinding,
+  HostListener,
   ViewChild,
 } from '@angular/core';
 import { EventBrokerService } from '../../../shared/services/event-broker.service';
@@ -14,6 +15,7 @@ import { GlService } from '../rendering/gl.service';
 import { ViewportService } from '../rendering/viewport.service';
 import { AnimationControlsOverlayService } from '../rendering/animation-controls-overlay.service';
 import { FlyThruSettingsDialogComponent } from '../fly-thru-settings-dialog/fly-thru-settings-dialog.component';
+import { KeyboardService } from './keyboard.service';
 
 @Component({
   selector: 'fly-thru-pane',
@@ -32,11 +34,12 @@ export class FlyThruPaneComponent implements AfterViewInit {
   height: number = screen.availHeight;
 
   constructor(
+    private readonly animationControlsOverlayService: AnimationControlsOverlayService,
     private readonly animationService: AnimationService,
     private readonly changeDetector: ChangeDetectorRef,
     private readonly eventBrokerService: EventBrokerService,
     private readonly glService: GlService,
-    private readonly animationControlsOverlayService: AnimationControlsOverlayService,
+    private readonly keyBoardService: KeyboardService,
     private readonly viewportService: ViewportService,
   ) {}
 
@@ -58,6 +61,14 @@ export class FlyThruPaneComponent implements AfterViewInit {
     if (event.button === 0) {
       this.flyThruCanvas.nativeElement.releasePointerCapture(event.pointerId);
       this.animationControlsOverlayService.overlayUi.acceptPointerUp(event.offsetX, event.offsetY);
+    }
+  }
+
+  /** Delegates document key down to the handler service if the pane is visible. */
+  @HostListener('document:keydown', ['$event'])
+  handleKeyDown(event: KeyboardEvent) {
+    if (this.display !== 'none') {
+      this.keyBoardService.handleKey(event.key);
     }
   }
 

@@ -31,12 +31,15 @@ export class UniformService {
   private readonly skyboxTransformsFloats = new Float32Array(16);
   // prettier-ignore
   private readonly lightConfig = new Float32Array([
-    0, 1, 0, // unit light direction (placeholder values)
-    0.5, // brightness
-    0.9, 0.9, 1.0, // light color
-    0.3, // ambient intensity
+      0, 1, 0, // unit light direction (placeholder values)
+      0.5, // brightness
+      0.9, 0.9, 1.0, // light color
+      0.3, // ambient intensity
+      1.0, // shadow multiplier
+      0, 0, 0, // padding
   ]);
-  public readonly timeFloats = new Float32Array(4);
+  // Last 3 of chunk aren't currently used.
+  public readonly time = new Float32Array(4);
 
   constructor(
     private readonly glService: GlService,
@@ -99,7 +102,7 @@ export class UniformService {
       'LightConfig',
       LIGHT_CONFIG_UBO_BINDING_INDEX,
     );
-    gl.bufferData(gl.UNIFORM_BUFFER, this.lightConfig.buffer.byteLength, gl.STATIC_DRAW);
+    gl.bufferData(gl.UNIFORM_BUFFER, this.lightConfig.byteLength, gl.STATIC_DRAW);
 
     this.materialConfigBuffer = this.setUpUniformBlock(
       [facetMeshProgram, facetMeshInstancesProgram],
@@ -109,7 +112,7 @@ export class UniformService {
     gl.bufferData(gl.UNIFORM_BUFFER, MATERIAL_CONFIG, gl.STATIC_DRAW);
 
     this.timeBuffer = this.setUpUniformBlock([riverProgram], 'Time', TIME_UBO_BINDING_INDEX);
-    gl.bufferData(gl.UNIFORM_BUFFER, this.timeFloats, gl.DYNAMIC_DRAW);
+    gl.bufferData(gl.UNIFORM_BUFFER, this.time, gl.DYNAMIC_DRAW);
   }
 
   /** The current model matrix top of stack. */
@@ -153,7 +156,7 @@ export class UniformService {
   }
 
   /** Transforms the constant light direction with the view matrix and updates the light config uniform. */
-  public updateLight(viewMatrix: mat4, brightness: number) {
+  public updateLight(viewMatrix: mat4, brightness: number, shadowWeight: number) {
     const u = UNIT_LIGHT_DIRECTION;
     const c = this.lightConfig;
     // gl-matrix doesn't do vector operaions.
@@ -161,9 +164,10 @@ export class UniformService {
     c[1] = viewMatrix[1] * u[0] + viewMatrix[5] * u[1] + viewMatrix[9] * u[2];
     c[2] = viewMatrix[2] * u[0] + viewMatrix[6] * u[1] + viewMatrix[10] * u[2];
     c[3] = brightness;
+    c[8] = shadowWeight;
     const gl = this.glService.gl;
     gl.bindBuffer(gl.UNIFORM_BUFFER, this.lightConfigBuffer);
-    gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.lightConfig);
+    gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.lightConfig.buffer);
   }
 
   public updateSkyboxTransformsUniform(viewMatrix: mat4, projectionMatrix: mat4) {
@@ -182,11 +186,11 @@ export class UniformService {
   /** Updates time uniform block contents. */
   public updateTimeUniform(clockMillis: number): void {
     // Clock cycles every 32 seconds to match uniform clock usage.
-    this.timeFloats[0] = (clockMillis % 32000) * 0.001;
+    this.time[0] = (clockMillis % 32000) * 0.001;
 
     const gl = this.glService.gl;
     gl.bindBuffer(gl.UNIFORM_BUFFER, this.timeBuffer);
-    gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.timeFloats.buffer);
+    gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.time.buffer);
   }
 
   /** Does boilerplate setup operations for a uniform block. */

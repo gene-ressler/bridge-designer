@@ -3,6 +3,7 @@ import { GlService } from './gl.service';
 
 @Injectable({ providedIn: 'root' })
 export class DepthBufferService {
+  private depthFrameBufffer!: WebGLFramebuffer;
   constructor(private readonly glService: GlService) {}
 
   public prepare(): void {
@@ -23,10 +24,11 @@ export class DepthBufferService {
     );
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    // WebGL doesn't support CLAMP_TO_BORDER. Use bounds checking in shader.
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    const depthFramebuffer = gl.createFramebuffer();
-    gl.bindFramebuffer(gl.FRAMEBUFFER, depthFramebuffer);
+    this.depthFrameBufffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.depthFrameBufffer);
     gl.framebufferTexture2D(
       gl.FRAMEBUFFER, // target
       gl.DEPTH_ATTACHMENT, // attachment point
@@ -34,6 +36,16 @@ export class DepthBufferService {
       depthTexture, // texture
       0, // mip level
     );
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  }
+
+  public bind(): void {
+    const gl = this.glService.gl;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.depthFrameBufffer);
+  }
+
+  public unbind(): void {
+    const gl = this.glService.gl;
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
 }

@@ -9,6 +9,7 @@ import { BitVector } from '../../../shared/core/bitvector';
 import { Gusset } from '../../../shared/services/gussets.service';
 import { BuckledMemberMesh, FailedMemberRenderingService, TornMemberMesh } from './failed-member-rendering.service';
 import { EventBrokerService } from '../../../shared/services/event-broker.service';
+import { GlService } from './gl.service';
 
 type BridgeMesh = {
   membersMesh: Mesh;
@@ -34,6 +35,7 @@ export class BridgeRenderingService {
     private readonly bridgeModelService: BridgeModelService,
     eventBrokerService: EventBrokerService,
     private readonly failedMemberRenderingService: FailedMemberRenderingService,
+    private readonly glService: GlService,
     private readonly meshRenderingService: MeshRenderingService,
     private readonly simulationStateService: SimulationStateService,
     private readonly uniformService: UniformService,
@@ -41,8 +43,8 @@ export class BridgeRenderingService {
     // Handle user request to replay the simulation by deleting failed member meshes, if any..
     eventBrokerService.simulationReplayRequest.subscribe(() => {
       if (this.mesh) {
-        failedMemberRenderingService.deleteExistingBuckledMemberMesh(this.mesh.buckledMembersMesh);
-        failedMemberRenderingService.deleteExistingTornMemberMesh(this.mesh.tornMemberMesh);
+        meshRenderingService.deleteExistingMesh(this.mesh.buckledMembersMesh?.mesh);
+        meshRenderingService.deleteExistingMesh(this.mesh.tornMemberMesh?.mesh);
         this.mesh.buckledMembersMesh = this.mesh.tornMemberMesh = undefined;
       }
     });
@@ -65,8 +67,10 @@ export class BridgeRenderingService {
     // Send updated values to the GPU.
     const mesh = this.mesh;
     this.meshRenderingService.updateInstanceModelTransforms(mesh.membersMesh);
-    this.meshRenderingService.updateInstanceColors(mesh.membersMesh);
-    this.meshRenderingService.updateInstanceModelTransforms(mesh.stiffeningWires);
+    if (this.glService.isRenderingDisplay) {
+      this.meshRenderingService.updateInstanceColors(mesh.membersMesh);
+      this.meshRenderingService.updateInstanceModelTransforms(mesh.stiffeningWires);
+    }
     this.meshRenderingService.updateInstanceModelTransforms(mesh.deckBeamsMesh);
     this.meshRenderingService.updateInstanceModelTransforms(mesh.deckSlabsMesh);
     for (const gussetMesh of mesh.gussetMeshes) {
@@ -164,10 +168,12 @@ export class BridgeRenderingService {
     this.meshRenderingService.renderColoredMesh(mesh.membersMesh);
     this.meshRenderingService.renderColoredMesh(mesh.deckBeamsMesh);
     mesh.gussetMeshes.forEach(mesh => this.meshRenderingService.renderColoredMesh(mesh));
-    this.meshRenderingService.renderWire(mesh.stiffeningWires);
+    if (this.glService.isRenderingDisplay) {
+      this.meshRenderingService.renderWire(mesh.stiffeningWires);
+    }
     this.meshRenderingService.renderColoredMesh(mesh.pinsMesh);
     if (mesh.buckledMembersMesh) {
-      this.failedMemberRenderingService.render(mesh.buckledMembersMesh);
+       this.meshRenderingService.renderBuckledMemberMesh(mesh.buckledMembersMesh.mesh)
     }
     if (mesh.tornMemberMesh) {
       this.meshRenderingService.renderColoredMesh(mesh.tornMemberMesh.mesh);
@@ -184,7 +190,7 @@ export class BridgeRenderingService {
     this.meshRenderingService.deleteExistingMesh(mesh.membersMesh);
     this.meshRenderingService.deleteExistingMesh(mesh.pinsMesh);
     this.meshRenderingService.deleteExistingWire(mesh.stiffeningWires);
-    this.failedMemberRenderingService.deleteExistingBuckledMemberMesh(mesh.buckledMembersMesh);
-    this.failedMemberRenderingService.deleteExistingTornMemberMesh(mesh.tornMemberMesh);
+    this.meshRenderingService.deleteExistingMesh(mesh.buckledMembersMesh?.mesh);
+    this.meshRenderingService.deleteExistingMesh(mesh.tornMemberMesh?.mesh);
   }
 }

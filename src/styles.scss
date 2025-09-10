@@ -24,3 +24,16 @@ body {
   padding-top: 0;
   padding-bottom: 0;
 }
+
+.loading-div {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-img {
+  width: 319px;
+  height: 102.5px;
+}
