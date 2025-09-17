@@ -41,6 +41,7 @@ export class SimulationStateService {
   public loadAlpha = 1;
   /** Time since the current phase started. Useful for sub-animations. */
   public phaseClockMillis: number = 0;
+  /** Simulation clock the last time the load was advanced. */
   public lastLoadAdvanceMillis: number | undefined;
 
   private phase: SimulationPhase = SimulationPhase.UNSTARTED;
@@ -49,7 +50,7 @@ export class SimulationStateService {
 
   private deadLoadingInterpolator!: Interpolator;
   private traversingInterpolator!: Interpolator;
-  // Initially undefined. Created when the test fails, after failure analysis is complete.
+  // Undefined until created after the test has failed, and failure analysis is completes.
   private collapsingInterpolator: Interpolator | undefined;
 
   constructor(

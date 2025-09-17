@@ -16,6 +16,7 @@ export interface CustomCursor {
   orgY?: number;
 }
 
+/** Static helpers for jqwidgets. */
 export class WidgetHelper {
   public static initToolbarImgButton(title: string, imgSrc: string, tool: any, isDisabled: boolean = false) {
     WidgetHelper.addButtonImg(imgSrc, title, tool);
@@ -64,16 +65,6 @@ export class WidgetHelper {
       }
     });
   }
-
-  /* Replaced by uistate service.
-  public static sendEventOnToolbarClick(subject: Subject<EventInfo>, tool: any, data?: any) {
-    tool.on('click', () =>
-      subject.next({
-        source: EventOrigin.TOOLBAR,
-        data: typeof data === 'function' ? data() : data,
-      }),
-    );
-  }*/
 
   private static addButtonImg(imgSrc: string, title: string, tool: any) {
     let img = document.createElement('img');

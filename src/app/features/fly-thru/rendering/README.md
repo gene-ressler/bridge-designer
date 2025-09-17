@@ -6,7 +6,6 @@ This directory contains rendering logic for fly-thru animation models.
 
 - **Rendering services.** These accept model mesh data and turn them into "meshes", which contain everything needed to
   render once per frame, including OpenGL objects. There is a hierarchical level graph of kinds of meshes:
-
   - **Top-level.** This is `RenderingService.` It injects a renderer for each kind of scene object and exports functions
     to initialize them and render at the frame rate. It does initializations: one-time (e.g. for the sky box),
     once-per-design-conditions (e.g. terrain), and once per bridge.
@@ -38,7 +37,7 @@ This directory contains rendering logic for fly-thru animation models.
   animation to freeze and restart at user request.
 - **Interpolators.** Provides interpolated analyses that lie between the discrete load cases, also second level
   interpolations ("bi-interpolations") between pairs of these. See details below.
-- **Simluation state.** Uses the animation clock and interpolators to determine what's going on in the load test
+- **Simulation state.** Uses the animation clock and interpolators to determine what's going on in the load test
   simulation: applying the dead load, truck materializing as it approaches the bridge, traversing the bridge,
   dematerializing on the other side, or perhaps failing.
 
@@ -64,12 +63,12 @@ sways far to the right under dead load, what should the truck do when it reaches
 teleport backward or ignore one of the two overlapping chunks of roadway? If ignore, which?
 
 We chose a "no teleport" policy. The truck should follow the roadway smoothly. Where the abutment gap is large, it
-should "fly" across it. To achieve this:
+should "fly" across it. Let L be the x-coordinate of the leftmost deck joint with only dead load applied and similarly R
+the rightmost. To achieve the policy:
 
-- Follow the roadway centerline with `t` = x until `t` = L, the x-coordinate of the leftmost deck joint with only dead
-  load applied.
-- The parameter space from L to R is now used to interpolate among the deck joints. If there are N of these, then
-  `(t -  L) / (R - L)` is the fraction of the deck the truck has traversed.
+- Follow the roadway centerline with `t` = x until `t` = L.
+- The parameter space from L to R is now used to interpolate among the deck joints and consequently among analysis load
+  cases. If there are N of these, then `(t - L) / (R - L)` is the fraction of the deck the truck has traversed.
 - Upon reaching R, again follow the roadway centerline with x=t.
 
 This can result in instantaneous jumps in the y-direction if deck end and terrain height differ. We won't worry about
@@ -80,17 +79,17 @@ interpolators to be created "lazily" when an analysis is guaranteed present.
 
 ### Interpolators and their data sources
 
-Interpolation is implemented with two interfiaces. A data source interface provides raw data e.g. displaced joint
+Interpolation is implemented with two interfaces. A data source interface provides raw data e.g. displaced joint
 locations and member forces. Implementations broadly follow an adapter pattern:
 
-- An analysis adapter exposes a bridge analysis in the expected form.
-- A "bi-source" interpolates between two other data sources and via its own parameter.
-- A "zero force" source always returns zero displacements and
+- An adapter pattern exposes a bridge analysis as a data source.
+- A "bi-source" interpolates between two other data sources _visa vis_ its own parameter.
+- A "zero force" source always returns zero forces and displacements.
 
 An interpolator accepts a data source and produces interpolated data similar to what the source provides, but includes
 other derivative attributes e.g. about failure of the structure at the current interpolation point.
 
-There are two kinds of interpolator: one that interpolates a single source and another that's specialized for the bridge
+There are two kinds of interpolator: one that interpolates a single source and another specifically for the bridge
 collapse animation.
 
 Withall, there are three interpolators managed by the simulation state machine. Only one is effective at any time.
@@ -113,3 +112,9 @@ Withall, there are three interpolators managed by the simulation state machine. 
   to affect the collapse interpolator's outputs at all. Consequently, there is a custom collapse intepolator
   implementation that is just a wrapper for two others: the bi-source interpolator and also a normal analysis
   iterpolator to the normal analysis. The wrapper delegates to the correct wrapped interpolator for each kind of output.
+
+### Interpolating failure
+
+Without due care, animation frames could skip over failure load cases, causing users to see the truck pass while the
+bridge actually fails. To prevent this, the analysis interpolator returns information directly from the left-most failed
+load case whenever the progress parameter is past it.
