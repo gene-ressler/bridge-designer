@@ -120,7 +120,7 @@ class SourceInterpolator implements Interpolator {
     const hiLimit = squaredTruckLength + eps2;
     const loLimit = squaredTruckLength - eps2;
     // Bail at a fixed limit for safety e.g. for elevation discontinuities at bridge ends, where
-    // no solution may exist.  Since the resulting point is still on the way, it's the best we can do.
+    // no solution may exist. Since the resulting point is still on the way, it's the best we can do.
     for (let i = 0; i < 16; ++i) {
       const t = (t0 + t1) * 0.5;
       this.setContextForParameter(this.tmpContext, t);
