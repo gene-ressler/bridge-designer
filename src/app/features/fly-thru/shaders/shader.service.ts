@@ -46,6 +46,11 @@ const PROGRAM_SPECS: ProgramSpec[] = [
     fragmentShaderName: 'COLORED_MESH_FRAGMENT_SHADER',
   },
   {
+    name: 'depth_texture',
+    displayVertexShaderName: 'DEPTH_TEXTURE_VERTEX_SHADER',
+    fragmentShaderName: 'DEPTH_TEXTURE_FRAGMENT_SHADER',
+  },
+  {
     name: 'instance_colored_mesh',
     displayVertexShaderName: 'INSTANCE_COLORED_MESH_VERTEX_SHADER',
     depthVertexShaderName: 'INSTANCE_COLORED_MESH_VERTEX_SHADER',

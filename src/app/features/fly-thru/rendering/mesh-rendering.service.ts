@@ -336,7 +336,9 @@ export class MeshRenderingService {
   /** Renders a previously prepared terrain mesh.  */
   public renderTerrainMesh(mesh: Mesh) {
     const gl = this.glService.gl;
-    gl.useProgram(this.shaderService.getProgram('terrain'));
+    const program = this.shaderService.getProgram('terrain');
+    gl.useProgram(program);
+    this.depthBufferService.bindDepthTexture(program);
     gl.bindVertexArray(mesh.vertexArray);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
     gl.drawElements(gl.TRIANGLES, mesh.elementCount, gl.UNSIGNED_SHORT, 0);

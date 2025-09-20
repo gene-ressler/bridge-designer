@@ -20,12 +20,13 @@ export type DisplayMatrices = {
   lightView: mat4;
   trapezoidalProjection: mat4;
 };
+/** Matrix for shifting canonical post-projection coordinates to texture space. */
 // prettier-ignore
 const CANON_TO_TEX = mat4.fromValues(
-  0.5, 0,   0, 0,
-  0,   0.5, 0, 0,
-  0,   0,   1, 0,
-  0.5, 0.5, 0, 1,
+  0.5, 0,   0,   0,
+  0,   0.5, 0,   0,
+  0,   0,   0.5, 0,
+  0.5, 0.5, 0.5, 1,
 );
 @Injectable({ providedIn: 'root' })
 export class UniformService {

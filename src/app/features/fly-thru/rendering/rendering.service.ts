@@ -97,15 +97,13 @@ export class RenderingService {
       return;
     }
 
-    // Fetch projection for the debugging light view. Never updated.
-    this.projectionService.getLightProjection(this.lightProjectionMatrix);
-
     // Set up objects that remain between animations.
     this.riverRenderingService.prepare();
     this.skyRenderingService.prepare();
     this.truckRenderingService.prepare();
     this.animationControlsOverlayService.prepare();
     this.depthBufferService.prepare();
+    this.depthBufferService.pepareRenderToDisplay();
 
     this.prepared = true;
   }
@@ -130,7 +128,6 @@ export class RenderingService {
     const gl = this.glService.gl;
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
-    gl.clearDepth(1);
     gl.depthFunc(gl.LEQUAL);
     gl.clearColor(0.3765, 0.4392, 0.502, 1); // Matches median sky map color.
 
@@ -141,6 +138,7 @@ export class RenderingService {
     this.viewService.getLookAtMatrix(this.eyeViewMatrix);
     this.viewService.getLightLookAtMatrix(this.lightViewMatrix);
     this.projectionService.getPerspectiveProjection(this.projectionMatrix);
+    this.projectionService.getLightProjection(this.lightProjectionMatrix);
     this.projectionService.getTrapezoidalProjection(
       this.trapezoidalProjectionMatrix,
       this.eyeViewMatrix,
@@ -219,6 +217,10 @@ export class RenderingService {
         m.lightView = this.lightViewMatrix;
         m.trapezoidalProjection = this.trapezoidalProjectionMatrix;
         break;
+      case 'depth':
+        // Short circuit normal flow.
+        this.depthBufferService.renderToDisplay();
+        return;
     }
 
     gl.cullFace(gl.BACK);

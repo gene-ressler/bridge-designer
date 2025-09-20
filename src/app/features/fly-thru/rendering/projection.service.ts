@@ -79,7 +79,7 @@ export class ProjectionService {
 
   /** Returns the trapezoidal projection for the current model-view and light-view transforms. */
   public getTrapezoidalProjection(m: mat4, view: mat4, lightView: mat4): void {
-    const halfGridSize = TerrainModelService.HALF_GRID_COUNT * TerrainModelService.METERS_PER_GRID;
+    const halfGridSize = TerrainModelService.HALF_GRID_COUNT * TerrainModelService.METERS_PER_GRID * 0.5;
     const near = -halfGridSize;
     const far = halfGridSize;
 

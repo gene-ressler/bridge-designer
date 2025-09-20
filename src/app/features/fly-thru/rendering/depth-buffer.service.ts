@@ -1,15 +1,22 @@
 import { Injectable } from '@angular/core';
 import { GlService } from './gl.service';
 import { DEPTH_TEXTURE_UNIT } from './constants';
+import { ShaderService } from '../shaders/shader.service';
+import { IN_POSITION_LOCATION } from '../shaders/constants';
 
 const DEPTH_BUFFER_SIZE = 2048;
+const TEX_COORDS = new Float32Array([0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0]);
 
 @Injectable({ providedIn: 'root' })
 export class DepthBufferService {
   private depthFrameBuffer!: WebGLFramebuffer;
   private depthTexture!: WebGLTexture;
+  private vertexArray!: WebGLVertexArrayObject;
 
-  constructor(private readonly glService: GlService) {}
+  constructor(
+    private readonly glService: GlService,
+    private readonly shaderService: ShaderService,
+  ) {}
 
   public prepare(): void {
     const gl = this.glService.gl;
@@ -19,12 +26,12 @@ export class DepthBufferService {
     gl.texImage2D(
       gl.TEXTURE_2D, // target
       0, // mip level
-      gl.DEPTH_COMPONENT32F, // internal format
+      gl.DEPTH_COMPONENT24, // internal format
       DEPTH_BUFFER_SIZE, // width
       DEPTH_BUFFER_SIZE, // height
       0, // border
       gl.DEPTH_COMPONENT, // format
-      gl.FLOAT, // type
+      gl.UNSIGNED_INT, // type
       null, // data
     );
     // Percentage closer filtering setup.
@@ -48,8 +55,8 @@ export class DepthBufferService {
   }
 
   /**
-   * Binds the depth buffer and sets the GL viewport to its extent.
-   * Not save/restoring viewport here because Int32Array may be allocated for each frame.
+   * Binds the depth buffer and sets the GL viewport to its extent. Not save/restoring
+   * viewport here because Int32Array may be allocated for each frame, which is expensive.
    */
   public bindAndSetViewport(): void {
     const gl = this.glService.gl;
@@ -76,5 +83,34 @@ export class DepthBufferService {
     gl.uniform1i(location, DEPTH_TEXTURE_UNIT);
     gl.activeTexture(gl.TEXTURE0 + DEPTH_TEXTURE_UNIT);
     gl.bindTexture(gl.TEXTURE_2D, this.depthTexture);
+  }
+
+  /** Prepares a texture coordinate buffer for drawing the depth texture to the screen. */
+  public pepareRenderToDisplay(): void {
+    const gl = this.glService.gl;
+    const vertexArray = gl.createVertexArray();
+    gl.bindVertexArray(vertexArray);
+    const texCoordBuffer = gl.createBuffer()!;
+    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, TEX_COORDS, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(IN_POSITION_LOCATION);
+    gl.vertexAttribPointer(IN_POSITION_LOCATION, 2, gl.FLOAT, false, 0, 0);
+    this.vertexArray = vertexArray;
+  }
+
+  public renderToDisplay(): void {
+    const gl = this.glService.gl;
+    gl.disable(gl.DEPTH_TEST);
+    gl.disable(gl.CULL_FACE);
+
+    const program = this.shaderService.getProgram('depth_texture');
+    gl.useProgram(program);
+    this.bindDepthTexture(program);
+    gl.bindVertexArray(this.vertexArray);
+
+    gl.drawArrays(gl.TRIANGLES, 0, TEX_COORDS.length >>> 1);
+
+    gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.CULL_FACE);
   }
 }

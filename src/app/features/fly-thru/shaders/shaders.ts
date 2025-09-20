@@ -109,6 +109,30 @@ vertex=vec3(transforms.modelView*position);
 normal=mat3(transforms.modelView)*mat3(inModelTransform)*inNormal;
 materialRef=inMaterialRef;}`;
 
+export const DEPTH_TEXTURE_VERTEX_SHADER = 
+`#version 300 es
+precision mediump float;
+layout(location=0)in vec2 inTexCoord;
+out vec2 texCoord;
+void main(){
+texCoord=inTexCoord;
+gl_Position=vec4(inTexCoord*2.0f-1.0f,0,1.0f);}`;
+
+export const DEPTH_TEXTURE_FRAGMENT_SHADER = 
+`#version 300 es
+precision mediump float;
+precision mediump sampler2DShadow;
+uniform sampler2DShadow depthMap;
+in vec2 texCoord;
+out vec4 fragmentColor;
+const float increment=0.03125f;
+void main(){
+float intensity=0.0f;
+for(float f=0.0f;
+f <=1.0f;
+f+=increment){
+intensity+=increment*texture(depthMap,vec3(texCoord,f));}fragmentColor=vec4(intensity,intensity,intensity,1);}`;
+
 export const EMPTY_FRAGMENT_SHADER = 
 `#version 300 es
 void main(){
@@ -266,25 +290,33 @@ export const TERRAIN_VERTEX_SHADER =
 `#version 300 es
 layout(std140)uniform Transforms{
 mat4 modelView;
-mat4 modelViewProjection;}transforms;
+mat4 modelViewProjection;
+mat4 depthMapLookup;}transforms;
 layout(location=0)in vec3 inPosition;
 layout(location=1)in vec3 inNormal;
 out vec3 normal;
+out vec4 depthMapLookup;
 out float yModelNormal;
 void main(){
-gl_Position=transforms.modelViewProjection*vec4(inPosition,1.0f);
+vec4 inPositionHomogeneous=vec4(inPosition,1.0f);
+gl_Position=transforms.modelViewProjection*inPositionHomogeneous;
 normal=mat3(transforms.modelView)*inNormal;
-yModelNormal=inNormal.y;}`;
+yModelNormal=inNormal.y;
+depthMapLookup=transforms.depthMapLookup*inPositionHomogeneous;}`;
 
 export const TERRAIN_FRAGMENT_SHADER = 
 `#version 300 es
 precision mediump float;
+precision mediump sampler2DShadow;
 layout(std140)uniform LightConfig{
 vec3 unitDirection;
 float brightness;
 vec3 color;
-float ambientIntensity;}light;
+float ambientIntensity;
+float shadowWeight;}light;
+uniform sampler2DShadow depthMap;
 in vec3 normal;
+in vec4 depthMapLookup;
 in float yModelNormal;
 out vec4 fragmentColor;
 const vec3 NORMAL_TERRAIN_COLOR=0.6f*vec3(0.13f,0.4f,0.33f);
@@ -297,7 +329,10 @@ float adjustedAmbientIntensity=light.ambientIntensity*0.2f;
 float diffuseIntensity=(1.0f-adjustedAmbientIntensity)*clamp(normalDotLight,0.0f,1.0f)+adjustedAmbientIntensity;
 float normalTerrainColorWeight=pow(yModelNormal,6.0f);
 vec3 color=ERODED_TERRAIN_COLOR+EROSION_DIFF*normalTerrainColorWeight;
-fragmentColor=light.brightness*vec4(diffuseIntensity*color*light.color,1.0f);}`;
+fragmentColor=light.brightness*vec4(diffuseIntensity*color*light.color,1.0f);
+if(light.shadowWeight < 1.0f){
+float shadow=/*light.shadowWeight+(1.0-light.shadowWeight)**/textureProj(depthMap,depthMapLookup);
+fragmentColor*=shadow;}}`;
 
 export const TEXTURED_MESH_VERTEX_SHADER = 
 `#version 300 es

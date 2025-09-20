@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 
-export type ProjectionType = 'normal' | 'light' | 'trapezoidal';
+export type ProjectionType = 'normal' | 'light' | 'trapezoidal' | 'depth';
 const NEXT_PROJECTION: Record<ProjectionType, ProjectionType> = {
   normal: 'light',
   light: 'trapezoidal',
-  trapezoidal: 'normal',
+  trapezoidal: 'depth',
+  depth: 'normal',
 };
 
 export type DebugState = {

@@ -15,5 +15,4 @@ void main() {
   }
   fragmentColor = texture(icons, texCoord);
   fragmentColor.a *= alpha;
-  // fragmentColor = vec4(1.0, 0.0, 0.0, 1.0);
 }
