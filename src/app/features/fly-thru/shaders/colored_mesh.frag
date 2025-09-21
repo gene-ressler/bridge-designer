@@ -38,13 +38,12 @@ void main() {
   vec3 unitEye = normalize(-vertex);
   MaterialSpec materialSpec = materialConfig.specs[materialRef];
   float specularIntensity = pow(max(dot(unitReflection, unitEye), 0.0f), materialSpec.SHININESS);
-  vec3 specularColor = specularIntensity * light.color;
-  float diffuseIntensity = (1.0f - light.ambientIntensity) * clamp(normalDotLight, 0.0f, 1.0f) + light.ambientIntensity;
-  vec3 diffuseColor = diffuseIntensity * materialSpec.COLOR * light.color * (1.0f - specularIntensity);
+  float diffuseIntensity = mix(light.ambientIntensity, 1.0f, normalDotLight);
   // build_include "shadow_lookup.h"
   // Make VScode happy.
   #ifndef SHADOW
     float shadow = 1.0f;
   #endif
-  fragmentColor = light.brightness * vec4(specularColor + diffuseColor, materialConfig.globalAlpha) * shadow;
+  vec3 color = light.color * (specularIntensity + diffuseIntensity * materialSpec.COLOR);
+  fragmentColor = vec4(light.brightness * color * shadow, materialConfig.globalAlpha);
 }

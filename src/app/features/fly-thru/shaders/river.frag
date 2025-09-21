@@ -34,17 +34,14 @@ void main() {
   vec3 unitReflection = normalize(2.0f * normalDotLight * unitNormal - light.unitDirection);
   vec3 unitEye = normalize(-vertex);
   float specularIntensity = pow(max(dot(unitReflection, unitEye), 0.0f), 60.0f);
-  float diffuseIntensity = (1.0f - light.ambientIntensity) * clamp(normalDotLight, 0.0f, 1.0f);
+  float diffuseIntensity = mix(light.ambientIntensity, 1.0f, normalDotLight);
+  // fract() may avoid losing shift to float precision.
+  vec3 texColor = texture(water, fract(texCoord) + WATER_VELOCITY * time.clock).rgb;
   // build_include "shadow_lookup.h"
   // Make VScode happy.
   #ifndef SHADOW
     float shadow = 1.0f;
   #endif
-  specularIntensity *= shadow;
-  diffuseIntensity *= shadow;
-  vec3 specularColor = specularIntensity * light.color;
-  // Use fractional parts of terms to avoid float overflow.
-  vec3 texColor = texture(water, fract(texCoord) + WATER_VELOCITY * time.clock).rgb;
-  vec3 diffuseColor = (diffuseIntensity + light.ambientIntensity) * texColor * light.color * (1.0f - specularIntensity);
-  fragmentColor = light.brightness * vec4(specularColor + diffuseColor, 1.0f);
+  vec3 color = light.color * (specularIntensity + diffuseIntensity * texColor);
+  fragmentColor = vec4(light.brightness * color * shadow, 1.0f);
 }

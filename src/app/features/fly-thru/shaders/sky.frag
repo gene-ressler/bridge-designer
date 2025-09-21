@@ -2,7 +2,7 @@
 
 precision mediump float;
 
-// TODO: Maybe add ambient light for brightness control.
+// TODO: Maybe add brightness control.
 uniform samplerCube skybox;
 
 in vec3 texCoord;

@@ -24,7 +24,7 @@ layout(location = IN_INSTANCE_MODEL_TRANSFORM_LOCATION) in mat4 inModelTransform
 out vec3 vertex;
 out vec3 normal;
 out vec4 depthMapLookup;
-out vec3 color;
+out vec3 materialColor;
 
 void main() {
   vec4 inPositionHomogeneous = inModelTransform * vec4(inPosition, 1.0f);
@@ -32,5 +32,5 @@ void main() {
   vertex = vec3(transforms.modelView * inPositionHomogeneous);
   normal = mat3(transforms.modelView) * mat3(inModelTransform) * inNormal;
   depthMapLookup = transforms.depthMapLookup * inPositionHomogeneous;
-  color = inColor;
+  materialColor = inColor;
 }

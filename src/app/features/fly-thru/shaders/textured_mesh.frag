@@ -29,5 +29,6 @@ void main() {
   #ifndef SHADOW
     float shadow = 1.0f;
   #endif
-  fragmentColor = light.brightness * vec4(diffuseIntensity * materialColor * light.color, 1) * shadow;
+  vec3 color = diffuseIntensity * materialColor * light.color;
+  fragmentColor = vec4(light.brightness * color * shadow, 1.0f);
 }
