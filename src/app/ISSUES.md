@@ -6,14 +6,14 @@
   - Controls
 - Complete help edit
   - @ 50%
-- Legacy animation
-  - delete
 - Dirty edit save behavior
 - Member details
 - Printing, 3D
 
 ## Issues
 
+- Failed members should be colored in drafting view after test.
+- Some graphics (help for sure) still say 2016.
 - Some sample designs fail.
 - Help should be its own window. 
   - Maybe not as BD best in full screen mode anyway?

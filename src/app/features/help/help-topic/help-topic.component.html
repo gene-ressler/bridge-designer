@@ -176,173 +176,108 @@
   <p>Disabling the animation allows quicker design iterations.</p>
 </ng-template>
 <ng-template topic-name="hlp_animation_controls">
-  <h1>Animation controls palette</h1>
+  <h1>Animation controls</h1>
   <p>
-    <img
-      alt="Animation controls palette"
-      src="img/help/animationctldlg.png"
-    /><br />
-    Use the tools on the <span class="b">animation controls palette</span> to change some aspects of the
-    <topic-link name="hlp_load_test3">load test animation</topic-link>:
+    This dialog provides various options to modify the animation's appearance. To look around the animation and
+    play/pause it, see <topic-link name="hlp_animation_view_controls">animation view controls</topic-link>.
   </p>
-  <ul>
-    <li>Click the <span class="b">play button</span> to start or restart the animation.</li>
-    <li>Click the <span class="b">pause button</span> to temporarily halt the animation.</li>
-    <li>
-      Click the <span class="b">rewind button</span> to reset the animation to its starting point, where no load is
-      applied to the bridge.
-    </li>
-    <li>
-      Move the <span class="b">animation speed slider</span> to change the speed of the truck. These vary from 0.5 to
-      30km per hour.
-    </li>
-    <li>Press the <span class="b">drop button</span> to reveal and hide additional animation controls.</li>
-  </ul>
-  <h3><img src="img/help/animationctldlgopen.png" /></h3>
-  <p>
-    When the additional controls are visible, check and uncheck the boxes to display and hide of various animation
-    features.
-  </p>
-  <ul>
-    <li><span class="b">Shadows</span> controls whether the sun casts shadows within the simulated scene.</li>
-    <li>
-      <span class="b">Sky</span> controls whether the sky is drawn using a realistic graphic that includes clouds, sun,
-      and hills in the distance or a simple blue background.
-    </li>
-    <li><span class="b">Terrain</span> controls whether the ground and water around the bridge are drawn.</li>
-    <li><span class="b">Abutments</span> controls whether the bridge abutments and road surfaces are drawn.</li>
-    <li>
-      <span class="b">Colors</span> controls whether <topic-popup name="glos_forces">member forces</topic-popup> are
-      depicted with colors. If the box is checked, <topic-popup name="glos_compression">compression</topic-popup> is
-      represented by <span class="c5b">red</span> and <topic-popup name="glos_tension">tension</topic-popup> by
-      <span class="c1b">blue</span> as the <topic-popup name="glos_loads">load</topic-popup> moves across the bridge
-      deck. Otherwise a <span class="c14b">flat gray</span> is used.
-    </li>
-    <li>
-      <span class="b">Erosion</span> controls whether the terrain color is adjusted to depict soil erosion on steep
-      slopes. Note that some computers may not properly draw eroded terrain due to bugs in graphics card drivers. If the
-      terrain is strangely colored or disappears when <span class="b">erosion</span> is checked, just keep this control
-      in the unchecked state.
-    </li>
-    <li>
-      <span class="b">Exaggeration</span> controls whether member deflections are exaggerated to make them more visible.
-      When unchecked, the animation is realistic. When checked, changes in the shape of the truss under load are
-      multiplied by 20 in order to make them more visible.
-    </li>
-    <li><span class="b">Truck</span> controls whether the cartoon of the truck loading is shown or hidden.</li>
-  </ul>
-  <p>
-    Some of these options are missing or modified if
-    <topic-link name="hlp_old_style_graphics">old style graphics</topic-link> have been selected.
-  </p>
-  <h2 class="btop">Notes and tips</h2>
-  <p>
-    Use the <topic-link name="hlp_animation_view_controls">animation view controls</topic-link> to walk under, over and
-    through the bridge site.
-  </p>
-  <p>
-    The animation controls palette is normally displayed whenever you
-    <topic-link name="hlp_run_load_test">load test your design</topic-link>. The palette is automatically hidden when
-    you return to the <topic-link name="hlp_drawing_board">drawing board.</topic-link> If you manually close the
-    controls, you can make it visible again with the
-    <topic-link name="hlp_view_animation_controls">view animation controls</topic-link> menu item.
-  </p>
-  <p>
-    When you initiate the <topic-popup name="glos_load_test">load test</topic-popup>, the play button is automatically
-    depressed.
-  </p>
-  <p>When you pause, you must use the play button to restart.</p>
-  <p>
-    The smoothness of the animation depends on the speed of your computer's processor and graphics system. If the motion
-    looks too &quot;jerky,&quot; try turning off some of the animation features. Turning off shadows is likely to have
-    the greatest effect.
-  </p>
-</ng-template>
-<ng-template topic-name="hlp_animation_view_controls">
-  <h1>Animation view controls</h1>
   <table
-    cellpadding="4"
+    cellpadding="8"
     cellspacing="0"
   >
     <tr>
       <td>
         <img
-          width="46"
-          src="img/help/animctrls.png"
-          height="202"
+          alt="Animation view control buttons"
+          src="img/help/settings.png"
+          style="width: 215px; height: 269px; margin-right: 12px"
         />
       </td>
       <td>
-        The <span class="b">animation view controls</span> move and rotate the viewpoint of the
-        <topic-link name="hlp_load_test3">load test animation</topic-link> within the scene, creating the impression of
-        flying under, over, and through the bridge. They are normally shown in faded colors on the left side of the
-        animation screen as shown here. When you pass the mouse over any of the controls, it will brighten to full
-        color.
+        <ul>
+          <li><span class="b">Shadows</span> controls whether the sun casts shadows within the simulated scene.</li>
+          <li>
+            <span class="b">Sky</span> controls whether the sky is drawn with clouds, sun, and hills on the horizon or a
+            simple blue background.
+          </li>
+          <li><span class="b">Terrain</span> controls whether the ground and water around the bridge are drawn.</li>
+          <li><span class="b">Wind turbine</span> controls whether the wind generator close to the bridge is drawn.</li>
+          <li><span class="b">Abutments</span> controls whether the bridge abutments and road surfaces are drawn.</li>
+          <li><span class="b">Truck</span> controls whether the cartoon of the truck loading is shown or hidden.</li>
+          <li>
+            <span class="b">Colors</span> controls whether
+            <topic-popup name="glos_forces">member forces</topic-popup> are depicted with colors. If the box is checked,
+            <topic-popup name="glos_compression">compression</topic-popup> is represented by
+            <span class="c5b">red</span> and <topic-popup name="glos_tension">tension</topic-popup> by
+            <span class="c1b">blue</span> as the <topic-popup name="glos_loads">load</topic-popup> moves across the
+            bridge deck. Color brightness corresponds to intense loading. No load is indicated with
+            <span class="c14b">flat gray</span>.
+          </li>
+          <li>
+            <span class="b">Exaggeration</span> controls whether member deflections are exaggerated to make them more
+            visible. When unchecked, the animation is realistic. When checked, changes in the shape of the truss under
+            load are multiplied by 20 in order to make them more visible.
+          </li>
+          <li>Move the <span class="b">speed slider</span> to change the speed of the truck.</li>
+          <li>
+            Move the <span class="b">brightness slider</span> to account differences in displays by making the whole
+            image darker or brighter.
+          </li>
+        </ul>
       </td>
     </tr>
+  </table>
+  <h2 class="btop">Notes and tips</h2>
+  <p>
+    The smoothness of the animation depends on the speed of your computer's processor and graphics system. If the motion
+    looks too &quot;jerky,&quot; try turning off some of the animation features. Shadows are likely to have the greatest
+    effect.
+  </p>
+  <p>Slowing the truck speed down makes it easier to see how members take up and release load as the test proceeds.</p>
+  <p>Turning off colors and exaggeration provides the most realistic view of the bridge doing its job.</p>
+</ng-template>
+<ng-template topic-name="hlp_animation_view_controls">
+  <h1>Animation view controls</h1>
+  <p>
+    A column of seven faded icons is displayed over the top of the animation image. Each will light up when the mouse
+    gets close.
+  </p>
+  <table
+    cellpadding="8"
+    cellspacing="0"
+  >
     <tr>
       <td>
         <img
-          width="64"
-          src="img/help/walk.png"
-          height="64"
+          alt="Animation view control buttons"
+          src="img/help/overlay.png"
+          style="width: 132px; height: 335px; margin-right: 12px"
         />
       </td>
       <td>
-        Click and drag the <span class="b">walk control</span> to move forward and turn left or right in the scene as
-        though you are walking. Dragging upward moves forward. Dragging downward moves to the rear.
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <img
-          width="64"
-          src="img/help/strafe.png"
-          height="64"
-        />
-      </td>
-      <td>
-        Click and drag the <span class="b">slide control</span> to move laterally in any direction as though your are
-        stepping sideways or moving up or down in an elevator within the scene.
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <img
-          width="64"
-          src="img/help/headtilt.png"
-          height="64"
-        />
-      </td>
-      <td>
-        Click and drag the <span class="b">head tilt control</span> to change the view as though tilting your head up,
-        down, left, or right while observing the scene. For example, walk under a bridge span and tilt up to observe the
-        structure beneath the deck.
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <img
-          width="64"
-          src="img/help/home.png"
-          height="64"
-        />
-      </td>
-      <td>
-        Click the <span class="b">home control</span> to move back to a position where the whole bridge is visible.
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <img
-          width="64"
-          src="img/help/drive.png"
-          height="64"
-        />
-      </td>
-      <td>
-        Click and drag the <span class="b">truck view control</span> to see what the truck driver sees as she drives
-        over the bridge. Drag the mouse left, right, up, and down to see all around.
+        <ul>
+          <li><span class="b">Walk.</span> Click over the icon and drag to walk through the animation.</li>
+          <li>
+            <span class="b">Pan.</span> Click over the icon and drag to shift horizontally and vertically without going
+            forward or back.
+          </li>
+          <li>
+            <span class="b">Head turn.</span> Click over the icon and drag to turn your head while standing still.
+          </li>
+          <li><span class="b">Home.</span> Click to move back to the starting view of the whole bridge.</li>
+          <li>
+            <span class="b">Truck view.</span> Click the icon to see what the truck driver does as she traverses the
+            bridge. Drag to turn your head. Click on walk, pan, head turn, or home to quit the truck view.
+          </li>
+          <li>
+            <span class="b">Pause/play.</span> Click to pause or unpause the animation. If the test has failed, click to
+            see the failure again.
+          </li>
+          <li>
+            <span class="b">Settings.</span> Click to show or hide the settings dialog. Same as selecting
+            <span class="b">Animation controls</span> in the View menu.
+          </li>
+        </ul>
       </td>
     </tr>
   </table>
@@ -2139,8 +2074,8 @@
       src="img/help/chekmark.png"
     />
     The <b>Exaggeration</b>check box is in the
-    <topic-link name="hlp_animation_controls">animation controls palette</topic-link>. If switched on, the bending of
-    the bridge is exaggerated by a factor of 10, to show more clearly how truss
+    <topic-link name="hlp_animation_controls">animation controls</topic-link>. If switched on, the bending of the bridge
+    is exaggerated by a factor of 20, to show more clearly how truss
     <topic-popup name="glos_members">members</topic-popup> shorten and elongate as they carry load. If this option is
     off, <topic-popup name="glos_displacement">displacements</topic-popup> are not exaggerated.
   </p>
@@ -2159,12 +2094,12 @@
   </p>
   <h2 class="btop">Notes and tips</h2>
   <p>
-    If you have a computer that does not perform well with the game-quality animation graphics, use the test menu to
-    check the
-    <topic-link name="hlp_old_style_graphics">use old-style graphics</topic-link> checkbox.
+    Once the animation starts, exaggeration and member colors options can be turned off to make your bridge appear as
+    realistic as possible.
   </p>
   <p>
-    Exaggeration and member colors options should be turned off to make your bridge appear as realistic as possible.
+    Shadows in the animation can tax the graphics hardware of your computer. If the animation is slow or rough, turning
+    them off may be an improvement.
   </p>
 </ng-template>
 <ng-template topic-name="hlp_load_test_status">
@@ -2568,7 +2503,6 @@
   <p class="in1"><topic-popup name="hlp_drawing_board_button">Drawing board</topic-popup></p>
   <p class="in1"><topic-popup name="hlp_load_test_button">Load test</topic-popup></p>
   <p class="in1"><topic-popup name="hlp_show_animation">Show animation</topic-popup></p>
-  <p class="in1"><topic-popup name="hlp_old_style_graphics">Use old-style graphics</topic-popup></p>
   <p class="in1"><topic-popup name="hlp_auto_correct_errors">Auto-correct errors</topic-popup></p>
   <p>Report</p>
   <p class="in1"><topic-popup name="hlp_report_cost">Cost calculations</topic-popup></p>
@@ -2798,28 +2732,6 @@
   <p>
     It is important to recognize that these limitations exist. But it is equally important to understand
     <topic-link name="hlp_realistic">what is realistic about the Bridge Designer.</topic-link>
-  </p>
-</ng-template>
-<ng-template topic-name="hlp_old_style_graphics">
-  <h1>Use old-style graphics check box</h1>
-  <p>
-    <img src="img/help/legacygraphics.png" /> The Cloud Edition load test animation uses a web brower technology called
-    WebGL2 to let you move around the bridge while it is being tested and to see what the truck driver sees as she
-    traverses the bridge. Some computers and browsers may not support WebGL2. If you seen an error message or nothing
-    happens when you select the <topic-link name="hlp_load_test3">load test animation</topic-link>, or if your computer
-    misbehaves in some other way, then you probably have one of these.
-  </p>
-  <p>
-    Fix the problem by using your browser's reload button to restart the Bridge Designer, then check the menu entry at
-    <span class="b">tools</span>, <span class="b">use old-style graphics</span>. This causes the 3D
-    <topic-link name="hlp_load_test3">load test animation</topic-link> to be shown using basic graphics that should work
-    on all computers. The down side is that you get only one view of your bridge. Fly around and through it isn't
-    possible.
-  </p>
-  <h2 class="btop">Notes and tips</h2>
-  <p>
-    Newer computers running a Chromium-based browser like Google Chrome or Microsoft Edge support WebGL2 on most
-    computers. Firefox also works with some minor degradation of features.
   </p>
 </ng-template>
 <!-- edited -->
@@ -3585,14 +3497,6 @@
       Sit back and watch. The <span class="bd-emph">Bridge Designer</span> will perform the load test, display the
       <topic-link name="hlp_load_test3">load test animation,</topic-link> and update the
       <topic-link name="hlp_load_test_status">load test status</topic-link> display.
-      <ul>
-        <li>
-          If the animation does not appear, you may have a computer that's incompatible with the advanced graphics
-          features of the Cloud Edition. See the
-          <topic-link name="hlp_old_style_graphics">Use Old-Style Graphics menu item</topic-link> to switch to basic
-          graphics that virtually all computers support.
-        </li>
-      </ul>
     </li>
     <li>
       Once the load test is complete, click the

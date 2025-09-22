@@ -42,39 +42,31 @@ export const HELP_INDEX_DATA: HelpIndexData[] = [
   },
   {
     id: 'hlp_animation_controls',
-    title: 'Animation controls palette',
-    text: 'use tools animation controls palette change aspects load test animation click play button start rest' +
-          'art animation click pause button temporarily halt animation click rewind button reset animation star' +
-          'ting point load applied bridge move animation speed slider change speed truck vary 0.5 30km per hour' +
-          ' press drop button reveal hide additional animation controls additional controls visible check unche' +
-          'ck boxes display hide various animation features shadows controls whether sun casts shadows within s' +
-          'imulated scene sky controls whether sky drawn using realistic graphic includes clouds sun hills dist' +
-          'ance simple blue background terrain controls whether ground water around bridge drawn abutments cont' +
-          'rols whether bridge abutments road surfaces drawn colors controls whether member forces depicted col' +
-          'ors box checked compression represented red tension blue load moves across bridge deck otherwise fla' +
-          't gray used erosion controls whether terrain color adjusted depict soil erosion steep slopes note co' +
-          'mputers may properly draw eroded terrain due bugs graphics card drivers terrain strangely colored di' +
-          'sappears erosion checked keep control unchecked state exaggeration controls whether member deflectio' +
-          'ns exaggerated make visible. unchecked animation realistic checked changes shape truss load multipli' +
-          'ed 20 order make visible truck controls whether cartoon truck loading shown hidden options missing m' +
-          'odified old style graphics selected notes tips use animation view controls walk bridge site animatio' +
-          'n controls palette normally displayed whenever load test design palette automatically hidden return ' +
-          'drawing board manually close controls make visible view animation controls menu item initiate load t' +
-          'est play button automatically depressed pause must use play button restart smoothness animation depe' +
-          'nds speed computers processor graphics system motion looks jerky try turning animation features turn' +
-          'ing shadows likely greatest effect'
+    title: 'Animation controls',
+    text: 'dialog provides various options modify animations appearance look around animation play/pause see an' +
+          'imation view controls shadows controls whether sun casts shadows within simulated scene sky controls' +
+          ' whether sky drawn clouds sun hills horizon simple blue background terrain controls whether ground w' +
+          'ater around bridge drawn wind turbine controls whether wind generator close bridge drawn abutments c' +
+          'ontrols whether bridge abutments road surfaces drawn truck controls whether cartoon truck loading sh' +
+          'own hidden colors controls whether member forces depicted colors box checked compression represented' +
+          ' red tension blue load moves across bridge deck color brightness corresponds intense loading load in' +
+          'dicated flat gray exaggeration controls whether member deflections exaggerated make visible unchecke' +
+          'd animation realistic checked changes shape truss load multiplied 20 order make visible move speed s' +
+          'lider change speed truck move brightness slider account differences displays making whole image dark' +
+          'er brighter notes tips smoothness animation depends speed computers processor graphics system motion' +
+          ' looks jerky try turning animation features shadows likely greatest effect slowing truck speed makes' +
+          ' easier see members take release load test proceeds turning colors exaggeration provides realistic v' +
+          'iew bridge job'
   },
   {
     id: 'hlp_animation_view_controls',
     title: 'Animation view controls',
-    text: 'animation view controls move rotate viewpoint load test animation within scene creating impression f' +
-          'lying bridge normally shown faded colors left side animation screen shown pass mouse controls bright' +
-          'en full color click drag walk control move forward turn left right scene though walking dragging upw' +
-          'ard moves forward dragging downward moves rear click drag slide control move laterally direction tho' +
-          'ugh stepping sideways moving elevator within scene click drag head tilt control change view though t' +
-          'ilting head left right observing scene example walk bridge span tilt observe structure beneath deck ' +
-          'click home control move back position whole bridge visible click drag truck view control see truck d' +
-          'river sees drives bridge drag mouse left right see around'
+    text: 'column seven faded icons displayed top animation image light mouse gets close walk click icon drag w' +
+          'alk animation pan click icon drag shift horizontally vertically without going forward back head turn' +
+          ' click icon drag turn head standing still home click move back starting view whole bridge truck view' +
+          ' click icon see truck driver traverses bridge drag turn head click walk pan head turn home quit truc' +
+          'k view pause/play click pause unpause animation test failed click see failure settings click show hi' +
+          'de settings dialog selecting animation controls view menu'
   },
   {
     id: 'glos_arch_abutments',
@@ -805,13 +797,13 @@ export const HELP_INDEX_DATA: HelpIndexData[] = [
           'mber adding new required members. modifications might successful depending type extent instability s' +
           'till best keep option switched unless theres good reason turn show animation check box test menu swi' +
           'tched load test animation displayed every load test animation shown user returned immediately drawin' +
-          'g board mode load test exaggeration check box animation controls palette switched bending bridge exa' +
-          'ggerated factor 10 show clearly truss members shorten elongate carry load option displacements exagg' +
-          'erated member colors check box animation controls palette switched members change color animation sh' +
-          'ow magnitude member force red compression blue tension intense color closer member failure switched ' +
-          'members change color animation notes tips computer perform well game quality animation graphics use ' +
-          'test menu check use old style graphics checkbox exaggeration member colors options turned make bridg' +
-          'e appear realistic possible'
+          'g board mode load test exaggeration check box animation controls switched bending bridge exaggerated' +
+          ' factor 20 show clearly truss members shorten elongate carry load option displacements exaggerated m' +
+          'ember colors check box animation controls palette switched members change color animation show magni' +
+          'tude member force red compression blue tension intense color closer member failure switched members ' +
+          'change color animation notes tips animation starts exaggeration member colors options turned make br' +
+          'idge appear realistic possible shadows animation tax graphics hardware computer animation slow rough' +
+          ' turning may improvement'
   },
   {
     id: 'hlp_load_test_status',
@@ -829,25 +821,23 @@ export const HELP_INDEX_DATA: HelpIndexData[] = [
     text: 'design bridge go back one step go forward one step complete stable structural model must run simulat' +
           'ed load test ensure members design strong enough carry loads prescribed design specification 5 load ' +
           'test design click load test button sit back watch bridge designer perform load test display load tes' +
-          't animation update load test status display animation appear may computer thats incompatible advance' +
-          'd graphics features cloud edition see use old style graphics menu item switch basic graphics virtual' +
-          'ly computers support load test complete click drawing board button return drawing board notes tips c' +
-          'lick load test mode button bridge designer automatically perform following actions create pin roller' +
-          ' supports appropriate locations structural model calculate weight members apply forces structure loa' +
-          'ds calculate weight concrete bridge deck asphalt wearing surface floor beams see design specificatio' +
-          'n 5 information apply corresponding loads structure apply aashto h25 truck loading structure multipl' +
-          'e positions representing movement truck across bridge check structural model stability structural mo' +
-          'del unstable bridge designer attempt fix problem unsuccessful stop load test inform problem provide ' +
-          'suggestions fixing return drawing board perform structural analysis considering combined effects bri' +
-          'dge self weight truck loading truck position calculate displacement joint member force member struct' +
-          'ural model member compare calculated member forces truck positions determine absolute maximum tensio' +
-          'n force absolute maximum compression force. critical forces determine whether given member safe calc' +
-          'ulate tensile strength compressive strength member member compare absolute maximum tension force ten' +
-          'sile strength compare absolute maximum compression force compressive strength force exceeds strength' +
-          ' either case member unsafe member safe prepare display load test animation update load test status d' +
-          'isplay save time run load test without displaying load test animation use load test options switch a' +
-          'nimation dont want bridge designer attempt automatically fix unstable structure use load test option' +
-          's switch feature'
+          't animation update load test status display load test complete click drawing board button return dra' +
+          'wing board notes tips click load test mode button bridge designer automatically perform following ac' +
+          'tions create pin roller supports appropriate locations structural model calculate weight members app' +
+          'ly forces structure loads calculate weight concrete bridge deck asphalt wearing surface floor beams ' +
+          'see design specification 5 information apply corresponding loads structure apply aashto h25 truck lo' +
+          'ading structure multiple positions representing movement truck across bridge check structural model ' +
+          'stability structural model unstable bridge designer attempt fix problem unsuccessful stop load test ' +
+          'inform problem provide suggestions fixing return drawing board perform structural analysis consideri' +
+          'ng combined effects bridge self weight truck loading truck position calculate displacement joint mem' +
+          'ber force member structural model member compare calculated member forces truck positions determine ' +
+          'absolute maximum tension force absolute maximum compression force. critical forces determine whether' +
+          ' given member safe calculate tensile strength compressive strength member member compare absolute ma' +
+          'ximum tension force tensile strength compare absolute maximum compression force compressive strength' +
+          ' force exceeds strength either case member unsafe member safe prepare display load test animation up' +
+          'date load test status display save time run load test without displaying load test animation use loa' +
+          'd test options switch animation dont want bridge designer attempt automatically fix unstable structu' +
+          're use load test options switch feature'
   },
   {
     id: 'glos_loads',
@@ -991,8 +981,8 @@ export const HELP_INDEX_DATA: HelpIndexData[] = [
           'ned files exit edit select delete undo redo go back go forward go iteration increase member size dec' +
           'rease member size remember work view design tools animation controls member list rulers title block ' +
           'member numbers symmetry guides template grid resolution drawing tools joint tool member tool select ' +
-          'tool eraser tool test drawing board load test show animation use old style graphics auto correct err' +
-          'ors report cost calculations load test results help tip day'
+          'tool eraser tool test drawing board load test show animation auto correct errors report cost calcula' +
+          'tions load test results help tip day'
   },
   {
     id: 'glos_modulus_of_elasticity',
@@ -1695,16 +1685,6 @@ export const HELP_INDEX_DATA: HelpIndexData[] = [
     text: 'member unsafe internal member force exceeds strength member member unsafe tension maximum tension fo' +
           'rce exceeds tensile strength member unsafe compression maximum compression force exceeds compressive' +
           ' strength'
-  },
-  {
-    id: 'hlp_old_style_graphics',
-    title: 'Use old-style graphics check box',
-    text: 'cloud edition load test animation uses game quality high speed graphics let move around bridge teste' +
-          'd see truck driver sees traverses bridge computers browsers support advanced graphics nothing happen' +
-          's select load test animation computer misbehaves way one fix problem restarting bridge designer chec' +
-          'king menu entry tools use old style graphics causes 3d load test animation shown using basic graphic' +
-          's work computers notes tips newer computers running chromium based browsers like google chrome micro' +
-          'soft edge support cloud edition graphics features firefox also works degradation features'
   },
   {
     id: 'hlp_using_undo',

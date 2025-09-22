@@ -69,7 +69,6 @@ export class MenusComponent implements AfterViewInit {
     this.uiStateService.registerToggleMenuItem(this.mainMenu, 'animationControls', this.eventBrokerService.animationControlsToggle);
     this.uiStateService.registerToggleMenuItem(this.mainMenu, 'autoCorrect', this.eventBrokerService.autoCorrectToggle);
     this.uiStateService.registerToggleMenuItem(this.mainMenu, 'guides', this.eventBrokerService.guidesToggle);
-    this.uiStateService.registerToggleMenuItem(this.mainMenu, 'legacyGraphics', this.eventBrokerService.legacyGraphicsToggle);
     this.uiStateService.registerToggleMenuItem(this.mainMenu, 'memberList', this.eventBrokerService.memberTableToggle);
     this.uiStateService.registerToggleMenuItem(this.mainMenu, 'memberNumbers', this.eventBrokerService.memberNumbersToggle);
     this.uiStateService.registerToggleMenuItem(this.mainMenu, 'rulers', this.eventBrokerService.rulersToggle);
