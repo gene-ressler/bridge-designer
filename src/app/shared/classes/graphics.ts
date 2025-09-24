@@ -190,8 +190,10 @@ export class Rectangle2D implements Rectangle2DInterface {
     if (pts.length === 0) {
       return this.makeEmpty();
     }
-    let ax = pts[0].x, bx = ax;
-    let ay = pts[0].y, by = ay;
+    let ax = pts[0].x,
+      bx = ax;
+    let ay = pts[0].y,
+      by = ay;
     for (let i = 1; i < pts.length; ++i) {
       const x = pts[i].x;
       const y = pts[i].y;
@@ -641,18 +643,27 @@ export class Graphics {
     ctx.setTransform(savedTransform);
   }
 
-  /** Compute a color with options to modify intensity and blueness of the result. */
-  public static computeColor(
-    r: number,
-    g: number,
-    b: number,
-    intensification: number = 0,
-    blueification: number = 0,
-  ): string {
-    r += intensification * (255 - r) - 0.25 * blueification * r;
-    g += intensification * (255 - g) - 0.25 * blueification * g;
-    b += intensification * (255 - b) + blueification * (255 - b);
-    return `rgb(${Math.trunc(r)}, ${Math.trunc(g)}, ${Math.trunc(b)})`;
+  /** Compute a color with options to modify intensity and tint the result. Positive tint is blue. Negative is red. */
+  public static computeColor(r: number, g: number, b: number, intensification: number = 0, tint: number = 0): string {
+    intensification = Utility.clamp(intensification, 0, 1);
+    tint = Utility.clamp(tint, -1, 1);
+    if (tint > 0) {
+      r += intensification * (255 - r) - 0.25 * tint * r;
+      g += intensification * (255 - g) - 0.25 * tint * g;
+      b += intensification * (255 - b) + tint * (255 - b);
+    } else if (tint < 0) {
+      r += intensification * (255 - r) - tint * (255 - r);
+      b += intensification * (255 - b) + 0.25 * tint * b;
+      g += intensification * (255 - g) + 0.25 * tint * g;
+    } else {
+      r += intensification * (255 - r);
+      g += intensification * (255 - g);
+      b += intensification * (255 - b);
+    }
+    r = Utility.clamp(r, 0, 255) >>> 0;
+    g = Utility.clamp(g, 0, 255) >>> 0;
+    b = Utility.clamp(b, 0, 255) >>> 0;
+    return `rgb(${r}, ${g}, ${b})`;
   }
 
   /** Sets up lineDashOffset and lineDash in given context with offset that assures a good look. */

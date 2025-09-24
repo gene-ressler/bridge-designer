@@ -80,6 +80,8 @@ export class WorkflowManagementService {
       switch (eventInfo.data) {
         case 0: // drafting
           eventBrokerService.uiModeRequest.next({ origin: EventOrigin.SERVICE, data: 'drafting' });
+          // Refresh drafting panel in case analysis changed member coloring.
+          eventBrokerService.draftingPanelInvalidation.next({ origin: EventOrigin.SERVICE, data: 'graphic' });
           break;
         case 1: // test
           if (autoFix) {

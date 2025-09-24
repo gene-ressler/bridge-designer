@@ -11,7 +11,6 @@ export class DesignRenderingService {
   ) {}
 
   public render(ctx: CanvasRenderingContext2D): void {
-    // TODO: The drafting canvas is full screen size. Could clear just the parent element's client area.
     Graphics.clearCanvas(ctx);
     this.siteRenderingService.render(ctx);
     this.designBridgeRenderingService.renderDesignBridge(ctx);

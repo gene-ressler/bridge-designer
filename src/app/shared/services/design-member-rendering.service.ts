@@ -5,19 +5,33 @@ import { DesignJointRenderingService } from './design-joint-rendering.service';
 import { InventoryService, Shape } from './inventory.service';
 import { ViewportTransform2D } from './viewport-transform.service';
 import { EventBrokerService, EventOrigin } from './event-broker.service';
+import { AnalysisValidityService } from '../../features/controls/management/analysis-validity.service';
+
+const enum Failure {
+  NONE,
+  TENSION,
+  COMPRESSION,
+}
+
+const FAILURE_COLOR_TRANSFORMS = [
+  [1, 0],
+  [1, 1],
+  [-1, -0.5],
+];
 
 @Injectable({ providedIn: 'root' })
 export class DesignMemberRenderingService {
-  // Member color arrays are indexed by material.
-  public static readonly NORMAL_COLORS: string[] = DesignMemberRenderingService.createColors(0, 0);
-  public static readonly SELECTED_COLORS: string[] = DesignMemberRenderingService.createColors(0, 0.9);
-  public static readonly HOT_COLORS: string[] = DesignMemberRenderingService.createColors(0.3, 0);
-  public static readonly HOT_SELECTED_COLORS: string[] = DesignMemberRenderingService.createColors(0.3, 0.9);
+  // Member color arrays are indexed by failure type, then material.
+  public static readonly NORMAL_COLORS: string[][] = DesignMemberRenderingService.createColors(0, 0);
+  public static readonly SELECTED_COLORS: string[][] = DesignMemberRenderingService.createColors(0, 0.9);
+  public static readonly HOT_COLORS: string[][] = DesignMemberRenderingService.createColors(0.3, 0);
+  public static readonly HOT_SELECTED_COLORS: string[][] = DesignMemberRenderingService.createColors(0.3, 0.9);
 
-  public static readonly INNER_COLORS: string[] = DesignMemberRenderingService.createInnerColors(0, 0);
-  public static readonly SELECTED_INNER_COLORS: string[] = DesignMemberRenderingService.createInnerColors(0, 0.9);
-  public static readonly HOT_INNER_COLORS: string[] = DesignMemberRenderingService.createInnerColors(0.3, 0);
-  public static readonly HOT_SELECTED_INNER_COLORS: string[] = DesignMemberRenderingService.createInnerColors(0.3, 0.9);
+  public static readonly INNER_COLORS: string[][] = DesignMemberRenderingService.createInnerColors(0, 0);
+  public static readonly SELECTED_INNER_COLORS: string[][] = DesignMemberRenderingService.createInnerColors(0, 0.9);
+  public static readonly HOT_INNER_COLORS: string[][] = DesignMemberRenderingService.createInnerColors(0.3, 0);
+  // prettier-ignore
+  public static readonly HOT_SELECTED_INNER_COLORS: string[][] = DesignMemberRenderingService.createInnerColors(0.3, 0.9);
   public static readonly SLENDERNESS_FAIL_MARK: string = 'magenta';
 
   public static readonly CENTER_LINE_DASH: number[] = [10, 4, 4, 4];
@@ -30,6 +44,7 @@ export class DesignMemberRenderingService {
   private showMemberNumbers = false;
 
   constructor(
+    private readonly analysisValidityService: AnalysisValidityService,
     inventoryService: InventoryService,
     private readonly viewportTransform: ViewportTransform2D,
     eventBrokerService: EventBrokerService,
@@ -57,34 +72,32 @@ export class DesignMemberRenderingService {
   }
 
   /** Create a set of member colors indexed by material with optional intensity and blueness modifications. */
-  private static createColors(intensification: number = 0, blueification: number = 0): string[] {
-    return [
-      Graphics.computeColor(96, 96, 96, intensification, blueification),
-      Graphics.computeColor(64, 64, 64, intensification, blueification),
-      Graphics.computeColor(192, 192, 192, intensification, blueification),
-    ];
+  private static createColors(intensification: number = 0, blueification: number = 0): string[][] {
+    // Extra tints correspond to FailureType.
+    return FAILURE_COLOR_TRANSFORMS.map(([a, b]) => [
+      Graphics.computeColor(96, 96, 96, intensification, a * blueification + b),
+      Graphics.computeColor(64, 64, 64, intensification, a * blueification + b),
+      Graphics.computeColor(192, 192, 192, intensification, a * blueification + b),
+    ]);
   }
 
   /** Create a set of colors used for the insides of tube cross-sections, indexed by material with optional intensity and blueness modifications. */
-  private static createInnerColors(intensification: number = 0, blueification: number = 0): string[] {
-    return [
-      Graphics.computeColor(192, 192, 192, intensification, blueification),
-      Graphics.computeColor(128, 128, 128, intensification, blueification),
-      Graphics.computeColor(224, 224, 224, intensification, blueification),
-    ];
+  private static createInnerColors(intensification: number = 0, blueification: number = 0): string[][] {
+    // Extra tints correspond to FailureType.
+    return FAILURE_COLOR_TRANSFORMS.map(([a, b]) => [
+      Graphics.computeColor(192, 192, 192, intensification, a * blueification + b),
+      Graphics.computeColor(128, 128, 128, intensification, a * blueification + b),
+      Graphics.computeColor(224, 224, 224, intensification, a * blueification + b),
+    ]);
   }
 
   // TODO: Factor common functionality of render and renderHot.
-  public render(
-    ctx: CanvasRenderingContext2D,
-    member: Member,
-    isSelected: boolean,
-    isMarked: boolean,
-  ): void {
-    const outerColor = this.outerColorsFromSelectionState(isSelected)[member.material.index];
+  public render(ctx: CanvasRenderingContext2D, member: Member, isSelected: boolean, isMarked: boolean): void {
+    let failure = this.getFailure(member);
+    const outerColor = this.outerColorsFromSelectionState(isSelected)[failure][member.material.index];
     const innerColor =
       member.shape.section.shortName === 'Tube'
-        ? this.innerColorsFromSelectionState(isSelected)[member.shape.section.index]
+        ? this.innerColorsFromSelectionState(isSelected)[failure][member.shape.section.index]
         : undefined;
     this.renderInWorldCoords(
       ctx,
@@ -98,16 +111,12 @@ export class DesignMemberRenderingService {
     );
   }
 
-  public renderHot(
-    ctx: CanvasRenderingContext2D,
-    member: Member,
-    isSelected: boolean,
-    isMarked: boolean,
-  ): void {
-    const outerColor = this.hotOuterColorsFromSelectionState(isSelected)[member.material.index];
+  public renderHot(ctx: CanvasRenderingContext2D, member: Member, isSelected: boolean, isMarked: boolean): void {
+    let failure = this.getFailure(member);
+    const outerColor = this.hotOuterColorsFromSelectionState(isSelected)[failure][member.material.index];
     const innerColor =
       member.shape.section.shortName === 'Tube'
-        ? this.hotInnerColorsFromSelectionState(isSelected)[member.shape.section.index]
+        ? this.hotInnerColorsFromSelectionState(isSelected)[failure][member.shape.section.index]
         : undefined;
     this.renderInWorldCoords(
       ctx,
@@ -119,6 +128,20 @@ export class DesignMemberRenderingService {
       isMarked ? DesignMemberRenderingService.SLENDERNESS_FAIL_MARK : undefined,
       this.showMemberNumbers || isSelected ? member.number : undefined,
     );
+  }
+
+  /** Returns the failure status of a given member or NONE if there's no valid analysis no failure occurred. */
+  private getFailure(member: Member): Failure {
+    if (!this.analysisValidityService.isLastAnalysisValid) {
+      return Failure.NONE;
+    }
+    if (member.tensionForceStrengthRatio > 1) {
+      return Failure.TENSION;
+    }
+    if (member.compressionForceStrengthRatio > 1) {
+      return Failure.COMPRESSION;
+    }
+    return Failure.NONE;
   }
 
   public clear(ctx: CanvasRenderingContext2D, member: Member): void {
@@ -142,19 +165,19 @@ export class DesignMemberRenderingService {
     return this.viewportTransform.viewportToWorldDistance(widthViewport);
   }
 
-  private outerColorsFromSelectionState(isSelected: boolean): string[] {
+  private outerColorsFromSelectionState(isSelected: boolean): string[][] {
     return isSelected ? DesignMemberRenderingService.SELECTED_COLORS : DesignMemberRenderingService.NORMAL_COLORS;
   }
 
-  private hotOuterColorsFromSelectionState(isSelected: boolean): string[] {
+  private hotOuterColorsFromSelectionState(isSelected: boolean): string[][] {
     return isSelected ? DesignMemberRenderingService.HOT_SELECTED_COLORS : DesignMemberRenderingService.HOT_COLORS;
   }
 
-  private innerColorsFromSelectionState(isSelected: boolean): string[] {
+  private innerColorsFromSelectionState(isSelected: boolean): string[][] {
     return isSelected ? DesignMemberRenderingService.SELECTED_INNER_COLORS : DesignMemberRenderingService.INNER_COLORS;
   }
 
-  private hotInnerColorsFromSelectionState(isSelected: boolean): string[] {
+  private hotInnerColorsFromSelectionState(isSelected: boolean): string[][] {
     return isSelected
       ? DesignMemberRenderingService.HOT_SELECTED_INNER_COLORS
       : DesignMemberRenderingService.HOT_INNER_COLORS;
@@ -239,6 +262,7 @@ export class DesignMemberRenderingService {
     const savedTextAlign = ctx.textAlign;
     const savedTextBaseline = ctx.textBaseline;
     const savedFillStyle = ctx.fillStyle;
+    const savedStrokeStyle = ctx.strokeStyle;
 
     const x = (a.x + b.x) * 0.5;
     const y = (a.y + b.y) * 0.5 + 1; // +1 centers on horizontal-ish members.
@@ -261,6 +285,7 @@ export class DesignMemberRenderingService {
     ctx.fillStyle = 'black';
     ctx.fillText(number, x, y);
 
+    ctx.strokeStyle = savedStrokeStyle;
     ctx.fillStyle = savedFillStyle;
     ctx.textBaseline = savedTextBaseline;
     ctx.textAlign = savedTextAlign;
