@@ -63,19 +63,31 @@ sways far to the right under dead load, what should the truck do when it reaches
 teleport backward or ignore one of the two overlapping chunks of roadway? If ignore, which?
 
 We chose a "no teleport" policy. The truck should follow the roadway smoothly. Where the abutment gap is large, it
-should "fly" across it. Let L be the x-coordinate of the leftmost deck joint with only dead load applied and similarly R
-the rightmost. To achieve the policy:
+should "fly" across it.
+
+Let L be the x-coordinate of the left edge of the deck (a bit left of the leftmost joint) with only dead load applied
+and similarly R the right edge. To achieve the policy:
 
 - Follow the roadway centerline with `t` = x until `t` = L.
 - The parameter space from L to R is now used to interpolate among the deck joints and consequently among analysis load
-  cases. If there are N of these, then `(t - L) / (R - L)` is the fraction of the deck the truck has traversed.
+  cases. If there are N of these, then `(t - L) / (R - L)` is the fraction of the deck the truck's front tire has
+  traversed.
+  - Note however that member force and deflection interpolations continue until the _rear_ tire leaves the deck.
 - Upon reaching R, again follow the roadway centerline with x=t.
 
-This can result in instantaneous jumps in the y-direction if deck end and terrain height differ. We won't worry about
-that, since major elevation differences wouldn't be practical designs.
+This logic can result in instantaneous jumps of the truck in the y-direction if deck end and terrain height differ. We
+won't worry about that, since major elevation differences wouldn't be practical anyway.
 
 One important effect of this definition of parameter is that a valid analysis is needed to set one. This requires
 interpolators to be created "lazily" when an analysis is guaranteed present.
+
+Another detail is how to interpolate the small sections of deck that form cantilevers from the left deck edge to the
+leftmost joint - the roadway over the abutment joint pillow - and similarly for the right edge. This is straightforward
+for contact points. For member forces and joint deflections, however, we can't do better than to use values
+corresponding to the first and last deck joint.
+
+- Truck tire contact points are linear extrapolations of the leftmost and rightmost deck panels.
+- Displacements can reasonably be extrapolated from the leftmost and rightmost load case pairs, too, even though this
 
 ### Interpolators and their data sources
 

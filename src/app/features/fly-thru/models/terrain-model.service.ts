@@ -287,7 +287,7 @@ export class TerrainModelService {
 
   /**
    * Builds the y-axis profile of the road centerline. It's two straight ramps with
-   * parabolic blending to he bridge deck wear surface.
+   * parabolic blending to the bridge deck wear surface.
    */
   private buildRoadCenterLine(): CenterlinePost[] {
     const conditions = this.bridgeService.designConditions;

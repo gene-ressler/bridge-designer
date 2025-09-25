@@ -8,6 +8,7 @@ import { AnalysisService } from '../../../shared/services/analysis.service';
 import { SiteConstants } from '../../../shared/classes/site-constants';
 import { COLLAPSE_ANALYSIS } from '../pane/constants';
 import { FlyThruSettingsService } from './fly-thru-settings.service';
+import { Utility } from '../../../shared/classes/utility';
 
 /** Source data for an interpolator. Has several purpose-built implementations. */
 interface InterpolatorSource {
@@ -51,15 +52,19 @@ type InterpolatorContext = {
   t: number;
   /** t scaled to bridge panel coordinate space. */
   tBridge: number;
-  /** Whether tBridge is in the range [0..maxLoadCaseIndex]. */
-  isLoadOnBridge: boolean;
-  /** Value in [0..1) showing progress along the current panel. */
+  /** Whether the interpolation point is on the deck. */
+  isOnDeck: boolean;
+  /**
+   * Value in [0..1) showing progress along the current panel including the "pseudopanel" where the front tire
+   * has left the bridge, but the right has not. Also slightly exceeds the range to account for the left
+   * and right deck cantilevers. Set to NaN when ont on any panel.
+   */
   tPanel: number;
-  /** Left joint and load case index of the current panel. */
+  /** Left joint and load case index of the current panel. Zero when not on the deck. */
   leftLoadCase: number;
   /**
-   * Right joint and load case index of the current panel or  zero if leftLoadCase is
-   * maxLoadCaseIndex. Appropriate because load case 0 is "no live load.""
+   * Right load case to use for force and joint location interpolation. NaN when interpolation is not relevant,
+   * i.e. load is not on a panel or the pseudopanel (see above).
    */
   rightLoadCase: number;
 };
@@ -159,7 +164,7 @@ class SourceInterpolator implements Interpolator {
    * used for fetching alternate position data with the current load case.
    */
   private getWayPoint(out: vec2, ctx: InterpolatorContext = this.ctx): vec2 {
-    if (ctx.isLoadOnBridge) {
+    if (ctx.isOnDeck) {
       const leftIndex = ctx.leftLoadCase;
       this.getExaggeratedDisplacedJointLocation(this.tmpJointA, leftIndex);
       this.getExaggeratedDisplacedJointLocation(this.tmpJointB, leftIndex + 1);
@@ -193,19 +198,26 @@ class SourceInterpolator implements Interpolator {
     const panelIndexMax = this.service.bridgeService.designConditions.loadedJointCount - 1;
     const rightmostJointX = this.getExaggeratedJointDisplacementXForDeadLoadOnly(panelIndexMax);
     ctx.tBridge = ((t - leftmostJointX) / (rightmostJointX - leftmostJointX)) * panelIndexMax;
-    if (t < leftmostJointX || t >= rightmostJointX) {
-      // Not on bridge case.
-      ctx.tPanel = ctx.leftLoadCase = ctx.rightLoadCase = NaN;
-      ctx.isLoadOnBridge = false;
+    const cantilever = SiteConstants.DECK_CANTILEVER;
+    const hasReachedDeck = t >= leftmostJointX - cantilever;
+    const hasntLeftDeck = t <= rightmostJointX + cantilever;
+    ctx.isOnDeck = hasReachedDeck && hasntLeftDeck;
+    // This remains 0 one panel length left of bridge, as desired for left cantilever.
+    ctx.leftLoadCase = Math.trunc(ctx.tBridge);
+    if (ctx.leftLoadCase === panelIndexMax && hasntLeftDeck) {
+      // Still on right cantilever. Interpolate with last panel.
+      ctx.leftLoadCase = panelIndexMax - 1;
+    }
+    // If truck left of bridge or too far right to use last load case...
+    if (!hasReachedDeck || ctx.leftLoadCase > panelIndexMax) {
+      // Can't interpolate at all.
+      ctx.leftLoadCase = 0;
+      ctx.rightLoadCase = ctx.tPanel = NaN;
       return this;
     }
-    ctx.isLoadOnBridge = true;
-    ctx.leftLoadCase = Math.trunc(ctx.tBridge);
     ctx.tPanel = ctx.tBridge - ctx.leftLoadCase;
-    ctx.rightLoadCase = ctx.leftLoadCase + 1;
-    if (ctx.rightLoadCase >= panelIndexMax) {
-      ctx.rightLoadCase = 0; // Off deck to the right: dead load only.
-    }
+    // If front tire has left the deck, but back hasn't, right load case is dead load only.
+    ctx.rightLoadCase = ctx.leftLoadCase === panelIndexMax ? 0 : ctx.leftLoadCase + 1;
     return this;
   }
 
@@ -324,20 +336,20 @@ class AnalysisInterpolationSource implements InterpolatorSource {
 
   constructor(private readonly analysisService: AnalysisService) {}
 
-  /** 
-   * Returns the interpolated joint displacement for the given parameter. 
+  /**
+   * Returns the interpolated joint displacement for the given parameter.
    * Parameters right of the failure load case, if any, interpolate to the failure.
    */
   getJointDisplacement(out: vec2, index: number, ctx: InterpolatorContext): vec2 {
     const failureLoadCase = this.analysisService.failureLoadCase;
     if (failureLoadCase !== undefined && ctx.tBridge >= failureLoadCase) {
       this.analysisService.getJointDisplacement(out, failureLoadCase, index);
-    } else if (ctx.isLoadOnBridge) {
+    } else if (isNaN(ctx.rightLoadCase)) {
+      this.analysisService.getJointDisplacement(out, 0, index);
+    } else {
       const left = this.analysisService.getJointDisplacement(this.tmpDisplacementA, ctx.leftLoadCase, index);
       const right = this.analysisService.getJointDisplacement(this.tmpDisplacementB, ctx.rightLoadCase, index);
       vec2.lerp(out, left, right, ctx.tPanel);
-    } else {
-      this.analysisService.getJointDisplacement(out, 0, index);
     }
     return out;
   }
@@ -347,8 +359,8 @@ class AnalysisInterpolationSource implements InterpolatorSource {
     return this.analysisService.getJointDisplacementX(0, index);
   }
 
-  /** 
-   * Returns the interpolated member force for the given parameter. 
+  /**
+   * Returns the interpolated force on member of given index for the given parameter.
    * Parameters right of the failure load case, if any, interpolate to the failure.
    */
   getMemberForce(index: number, ctx: InterpolatorContext): number {
@@ -356,13 +368,13 @@ class AnalysisInterpolationSource implements InterpolatorSource {
     if (failureLoadCase !== undefined && ctx.tBridge >= failureLoadCase) {
       return this.analysisService.getMemberForce(failureLoadCase, index);
     }
-    if (ctx.isLoadOnBridge) {
-      const leftLoadCaseForce = this.analysisService.getMemberForce(ctx.leftLoadCase, index);
-      const rightLoadCaseForce = this.analysisService.getMemberForce(ctx.rightLoadCase, index);
-      return leftLoadCaseForce + ctx.tPanel * (rightLoadCaseForce - leftLoadCaseForce);
+    if (Number.isNaN(ctx.rightLoadCase)) {
+      // Load is exerting no force on the bridge. Dead load only.
+      return this.analysisService.getMemberForce(0, index);
     }
-    // Dead load only force if not on bridge.
-    return this.analysisService.getMemberForce(0, index);
+    const leftLoadCaseForce = this.analysisService.getMemberForce(ctx.leftLoadCase, index);
+    const rightLoadCaseForce = this.analysisService.getMemberForce(ctx.rightLoadCase, index);
+    return Utility.lerp(leftLoadCaseForce, rightLoadCaseForce, ctx.tPanel);
   }
 }
 

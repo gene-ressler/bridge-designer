@@ -56,6 +56,10 @@ export class Utility {
     return x;
   }
 
+  public static lerp(a: number, b: number, t: number): number {
+    return a + (b - a) * t;
+  }
+
   /** Normalizes the given angle to the range [-pi..pi). */
   public static normalizeAngle(theta: number): number {
     return theta - 2 * Math.PI * Math.round(theta * /* 1 / (2 pi) */ 0.15915494309);

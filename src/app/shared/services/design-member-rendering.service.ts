@@ -71,7 +71,54 @@ export class DesignMemberRenderingService {
     });
   }
 
-  public static getShapeStrokeWidth(shape: Shape): number {
+  /** Renders a member, optionally selected or marked, in its cool state (not moused-over). */
+  public render(ctx: CanvasRenderingContext2D, member: Member, isSelected: boolean, isMarked: boolean): void {
+    this.renderInternal(
+      ctx,
+      member,
+      isSelected,
+      isMarked,
+      DesignMemberRenderingService.OUTER_PALETTE,
+      DesignMemberRenderingService.INNER_PALETTE,
+    );
+  }
+
+  /** Renders a member, optionally selected or marked, in its hot state (moused-over). */
+  public renderHot(ctx: CanvasRenderingContext2D, member: Member, isSelected: boolean, isMarked: boolean): void {
+    this.renderInternal(
+      ctx,
+      member,
+      isSelected,
+      isMarked,
+      DesignMemberRenderingService.HOT_OUTER_PALETTE,
+      DesignMemberRenderingService.HOT_INNER_PALETTE,
+    );
+  }
+
+  /** Clears a rectangle big enough to cover the given member. */
+  public clear(ctx: CanvasRenderingContext2D, member: Member): void {
+    this.viewportTransform.worldToViewportPoint(this.pointA, member.a);
+    this.viewportTransform.worldToViewportPoint(this.pointB, member.b);
+    const pad =
+      2 *
+      Math.max(
+        DesignMemberRenderingService.getShapeStrokeWidth(member.shape),
+        DesignJointRenderingService.JOINT_RADIUS_VIEWPORT,
+      );
+    const toClear = Rectangle2D.fromDiagonalPoints(this.pointA, this.pointB).pad(pad, pad);
+    ctx.clearRect(toClear.x0, toClear.y0, toClear.width, toClear.height);
+  }
+
+  /** Gets the design view width of a member, which is generally not to scale. */
+  public getMemberWidthWorld(member: Member, minWidthViewport?: number): number {
+    let widthViewport: number = this.lineWidths[member.shape.sizeIndex].outer;
+    if (minWidthViewport && widthViewport < minWidthViewport) {
+      widthViewport = minWidthViewport;
+    }
+    return this.viewportTransform.viewportToWorldDistance(widthViewport);
+  }
+
+  private static getShapeStrokeWidth(shape: Shape): number {
     return Math.max(shape.width * 0.07, 4); // min to ensure tube always has an inner color.
   }
 
@@ -93,28 +140,6 @@ export class DesignMemberRenderingService {
       Graphics.computeColor(128, 128, 128, intensification, a * blueification + b),
       Graphics.computeColor(224, 224, 224, intensification, a * blueification + b),
     ]);
-  }
-
-  public render(ctx: CanvasRenderingContext2D, member: Member, isSelected: boolean, isMarked: boolean): void {
-    this.renderInternal(
-      ctx,
-      member,
-      isSelected,
-      isMarked,
-      DesignMemberRenderingService.OUTER_PALETTE,
-      DesignMemberRenderingService.INNER_PALETTE,
-    );
-  }
-
-  public renderHot(ctx: CanvasRenderingContext2D, member: Member, isSelected: boolean, isMarked: boolean): void {
-    this.renderInternal(
-      ctx,
-      member,
-      isSelected,
-      isMarked,
-      DesignMemberRenderingService.HOT_OUTER_PALETTE,
-      DesignMemberRenderingService.HOT_INNER_PALETTE,
-    );
   }
 
   private renderInternal(
@@ -154,27 +179,6 @@ export class DesignMemberRenderingService {
       return Failure.COMPRESSION;
     }
     return Failure.NONE;
-  }
-
-  public clear(ctx: CanvasRenderingContext2D, member: Member): void {
-    this.viewportTransform.worldToViewportPoint(this.pointA, member.a);
-    this.viewportTransform.worldToViewportPoint(this.pointB, member.b);
-    const pad =
-      2 *
-      Math.max(
-        DesignMemberRenderingService.getShapeStrokeWidth(member.shape),
-        DesignJointRenderingService.JOINT_RADIUS_VIEWPORT,
-      );
-    const toClear = Rectangle2D.fromDiagonalPoints(this.pointA, this.pointB).pad(pad, pad);
-    ctx.clearRect(toClear.x0, toClear.y0, toClear.width, toClear.height);
-  }
-
-  public getMemberWidthWorld(member: Member, minWidthViewport?: number): number {
-    let widthViewport: number = this.lineWidths[member.shape.sizeIndex].outer;
-    if (minWidthViewport && widthViewport < minWidthViewport) {
-      widthViewport = minWidthViewport;
-    }
-    return this.viewportTransform.viewportToWorldDistance(widthViewport);
   }
 
   private renderInWorldCoords(
