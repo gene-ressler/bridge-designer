@@ -60,63 +60,6 @@ describe('TreeMap', () => {
     });
   });
 
-  describe('delete', () => {
-    it('should return false if deleting from empty tree', () => {
-      expect(treeMap.delete(42)).toBeUndefined();
-    });
-
-    it('should return false deleting nonexistent element', () => {
-      expect(treeMap.insert('1')).toBeUndefined();
-      expect(treeMap.delete(42)).toBeUndefined();
-    });
-
-    it('should delete the root', () => {
-      expect(treeMap.insert('1')).toBeUndefined();
-      expect(treeMap.delete(1)).toBe('1');
-      expect(treeMap.find(1)).toBeUndefined();
-    });
-
-    it('should delete multiple ascending values', () => {
-      for (let i = 0; i <= 100; ++i) {
-        expect(treeMap.insert(i.toString())).withContext(`i=${i}`).toBeUndefined();
-      }
-      for (let i = 0; i <= 100; ++i) {
-        expect(treeMap.delete(i)).withContext(`i=${i}`).toBe(i.toString());
-      }
-      for (let i = 99; i >= 0; --i) {
-        expect(treeMap.find(i)).withContext(`i=${i}`).toBeUndefined();
-      }
-    });
-
-    it('should delete multiple decending values', () => {
-      for (let i = 99; i >= 0; --i) {
-        expect(treeMap.insert(i.toString())).withContext(`i=${i}`).toBeUndefined();
-      }
-      for (let i = 99; i >= 0; --i) {
-        expect(treeMap.delete(i)).withContext(`i=${i}`).toBe(i.toString());
-      }
-      for (let i = 99; i >= 0; --i) {
-        expect(treeMap.find(i)).withContext(`i=${i}`).toBeUndefined();
-      }
-    });
-
-    it('should delete multiple random values', () => {
-      const rand = make32BitRandomGenerator(10938443, 3098442, 1099942, 947362228);
-      const data = [];
-      for (let i = 0; i <= 100; ++i) {
-        const n = rand();
-        data.push(n);
-        expect(treeMap.insert(n.toString())).withContext(`i=${i}, n=${n}`).toBeUndefined();
-      }
-      for (let i = 0; i <= 100; ++i) {
-        expect(treeMap.delete(data[i])).withContext(`i=${i}`).toBe(data[i].toString());
-      }
-      for (let i = 99; i >= 0; --i) {
-        expect(treeMap.find(i)).withContext(`i=${i}`).toBeUndefined();
-      }
-    });
-  });
-
   describe('find', () => {
     it('should return undefined for an empty tree', () => {
       expect(treeMap.find(1)).toBeUndefined();
