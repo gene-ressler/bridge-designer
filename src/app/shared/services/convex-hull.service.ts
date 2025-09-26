@@ -7,19 +7,23 @@ export class ConvexHullService {
   private readonly pts: Point2DInterface[] = [];
   private readonly orderedPts = new Deque<Point2DInterface>();
 
+  /** Adds given coordinates as a new point for consideration as part of the hull. */
+  public add(x: number, y: number) {
+    this.addPoint(new Point2D(x, y));
+  }
+
+  /** Adds the given point (without copying) for consideration as part of the hull. */
+  public addPoint(pt: Point2DInterface) {
+    this.pts.push(pt);
+  }
+
+  /** Empties the points buffer. */
   public clear(): void {
     this.pts.length = 0;
     this.orderedPts.clear();
   }
 
-  public add(x: number, y: number) {
-    this.addPoint(new Point2D(x, y));
-  }
-
-  public addPoint(pt: Point2DInterface) {
-    this.pts.push(pt);
-  }
-
+  /** Creates the hull, an improper subset of added points. */
   public createHull(hull: Point2DInterface[] = []): Point2DInterface[] {
     this.orderedPts.clear();
     hull.length = 0;

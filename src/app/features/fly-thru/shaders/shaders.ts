@@ -351,7 +351,7 @@ void main(){
 vec3 unitNormal=normalize(normal);
 float normalDotLight=dot(unitNormal,light.unitDirection);
 float shadow=light.shadowWeight < 1.0f ? mix(light.shadowWeight,1.0f,textureProj(depthMap,depthMapLookup)): 1.0f;
-float diffuseIntensity=mix(light.ambientIntensity*0.2f,1.0f,shadow*normalDotLight);
+float diffuseIntensity=mix(light.ambientIntensity*0.2f,1.0f,shadow*max(0.0f,normalDotLight));
 float normalTerrainColorWeight=pow(yModelNormal,6.0f);
 vec3 terrainColor=ERODED_TERRAIN_COLOR+EROSION_DIFF*normalTerrainColorWeight;
 vec3 color=diffuseIntensity*light.color*terrainColor;
@@ -456,7 +456,7 @@ vec3 unitNormal=normalize(unitEye-dot(unitEye,unitDirection)*unitDirection);
 float normalDotLight=dot(unitNormal,light.unitDirection);
 vec3 unitReflection=normalize(2.0f*normalDotLight*unitNormal-light.unitDirection);
 float specularIntensity=pow(max(dot(unitReflection,unitEye),0.0f),WIRE_SHININESS);
-float diffuseIntensity=mix(light.ambientIntensity,1.0f,normalDotLight);
+float diffuseIntensity=mix(light.ambientIntensity,1.0f,max(0.0f,normalDotLight));
 vec3 color=light.color*(specularIntensity+diffuseIntensity*WIRE_COLOR);
 fragmentColor=vec4(light.brightness*color,1.0f);}`;
 

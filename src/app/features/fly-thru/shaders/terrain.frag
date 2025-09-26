@@ -31,7 +31,7 @@ void main() {
     float shadow = 1.0f;
   #endif
   // Artificially reducing ambient intensity makes terrain more dramatic.
-  float diffuseIntensity = mix(light.ambientIntensity * 0.2f, 1.0f, shadow * normalDotLight);
+  float diffuseIntensity = mix(light.ambientIntensity * 0.2f, 1.0f, shadow * max(0.0f, normalDotLight));
   // Powering up makes the erosion effect more visible.
   float normalTerrainColorWeight = pow(yModelNormal, 6.0f);
   vec3 terrainColor = ERODED_TERRAIN_COLOR + EROSION_DIFF * normalTerrainColorWeight;
