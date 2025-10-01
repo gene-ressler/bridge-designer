@@ -52,6 +52,7 @@ export class MenusComponent implements AfterViewInit {
     this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'new', this.eventBrokerService.newDesignRequest);
     this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'open', this.eventBrokerService.loadBridgeFileRequest);
     this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'print', this.eventBrokerService.printRequest);
+    this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'print3d', this.eventBrokerService.print3dRequest);
     this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'redo', this.eventBrokerService.redoRequest);
     this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'save', this.eventBrokerService.saveBridgeFileRequest);
     this.uiStateService.registerPlainMenuEntry(this.mainMenu, 'saveAs', this.eventBrokerService.saveBridgeFileRequest, true);

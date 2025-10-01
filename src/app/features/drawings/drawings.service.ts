@@ -24,9 +24,15 @@ export class DrawingsService {
 
   public createPDF(): jsPDF {
     const doc = new jsPDF({ format: 'letter', orientation: 'landscape' });
+    // Becomes title of PDF preview window.
+    doc.setProperties({title: 'Bridge Drawing'});
+
+    // Render the first sheet.
     const drawingBottomY = this.bridgePdfRenderingService.draw(doc);
     const titleBlockTopY = this.titleBlockPdfRenderingService.draw(doc);
     let remainingRows = this.memberTablePdfRenderingService.drawFirstSheet(doc, drawingBottomY + DRAWING_SEPARATION, titleBlockTopY);
+
+    // Render continuations of the member table while data still remains.
     let sheetNumber = 2;
     while (remainingRows.length > 0) {
       doc.addPage();
@@ -34,7 +40,9 @@ export class DrawingsService {
       remainingRows = this.memberTablePdfRenderingService.drawContinuationSheet(doc, remainingRows, titleBlockTopY);
     }
 
+    // Build a PDF file and preview it. Assumes the browser has a PDF viewer linked to the MIME type.
     const blob = doc.output('blob');
+    // This makes a funky random string. Specifying the name requires a hack that doesn't look robust.
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank');
     return doc;

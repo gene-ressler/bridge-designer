@@ -4,6 +4,7 @@
   [autoOpen]="false"
   [width]="694"
   [height]="752"
+  [position]="'center'"
   (onOpen)="handleDialogOpen($event)"
 >
   <div
@@ -21,7 +22,7 @@
     </div>
     <div class="left-column">
       <jqxTabs
-        #tabsReference
+        #tabs
         style="margin-left: 8px"
         [width]="514"
         [height]="360"
@@ -40,7 +41,7 @@
             style="margin: 8px"
             [width]="494"
             [height]="308"
-            [columns]="columns"
+            [columns]="treeColumns"
             [columnsHeight]="30"
             [columnsResize]="true"
             [selectionMode]="'singleRow'"
@@ -55,10 +56,10 @@
             style="margin: 8px"
             [width]="494"
             [height]="308"
-            [columns]="columns"
+            [columns]="gridColumns"
             [columnsheight]="30"
             [columnsresize]="true"
-            [rowsheight]="26"
+            [rowsheight]="27"
             [selectionmode]="'singleRow'"
             [source]="dataAdapter"
             (onRowDoubleClick)="handleRowDoubleClick($event)"

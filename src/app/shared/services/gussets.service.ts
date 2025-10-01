@@ -37,6 +37,9 @@ function buildMemberGeometry(gussetJoint: Joint, member: Member): MemberGeometry
   const otherJoint = member.getOtherJoint(gussetJoint);
   const vx = otherJoint.x - gussetJoint.x;
   const vy = otherJoint.y - gussetJoint.y;
+  // Note adding GUSSET_THICKNESS artificially "thickens" the member so the gusset
+  // is a bit bigger. This pecludes dueling polygons while rendering and other problems.
+  // Looks cool, too.
   const halfSizeM = 0.0005 * member.materialSizeMm + SiteConstants.GUSSET_THICKNESS;
   const vScale = halfSizeM / Math.hypot(vx, vy);
   const ux = vx * vScale;
@@ -115,6 +118,7 @@ export class GussetsService {
           );
           if (intersection) {
             this.convexHullService.addPoint(intersection);
+            // Points opposite the intersection on each member, perpendicular to the resp. member axis.
             this.convexHullService.add(intersection.x - geometry.upx * 2, intersection.y - geometry.upy * 2);
             this.convexHullService.add(intersection.x + altGeometry.upx * 2, intersection.y + altGeometry.upy * 2);
           }

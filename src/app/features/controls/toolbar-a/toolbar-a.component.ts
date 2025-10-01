@@ -16,6 +16,7 @@ const enum Tools {
   OPEN,
   SAVE,
   PRINT,
+  PRINT_3D,
   DESIGN,
   LOAD_TEST,
   SELECT_ALL,
@@ -44,7 +45,7 @@ const enum Tools {
 })
 export class ToolbarAComponent implements AfterViewInit {
   readonly tools: string =
-    'button button button button | ' +
+    'button button button button button | ' +
     'toggleButton toggleButton | ' +
     'button button | ' +
     'button toggleButton | ' +
@@ -80,6 +81,9 @@ export class ToolbarAComponent implements AfterViewInit {
       case Tools.PRINT:
         WidgetHelper.initToolbarImgButton('Print current bridge', 'img/print.png', tool);
         break;
+      case Tools.PRINT_3D:
+        WidgetHelper.initToolbarImgButton('Export OBJ file to 3d print', 'img/print3d.png', tool);
+        break;      
       case Tools.DESIGN:
         WidgetHelper.initToolbarImgToggleButton('Design bridge', 'img/design.png', tool, {
           toggled: true,
@@ -168,6 +172,7 @@ export class ToolbarAComponent implements AfterViewInit {
     this.uiStateService.registerPlainToolbarButton(tools[Tools.NEW], eventBroker.newDesignRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.OPEN], eventBroker.loadBridgeFileRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.PRINT], eventBroker.printRequest);
+    this.uiStateService.registerPlainToolbarButton(tools[Tools.PRINT_3D], eventBroker.print3dRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.REDO], eventBroker.redoRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.SAVE], eventBroker.saveBridgeFileRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.SELECT_ALL], eventBroker.selectAllRequest);

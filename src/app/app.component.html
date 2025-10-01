@@ -28,46 +28,48 @@
     [position]="'bottom'"
   ></ruler>
 </div>
-<!-- Normally invisible dialogs -->
-<div>
-  <about-dialog />
-</div>
-<div>
-  <cost-report-dialog />
-</div>
-<div>
-  <design-iteration-dialog />
-</div>
-<div>
-  <help-dialog />
-</div>
-<div>
-  <load-test-report-dialog />
-</div>
-<div>
-  <member-edit-dialog />
-</div>
-<div>
-  <sample-selection-dialog />
-</div>
-<div>
-  <design-saver-loader />
-</div>
-<div>
-  <setup-wizard />
-</div>
-<div>
-  <slenderness-fail-dialog />
-</div>
-<div>
-  <template-selection-dialog />
-</div>
-<div>
-  <tip-dialog (onClose)="handleTipDialogClose($event)" />
-</div>
-<div>
-  <unstable-bridge-dialog />
-</div>
-<div>
-  <welcome-dialog />
+<!-- Normally invisible dialogs. Size setting prevents dialog centering confusion. -->
+<div style="height: 0; width: 0; overflow: hidden;">
+  <div>
+    <about-dialog />
+  </div>
+  <div>
+    <cost-report-dialog />
+  </div>
+  <div>
+    <design-iteration-dialog />
+  </div>
+  <div>
+    <help-dialog />
+  </div>
+  <div>
+    <load-test-report-dialog />
+  </div>
+  <div>
+    <member-edit-dialog />
+  </div>
+  <div>
+    <sample-selection-dialog />
+  </div>
+  <div>
+    <design-saver-loader />
+  </div>
+  <div>
+    <setup-wizard />
+  </div>
+  <div>
+    <slenderness-fail-dialog />
+  </div>
+  <div>
+    <template-selection-dialog />
+  </div>
+  <div>
+    <tip-dialog (onClose)="handleTipDialogClose($event)" />
+  </div>
+  <div>
+    <unstable-bridge-dialog />
+  </div>
+  <div>
+    <welcome-dialog />
+  </div>
 </div>

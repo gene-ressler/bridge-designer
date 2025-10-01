@@ -24,6 +24,7 @@ import { UnstableBridgeDialogComponent } from './features/testing/unstable-bridg
 import { WelcomeDialogComponent } from './features/welcome/welcome-dialog/welcome-dialog.component';
 import { WorkflowManagementService } from './features/controls/management/workflow-management.service';
 import { DrawingsService } from './features/drawings/drawings.service';
+import { Printing3dService } from './features/printing-3d/printing-3d.service';
 
 // ¯\_(ツ)_/¯
 
@@ -66,6 +67,7 @@ export class AppComponent implements AfterViewInit {
     private readonly eventBrokerService: EventBrokerService,
     private readonly sessionStateService: SessionStateService,
     _drawingsService: DrawingsService, // Instantiate only.
+    _printing3dService: Printing3dService, // Instantiate only.
     _workflowManagementService: WorkflowManagementService, // Instantiate only.
   ) {}
 

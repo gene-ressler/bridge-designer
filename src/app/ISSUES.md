@@ -2,19 +2,15 @@
 
 ## Master TODO
 
-- Animation
-  - Controls
 - Complete help edit
-  - @ 50%
-- Dirty edit save behavior
+  - @ 60%
 - Member details
 - Printing, 3D
 
 ## Issues
 
-- Some sample designs fail.
 - Help should be its own window. 
-  - Maybe not as BD best in full screen mode anyway?
+  - Maybe not since BD best in full screen mode anyway?
   - Use router to select either help or BD.
 - Scenario numbers in Project IDs are inconsistent:
   - Project ID of sample is loading with scenario number in text.
@@ -35,3 +31,8 @@
 - Printing test results.
 - Some graphics (help for sure) still say 2016.
 - Failed members should be colored in drafting view after test.
+- Some sample designs fail.
+- Tree view of iteration dialog is not scrolling. 
+  - Scolls on reload, but previous failed iteration is missing. 
+  - Present in list.
+  - Reappears in tree if branch is collapsed and re-opened.

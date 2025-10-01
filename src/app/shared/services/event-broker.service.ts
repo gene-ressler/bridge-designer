@@ -93,6 +93,7 @@ export class EventBrokerService {
   public readonly memberTableToggle = new Subject<EventInfo>();
   public readonly newDesignRequest = new Subject<EventInfo>();
   public readonly printRequest = new Subject<EventInfo>();
+  public readonly print3dRequest = new Subject<EventInfo>();
   public readonly redoRequest = new Subject<EventInfo>();
   public readonly rulersToggle = new Subject<EventInfo>();
   public readonly saveBridgeFileRequest = new Subject<EventInfo>();

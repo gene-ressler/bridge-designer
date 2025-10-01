@@ -54,18 +54,6 @@ export class WidgetHelper {
     list.selectedIndex(index);
   }
 
-  /** Given a collection of event handlers, returns new ones where execution of any disables all others. */
-  public static createMutexHandlerGroup(...handlers: ((event: any) => void)[]): ((event: any) => void)[] {
-    let disabled = false;
-    return handlers.map(handler => event => {
-      if (!disabled) {
-        disabled = true;
-        handler(event);
-        disabled = false;
-      }
-    });
-  }
-
   private static addButtonImg(imgSrc: string, title: string, tool: any) {
     let img = document.createElement('img');
     img.src = imgSrc;
