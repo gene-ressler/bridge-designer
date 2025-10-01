@@ -4,18 +4,20 @@
   [autoOpen]="false"
   [width]="960"
   [height]="500"
-  (onOpen)="dialogOpenHandler()"
+  (onOpen)="handleDialogOpen()"
 >
   <div class="header">Cost calculations</div>
   <div>
     <div class="scroller">
       <table class="report-table">
         <thead class="table-header">
-          <th>Type of cost</th>
-          <th colspan="4">Item</th>
-          <th>Calculations</th>
-          <th></th>
-          <th>Cost</th>
+          <tr>
+            <th>Type of cost</th>
+            <th colspan="4">Item</th>
+            <th>Calculations</th>
+            <th></th>
+            <th>Cost</th>
+          </tr>
         </thead>
         <tbody class="table-body">
           @for (item of bridgeCosts.weightByMaterialAndSection; track item.sortKey) {
@@ -132,6 +134,12 @@
       </table>
     </div>
     <div class="buttons">
+      <jqxButton
+        (onClick)="handlePrint()"
+        [width]="'110px'"
+        style="margin-right: 8px"
+        >Print...</jqxButton
+      >
       <jqxButton
         (onClick)="dialog.close()"
         [width]="'110px'"

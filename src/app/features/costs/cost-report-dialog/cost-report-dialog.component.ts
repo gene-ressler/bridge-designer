@@ -8,13 +8,15 @@ import { BridgeCostModel } from '../../../shared/classes/bridge-cost.model';
 import { COUNT_FORMATTER, DOLLARS_FORMATTER, FIXED_FORMATTER } from '../../../shared/classes/utility';
 import { BridgeService } from '../../../shared/services/bridge.service';
 import { SiteCostsModel } from '../../../shared/services/design-conditions.service';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 @Component({
-    selector: 'cost-report-dialog',
-    imports: [CommonModule, jqxButtonModule, jqxWindowModule],
-    templateUrl: './cost-report-dialog.component.html',
-    styleUrl: './cost-report-dialog.component.css',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'cost-report-dialog',
+  imports: [CommonModule, jqxButtonModule, jqxWindowModule],
+  templateUrl: './cost-report-dialog.component.html',
+  styleUrl: './cost-report-dialog.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CostReportDialogComponent implements AfterViewInit {
   @ViewChild('dialog') dialog!: jqxWindowComponent;
@@ -40,9 +42,21 @@ export class CostReportDialogComponent implements AfterViewInit {
     return this.bridgeCosts.totalCost + this.siteCosts.totalFixedCost;
   }
 
-  dialogOpenHandler(): void {
+  handleDialogOpen(): void {
     this.bridgeCosts = this.bridgeCostService.bridgeCostModel;
     this.changeDetector.detectChanges();
+  }
+
+  handlePrint(): void {
+    const doc = new jsPDF({ format: 'letter', orientation: 'landscape' });
+    autoTable(doc, {
+      html: '.report-table',
+      styles: { fontSize: 8 },
+      useCss: true,
+    });
+    const blob = doc.output('blob');
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
   }
 
   ngAfterViewInit(): void {
