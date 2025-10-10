@@ -12,11 +12,11 @@ import { VERSION } from '../../../shared/classes/version';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AboutDialogComponent implements AfterViewInit {
+  @ViewChild('dialog') dialog!: jqxWindowComponent;
+
   version: string = VERSION.toString();
 
   constructor(private readonly eventBrokerService: EventBrokerService) {}
-
-  @ViewChild('dialog') dialog!: jqxWindowComponent;
 
   handlePurposeButtonClick(): void {
     const data = { topic: 'hlp_purposes' };
