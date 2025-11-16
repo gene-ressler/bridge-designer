@@ -168,7 +168,7 @@ describe('GussetsService', () => {
   });
 
   it('should generate gussets for each joint', () => {
-    const gussets = service.gussets;
+    const gussets = service.createGussets();
     expect(gussets.length).toBe(3);
     gussets.forEach((gusset, idx) => {
       expect(gusset.joint.index).toBe(idx);
@@ -179,7 +179,7 @@ describe('GussetsService', () => {
   });
 
   it('should produce expected gusset contents', () => {
-    const gusset = service.gussets[0];
+    const gusset = service.createGussets()[0];
     expect(gusset.joint).toEqual(jointA);
     expect(gusset.halfDepthM).toBeCloseTo(0.17);
     expect(gusset.hull).toNearlyEqual(expectedHull, 1e-3);

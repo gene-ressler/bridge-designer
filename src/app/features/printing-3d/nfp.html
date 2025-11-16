@@ -1,0 +1,48 @@
+<html>
+  <head>
+    <script>var exports = {};</script>
+    <script src="./nfp.js"></script>
+    <script>
+      const scale = 7;
+      const xOfs = 200 / scale;
+      const yOfs = 200 / scale;
+      const ht = 600 / scale - yOfs;
+      function run(elt) {
+        const ctx = elt.getContext('2d');
+        ctx.scale(scale, scale);
+        ctx.lineWidth = 1 / scale;
+
+        const drawPolygon = function (polygon, color, x0, y0) {
+          ctx.strokeStyle = color;
+          ctx.beginPath();
+          let pq = polygon[polygon.length - 1];
+          ctx.moveTo(xOfs + x0 + pq[0], ht - y0 - pq[1]);
+          for (const pp of polygon) {
+            ctx.lineTo(xOfs + x0 + pp[0], ht - y0 - pp[1]);
+          }
+          ctx.stroke();
+        };
+        const tp = getTestPolygon();
+        drawPolygon(exports.a, 'red', 0, 0);
+        for (const pp of tp) {
+          drawPolygon(exports.b, 'blue', pp[0], pp[1]);
+        }
+        console.log('tp', tp);
+        drawPolygon(tp, 'green', 0, 0);
+      }
+    </script>
+    <style>
+      #world {
+        width: 600px;
+        height: 600px;
+      }
+    </style>
+  </head>
+  <body onLoad="run(document.getElementById('world'))">
+    <canvas
+      id="world"
+      height="600"
+      width="600"
+    />
+  </body>
+</html>

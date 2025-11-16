@@ -19,7 +19,6 @@ export class AbutmentModelService {
   public buildAbutment(): { texturedMeshData: MeshData; coloredMeshData: MeshData } {
     // Comments use the default view as reference frame. We're modeling the
     // left abutment. Front and rear are the flanks wrt the eye; front is closer.
-
     const conditions = this.bridgeService.designConditions;
     const archHeight = conditions.isArch ? conditions.underClearance : 0;
     const halfDepth = this.bridgeService.bridgeHalfWidth;

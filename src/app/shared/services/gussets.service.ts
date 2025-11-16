@@ -33,14 +33,14 @@ type MemberGeometry = {
 };
 
 /** Builds a gusset member geometry for an adjacent member. */
-function buildMemberGeometry(gussetJoint: Joint, member: Member): MemberGeometry {
+function buildMemberGeometry(gussetJoint: Joint, member: Member, minMemberSizeMm: number): MemberGeometry {
   const otherJoint = member.getOtherJoint(gussetJoint);
   const vx = otherJoint.x - gussetJoint.x;
   const vy = otherJoint.y - gussetJoint.y;
   // Note adding GUSSET_THICKNESS artificially "thickens" the member so the gusset
   // is a bit bigger. This pecludes dueling polygons while rendering and other problems.
   // Looks cool, too.
-  const halfSizeM = 0.0005 * member.materialSizeMm + SiteConstants.GUSSET_THICKNESS;
+  const halfSizeM = 0.0005 * Math.max(minMemberSizeMm, member.materialSizeMm) + SiteConstants.GUSSET_THICKNESS;
   const vScale = halfSizeM / Math.hypot(vx, vy);
   const ux = vx * vScale;
   const uy = vy * vScale;
@@ -72,8 +72,12 @@ export class GussetsService {
     private readonly convexHullService: ConvexHullService,
   ) {}
 
-  /** Builds one gusset per joint in the current bridge. */
-  public get gussets(): Gusset[] {
+  /**
+   * Builds one gusset per joint in the current bridge.
+   * 
+   * @param minMemberSizeMm optional forced minimum member size (e.g. for 3d printing)
+   */
+  public createGussets(minMemberSizeMm: number = 0): Gusset[] {
     // Make one gusset per joint.
     const gussets: Gusset[] = this.bridgeService.bridge.joints.map(joint => {
       return {
@@ -85,8 +89,8 @@ export class GussetsService {
     });
     // Add member geometries to each gusset.
     for (const member of this.bridgeService.bridge.members) {
-      gussets[member.a.index].memberGeometries!.push(buildMemberGeometry(member.a, member));
-      gussets[member.b.index].memberGeometries!.push(buildMemberGeometry(member.b, member));
+      gussets[member.a.index].memberGeometries!.push(buildMemberGeometry(member.a, member, minMemberSizeMm));
+      gussets[member.b.index].memberGeometries!.push(buildMemberGeometry(member.b, member, minMemberSizeMm));
     }
     // Use the member geometries to compute potential gusset vertices.
     for (const gusset of gussets) {

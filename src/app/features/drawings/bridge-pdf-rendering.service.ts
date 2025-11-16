@@ -52,7 +52,7 @@ export class BridgePdfRenderingService {
     // Draw. Order matters.
     this.bridgeService.bridge.members.forEach(member => this.drawMember(doc, member));
     const suppportsBottomY = this.drawSupports(doc);
-    this.gussetsService.gussets.forEach(gusset => this.drawJoint(doc, gusset));
+    this.gussetsService.createGussets().forEach(gusset => this.drawJoint(doc, gusset));
     this.bridgeService.bridge.members.forEach(member => this.drawMemberLabel(doc, member));
     const dimensionsY = DIMENSION_GAP + Math.max(this.tY(bridgeExtent.y0), suppportsBottomY);
     this.drawVerticalDimensions(doc, bridgeExtent);

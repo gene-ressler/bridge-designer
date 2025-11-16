@@ -75,7 +75,7 @@ export class BridgeModelService {
   public createForCurrentBridge(jointLocations: Float32Array): BridgeMeshData {
     const trussCenterlineOffset = this.bridgeService.trussCenterlineOffset;
     const membersNotTransectingRoadwayClearance = this.bridgeService.membersNotTransectingRoadwayClearance;
-    const gussets = this.gussetService.gussets;
+    const gussets = this.gussetService.createGussets();
     const gl = this.glService.gl;
     return {
       memberMeshData: {

@@ -1,10 +1,17 @@
 import { Injectable } from '@angular/core';
 import { EventBrokerService } from '../../shared/services/event-broker.service';
-import Module, { Mesh, Vec3 } from 'manifold-3d';
-import * as ManifoldTypes from 'manifold-3d/manifold-encapsulated-types';
-import { BridgeService } from '../../shared/services/bridge.service';
-import { ObjectPlacementService } from './object-placement.service';
+import { Mesh, Vec3 } from 'manifold-3d';
 import { Print3dEntityService } from './print-3d-entity.service';
+
+export class Printing3dConfig {
+  /**
+   * @param scale model millimeters per world meter
+   * @param minFeatureSize minimum printable feature size
+   */
+  constructor(public readonly scale: number = 230 / 44,
+    public readonly minFeatureSize: number = 0.8,
+  ) {}
+}
 
 /**
  * State of the OBJ file formatter `getObjText(mesh)` allowing several of
@@ -18,49 +25,64 @@ class ObjContext {
 
 @Injectable({ providedIn: 'root' })
 export class Printing3dService {
-  private manifoldInstance!: typeof ManifoldTypes.Manifold;
+  private config = new Printing3dConfig();
 
   constructor(
-    private readonly bridgeService: BridgeService,
     private readonly print3dEntityService: Print3dEntityService,
     eventBrokerService: EventBrokerService,
-    objectPlacementService: ObjectPlacementService,
+    //objectPlacementService: ObjectPlacementService,
   ) {
-    //eventBrokerService.print3dRequest.subscribe(() => this.emit3dPrint());
-    eventBrokerService.print3dRequest.subscribe(() => objectPlacementService.test());
+    eventBrokerService.print3dRequest.subscribe(() => this.emit3dPrint());
+    //eventBrokerService.print3dRequest.subscribe(() => objectPlacementService.test());
   }
 
-  /** Sets up the Manifold library for CSG operations. Multiple calls okay. */
-  private async initialize(): Promise<void> {
-    if (this.manifoldInstance) {
-      return;
-    }
-    // Assets spec puts manifold.wasm at /wasm.
-    const wasm = await Module({ locateFile: () => 'wasm/manifold.wasm' });
-    wasm.setup();
-    this.manifoldInstance = wasm.Manifold;
+  public setConfig(config: Printing3dConfig) {
+    this.config = config;
   }
 
   /** Emits an OBJ file suitable for 3d printing the current bridge model. */
   public async emit3dPrint(): Promise<void> {
-    await this.initialize();
-    const memberSizes = this.bridgeService.getMemberSizesMmSorted();
-    const trussExtent = this.bridgeService.getWorldExtent();
-    const yTrussSeparation = 0.00075 * memberSizes[memberSizes.length - 1];
-    const minFeatureSize = 0.001 * memberSizes[0];
-    const frontTruss = this.print3dEntityService.buildTruss([1, 0, 0, 1, 0, yTrussSeparation - trussExtent.y0], minFeatureSize);
+    // Load Manifold.
+    await this.print3dEntityService.initialize();
+
+    // Trusses
+    const scale = this.config.scale;
+    const minFeatureSize = this.config.minFeatureSize;;
+    const frontTruss = this.print3dEntityService.buildTruss([scale, 0, 0, scale, 0, 0], minFeatureSize);
     if (!frontTruss) {
       return;
     }
-    const objContext = new ObjContext();
-    const frontTrussText = this.getObjText(objContext, 'FrontTruss', frontTruss.getMesh());
+    const trussBoundingBox = frontTruss.boundingBox();
+    const trussContext = new ObjContext();
+    const frontTrussText = this.getObjText(trussContext, 'FrontTruss', frontTruss.getMesh());
     frontTruss.delete();
-    const rearTruss = this.print3dEntityService.buildTruss([1, 0, 0, -1, 0, trussExtent.y0 - yTrussSeparation], minFeatureSize);
+    const rearTruss = this.print3dEntityService.buildTruss(
+      [scale, 0, 0, -scale, 0, 2 * trussBoundingBox.min[1] - minFeatureSize],
+      minFeatureSize,
+    );
     if (!rearTruss) {
       return;
     }
-    const rearTrussText: string[] = this.getObjText(objContext, 'RearTruss', rearTruss.getMesh());
-    this.downloadObjFileText(frontTrussText.concat(rearTrussText), '3d-bridge.obj');
+    const rearTrussText: string[] = this.getObjText(trussContext, 'RearTruss', rearTruss.getMesh());
+    rearTruss.delete();
+    this.downloadObjFileText(frontTrussText.concat(rearTrussText), '3d-truss.obj');
+
+    // Abutments, pier, anchorages
+    const leftAbutment = this.print3dEntityService.buildAbutment([scale, 0, 0, scale, 0, 0], minFeatureSize);
+    const abutmentBoundingBox = leftAbutment.boundingBox();
+    if (!leftAbutment) {
+      return;
+    }
+    const abutmentContext = new ObjContext();
+    const leftAbutmentText = this.getObjText(abutmentContext, 'LeftAbutment', leftAbutment.getMesh());
+    leftAbutment.delete();
+    const rightAbutment = this.print3dEntityService.buildAbutment(
+      [-scale, 0, 0, scale, 2 * abutmentBoundingBox.max[0] + minFeatureSize, 0],
+      minFeatureSize,
+    );
+    const rightAbutmentText = this.getObjText(abutmentContext, 'RightAbutment', rightAbutment.getMesh());
+    rightAbutment.delete();
+    this.downloadObjFileText(leftAbutmentText.concat(rightAbutmentText), '3d-abutment.obj');
   }
 
   /**
