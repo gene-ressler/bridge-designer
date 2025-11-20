@@ -11,7 +11,9 @@ export class PierModelService {
   private static readonly BASE_HEIGHT = 1.4;
   private static readonly BASE_TAPER = 1.1;
   private static readonly PIER_BASE_SHOULDER = 0.5;
+  /** Height along z-axis of of up- and downstream cross-section triangles. */
   private static readonly PIER_CUSP_WIDTH = 0.3;
+  /** Thickness on x-axis. */
   private static readonly PIER_HALF_WIDTH = 0.5;
   /** Pier base/top size ratio. Looks cool, but too-large values distort texture. */
   private static readonly PIER_TAPER = 1.1;

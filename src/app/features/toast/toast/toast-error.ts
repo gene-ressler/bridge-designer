@@ -8,6 +8,7 @@ export type ToastKind =
   | 'fileWriteError'
   | 'highPierError'
   | 'moveJointError'
+  | 'manifoldBuildFailedError'
   | 'noError' // silent cancellation
   | 'needWebGl2Error'
   | 'noMembersToAddError'

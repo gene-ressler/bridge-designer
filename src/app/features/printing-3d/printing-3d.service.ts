@@ -1,15 +1,19 @@
 import { Injectable } from '@angular/core';
 import { EventBrokerService } from '../../shared/services/event-broker.service';
-import { Mesh, Vec3 } from 'manifold-3d';
-import { Print3dEntityService } from './print-3d-entity.service';
+import { Manifold, Mesh, Vec3 } from 'manifold-3d';
+import { Mat2x3, Print3dEntityService } from './print-3d-entity.service';
+import { ToastError } from '../toast/toast/toast-error';
+import { cleanup } from 'manifold-3d/lib/garbage-collector.js';
 
 export class Printing3dConfig {
   /**
-   * @param scale model millimeters per world meter
+   * @param modelMmPerWorldM model millimeters per world meter
    * @param minFeatureSize minimum printable feature size
    */
-  constructor(public readonly scale: number = 230 / 44,
+  constructor(
+    public readonly modelMmPerWorldM: number = 230 / 44,
     public readonly minFeatureSize: number = 0.8,
+    public readonly name: string = '',
   ) {}
 }
 
@@ -28,8 +32,8 @@ export class Printing3dService {
   private config = new Printing3dConfig();
 
   constructor(
-    private readonly print3dEntityService: Print3dEntityService,
     eventBrokerService: EventBrokerService,
+    private readonly print3dEntityService: Print3dEntityService,
     //objectPlacementService: ObjectPlacementService,
   ) {
     eventBrokerService.print3dRequest.subscribe(() => this.emit3dPrint());
@@ -40,49 +44,84 @@ export class Printing3dService {
     this.config = config;
   }
 
-  /** Emits an OBJ file suitable for 3d printing the current bridge model. */
+  /** Downloads OBJ files suitable for 3d printing the current bridge model. */
   public async emit3dPrint(): Promise<void> {
     // Load Manifold.
     await this.print3dEntityService.initialize();
 
-    // Trusses
-    const scale = this.config.scale;
-    const minFeatureSize = this.config.minFeatureSize;;
-    const frontTruss = this.print3dEntityService.buildTruss([scale, 0, 0, scale, 0, 0], minFeatureSize);
-    if (!frontTruss) {
-      return;
-    }
-    const trussBoundingBox = frontTruss.boundingBox();
-    const trussContext = new ObjContext();
-    const frontTrussText = this.getObjText(trussContext, 'FrontTruss', frontTruss.getMesh());
-    frontTruss.delete();
-    const rearTruss = this.print3dEntityService.buildTruss(
-      [scale, 0, 0, -scale, 0, 2 * trussBoundingBox.min[1] - minFeatureSize],
-      minFeatureSize,
-    );
-    if (!rearTruss) {
-      return;
-    }
-    const rearTrussText: string[] = this.getObjText(trussContext, 'RearTruss', rearTruss.getMesh());
-    rearTruss.delete();
-    this.downloadObjFileText(frontTrussText.concat(rearTrussText), '3d-truss.obj');
+    // Common computations context.
+    const modelMmPerWorldM = this.config.modelMmPerWorldM;
+    const ctx = this.print3dEntityService.getContext(modelMmPerWorldM, this.config.minFeatureSize);
 
-    // Abutments, pier, anchorages
-    const leftAbutment = this.print3dEntityService.buildAbutment([scale, 0, 0, scale, 0, 0], minFeatureSize);
-    const abutmentBoundingBox = leftAbutment.boundingBox();
-    if (!leftAbutment) {
-      return;
-    }
-    const abutmentContext = new ObjContext();
-    const leftAbutmentText = this.getObjText(abutmentContext, 'LeftAbutment', leftAbutment.getMesh());
-    leftAbutment.delete();
-    const rightAbutment = this.print3dEntityService.buildAbutment(
-      [-scale, 0, 0, scale, 2 * abutmentBoundingBox.max[0] + minFeatureSize, 0],
-      minFeatureSize,
+    // Trusses.
+    const trussesContext = new ObjContext();
+    const minFeatureSize = this.config.minFeatureSize;
+    const frontTruss = throwIfEmpty(
+      this.print3dEntityService.buildTruss(ctx, [modelMmPerWorldM, 0, 0, modelMmPerWorldM, 0, 0]),
     );
-    const rightAbutmentText = this.getObjText(abutmentContext, 'RightAbutment', rightAbutment.getMesh());
-    rightAbutment.delete();
-    this.downloadObjFileText(leftAbutmentText.concat(rightAbutmentText), '3d-abutment.obj');
+    const trussBoundingBox = frontTruss.boundingBox();
+    const trussesText = this.getObjText(trussesContext, 'FrontTruss', frontTruss.getMesh());
+    const boundingBoxDx = trussBoundingBox.max[0] - trussBoundingBox.min[0];
+    const boundingBoxDy = trussBoundingBox.max[1] - trussBoundingBox.min[1];
+    // Place trusses in a row or column depending on largest dimension.
+    const xyTransformLeft: Mat2x3 =
+      boundingBoxDx > boundingBoxDy
+        ? [modelMmPerWorldM, 0, 0, -modelMmPerWorldM, 0, 2 * trussBoundingBox.min[1] - minFeatureSize]
+        : [modelMmPerWorldM, 0, 0, -modelMmPerWorldM, boundingBoxDx + minFeatureSize, trussBoundingBox.min[1]];
+    const rearTruss = throwIfEmpty(this.print3dEntityService.buildTruss(ctx, xyTransformLeft));
+    trussesText.push(...this.getObjText(trussesContext, 'RearTruss', rearTruss.getMesh()));
+    cleanup(); // Garbage collect manifolds.
+    this.downloadObjFileText(trussesText, '3d-trusses');
+
+    // Abutments.
+    const abutmentsContext = new ObjContext();
+    let placementX = 0;
+    const leftAbutment = throwIfEmpty(
+      this.print3dEntityService.buildAbutment(ctx, [modelMmPerWorldM, 0, 0, modelMmPerWorldM, placementX, 0]),
+    );
+    const abutmentBoundingBox = leftAbutment.boundingBox();
+    const leftAbutmentText = this.getObjText(abutmentsContext, 'LeftAbutment', leftAbutment.getMesh());
+    placementX += abutmentBoundingBox.max[0] - abutmentBoundingBox.min[0] + minFeatureSize;
+    const rightAbutment = throwIfEmpty(
+      this.print3dEntityService.buildAbutment(ctx, [modelMmPerWorldM, 0, 0, modelMmPerWorldM, placementX, 0]),
+    );
+    const rightAbutmentText = this.getObjText(abutmentsContext, 'RightAbutment', rightAbutment.getMesh());
+    placementX += minFeatureSize + abutmentBoundingBox.max[0];
+    const abutmentsText = leftAbutmentText.concat(rightAbutmentText);
+
+    // Anchorages (if present) also to abutments file.
+    if (this.print3dEntityService.isLeftAnchorage) {
+      const anchorage = throwIfEmpty(
+        this.print3dEntityService.buildAnchorage(ctx, [modelMmPerWorldM, 0, 0, modelMmPerWorldM, placementX, 0]),
+      );
+      const anchorageBoundingBox = anchorage.boundingBox();
+      abutmentsText.push(...this.getObjText(abutmentsContext, `LeftAnchorage`, anchorage.getMesh()));
+      placementX += anchorageBoundingBox.max[0] - anchorageBoundingBox.min[0] + minFeatureSize;
+    }
+    if (this.print3dEntityService.isRightAnchorage) {
+      // Make identical to the left. They're symmetric about x-y plane, so this is okay.
+      const anchorage = throwIfEmpty(
+        this.print3dEntityService.buildAnchorage(ctx, [modelMmPerWorldM, 0, 0, modelMmPerWorldM, placementX, 0]),
+      );
+      const anchorageBoundingBox = anchorage.boundingBox();
+      abutmentsText.push(...this.getObjText(abutmentsContext, `RightAnchorage`, anchorage.getMesh()));
+      placementX += anchorageBoundingBox.max[0] - anchorageBoundingBox.min[0] + minFeatureSize;
+    }
+
+    // Pier (if present) also to abutments file.
+    if (this.print3dEntityService.isPier) {
+      const pier = throwIfEmpty(
+        this.print3dEntityService.buildPier(ctx, [modelMmPerWorldM, 0, 0, modelMmPerWorldM, placementX, 0]),
+      );
+      abutmentsText.push(...this.getObjText(abutmentsContext, 'Pier', pier.getMesh()));
+    }
+    cleanup(); // Garbage collect manifolds.
+    this.downloadObjFileText(abutmentsText, '3d-abutments');
+
+    const crossMembersContext = new ObjContext();
+    const crossMembers = throwIfEmpty(this.print3dEntityService.buildCrossmembers(ctx, [0, 0]));
+    const crossMembersText = this.getObjText(crossMembersContext, 'CrossMembers', crossMembers.getMesh());
+    this.downloadObjFileText(crossMembersText, '3d-cross-members');
   }
 
   /**
@@ -120,12 +159,17 @@ export class Printing3dService {
     return text;
   }
 
-  private downloadObjFileText(text: string[], preferredName: string): void {
+  private downloadObjFileText(text: string[], kind: string): void {
     const blob = new Blob(text, { type: 'model/obj' });
     const anchorElement = window.document.createElement('a');
     const url = window.URL.createObjectURL(blob);
     anchorElement.href = url;
-    anchorElement.download = preferredName;
+    let fileName = kind;
+    if (this.config.name.length > 0) {
+      fileName += `-${this.config.name}`;
+    }
+    fileName += '.obj';
+    anchorElement.download = fileName;
     document.body.appendChild(anchorElement);
     anchorElement.click();
     document.body.removeChild(anchorElement);
@@ -161,4 +205,11 @@ function getTriangleNormal(coords: Float32Array, ia: number, ib: number, ic: num
   nz += (c[0] - a[0]) * (c[1] + a[1]);
   const len = Math.hypot(nx, ny, nz);
   return [nx / len, ny / len, nz / len];
+}
+
+function throwIfEmpty(manifold: Manifold): Manifold {
+  if (manifold.isEmpty()) {
+    throw new ToastError('manifoldBuildFailedError');
+  }
+  return manifold;
 }

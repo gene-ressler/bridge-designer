@@ -156,4 +156,3 @@ export class SiteConstants {
     return curve;
   }
 }
-

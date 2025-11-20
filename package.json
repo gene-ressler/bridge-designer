@@ -26,7 +26,7 @@
     "jqwidgets-ng": "^24.0.0",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
-    "manifold-3d": "^3.2.1",
+    "manifold-3d": "^3.3.2",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
