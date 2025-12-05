@@ -240,6 +240,11 @@ th {
   font-style: italic;
 }
 
+.icon {
+  height: 40px;
+  margin: 8px;
+}
+
 map area {
   cursor: pointer;
 }
