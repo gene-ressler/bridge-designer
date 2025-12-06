@@ -11,28 +11,29 @@ const enum Tools {
   INVENTORY_SELECTOR,
   SIZE_UP,
   SIZE_DOWN,
-  MEMBER_TABLE,
   MEMBER_NUMBERS,
   GUIDES,
   TEMPLATE,
   COARSE_GRID,
   MEDIUM_GRID,
   FINE_GRID,
+  MEMBER_TABLE,
 }
 
 @Component({
-    selector: 'toolbar-b',
-    imports: [jqxToolBarModule, jqxDropDownListModule],
-    templateUrl: './toolbar-b.component.html',
-    styleUrl: './toolbar-b.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'toolbar-b',
+  imports: [jqxToolBarModule, jqxDropDownListModule],
+  templateUrl: './toolbar-b.component.html',
+  styleUrl: './toolbar-b.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToolbarBComponent implements AfterViewInit {
   readonly tools: string =
     'custom | ' +
     'button button | ' +
-    'toggleButton toggleButton toggleButton toggleButton | ' +
-    'toggleButton toggleButton toggleButton';
+    'toggleButton toggleButton toggleButton | ' +
+    'toggleButton toggleButton toggleButton | ' +
+    'toggleButton'; // justified right and down by CSS
 
   @ViewChild('toolbar') toolbar!: jqxToolBarComponent;
 
@@ -55,9 +56,6 @@ export class ToolbarBComponent implements AfterViewInit {
       case Tools.SIZE_DOWN:
         WidgetHelper.initToolbarImgButton('Downsize selected members', 'img/sizedown.png', tool, true);
         break;
-      case Tools.MEMBER_TABLE:
-        WidgetHelper.initToolbarImgToggleButton('Show/hide member table', 'img/memtable.png', tool, { toggled: true });
-        break;
       case Tools.MEMBER_NUMBERS:
         WidgetHelper.initToolbarImgButton('Show/hide member numbers', 'img/numbers.png', tool);
         break;
@@ -78,6 +76,12 @@ export class ToolbarBComponent implements AfterViewInit {
       case Tools.FINE_GRID:
         WidgetHelper.initToolbarImgToggleButton('Use fine drawing grid', 'img/finegrid.png', tool);
         break;
+      case Tools.MEMBER_TABLE:
+        WidgetHelper.initToolbarImgToggleButton('Hide member table', 'img/close.png', tool, { toggled: true, height: 16 });
+        //WidgetHelper.addButtonImg('img/close.png', 'Hide member table', tool);
+        //tool.jqxButton({ height: 16 });
+        tool.css({ position: 'absolute', right: '0', bottom: '2px' });
+        break;
     }
     return { minimizable: false, menuTool: false };
   }
@@ -89,9 +93,13 @@ export class ToolbarBComponent implements AfterViewInit {
     uiState.registerSelectToolbarButtons(tools, gridTools, this.eventBrokerService.gridDensitySelection);
     uiState.registerPlainToolbarButton(tools[Tools.SIZE_DOWN], this.eventBrokerService.memberSizeDecreaseRequest);
     uiState.registerPlainToolbarButton(tools[Tools.SIZE_UP], this.eventBrokerService.memberSizeIncreaseRequest);
-    uiState.registerToggleToolbarButton(tools[Tools.MEMBER_TABLE], this.eventBrokerService.memberTableToggle);
     uiState.registerToggleToolbarButton(tools[Tools.MEMBER_NUMBERS], this.eventBrokerService.memberNumbersToggle);
     uiState.registerToggleToolbarButton(tools[Tools.GUIDES], this.eventBrokerService.guidesToggle);
     uiState.registerToggleToolbarButton(tools[Tools.TEMPLATE], this.eventBrokerService.templateToggle);
+    uiState.registerToggleToolbarButton(tools[Tools.MEMBER_TABLE], this.eventBrokerService.memberTableToggle);
+    // Handler toggles icon of member table button close <-> open.
+    this.eventBrokerService.memberTableToggle.subscribe(info => {
+      WidgetHelper.updateToolbarButtonImg(tools[Tools.MEMBER_TABLE], info.data ? 'img/close.png' : 'img/dropleft.png');
+    });
   }
 }

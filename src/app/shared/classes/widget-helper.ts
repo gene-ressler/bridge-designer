@@ -27,7 +27,7 @@ export class WidgetHelper {
     title: string,
     imgSrc: string,
     tool: any,
-    options?: { toggled?: boolean; disabled?: boolean },
+    options?: { toggled?: boolean; disabled?: boolean; height?: number },
   ) {
     WidgetHelper.addButtonImg(imgSrc, title, tool);
     tool.jqxToggleButton({ height: 28, ...options });
@@ -52,6 +52,14 @@ export class WidgetHelper {
       return;
     }
     list.selectedIndex(index);
+  }
+
+  public static updateToolbarButtonImg(buttonTool: any, imgSrc: string, title?: string) {
+    const img = buttonTool.tool[0].firstChild;
+    img.src = imgSrc;
+    if (title) {
+      img.title = title;
+    }
   }
 
   private static addButtonImg(imgSrc: string, title: string, tool: any) {
