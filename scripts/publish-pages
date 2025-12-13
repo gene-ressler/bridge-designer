@@ -11,25 +11,22 @@ site_source="$project_dir/docs"
 rm -rf "$site_source/bridge-designer"
 cp -R "$project_dir/dist/bridge-designer" "$site_source"
 
-# Stage changes and commit to publish.
+# Stage changes and commit in main.
 git add --all
+git commit -m 'Publish pages'
 
-# Switch branches and commit there
+# Switch to publishing branch and update it to current, including new pages.
 old_branch=$(git branch --show-current)
 git switch publish-pages
 
-echo "Stashed ${old_branch}. Commit and publish from branch ${publish-pages}? (Y/n))"
+echo "Stashed ${old_branch}. Commit and publish from branch publish-pages? (Y/n))"
 read -sn1 key
-if [[ "$key" == 'n' ]]
+if [[ "$key" != 'n' ]]
 then
-  git switch "$old_branch"
-  git stash pop
-  exit 1
+  git merge main
+  # Push to trigger publish
+  git push origin publish-pages
 fi
-git commit -m 'Publish pages'
-
-# Push to trigger publish
-git push origin publish-pages
 
 # Restore old branch
 git switch "$old_branch"
