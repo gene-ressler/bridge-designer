@@ -22,6 +22,8 @@ echo "Stashed ${old_branch}. Commit and publish from branch ${publish-pages}? (Y
 read -sn1 key
 if [[ "$key" == 'n' ]]
 then
+  git switch "$old_branch"
+  git stash pop
   exit 1
 fi
 git commit -m 'Publish pages'
@@ -31,3 +33,4 @@ git push origin publish-pages
 
 # Restore old branch
 git switch "$old_branch"
+git stash pop
