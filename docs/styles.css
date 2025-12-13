@@ -1,0 +1,55 @@
+html,
+body {
+  background-color: white;
+  color: black;
+  font-family: 'Roboto', sans-serif;
+  font-size: 1rem;
+  font-weight: 300;
+  margin: 0 0 0 0;
+}
+
+div {
+  margin-left: 16px;
+  margin-right: 16px;
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: 400;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+  margin-left: 16px;
+  margin-right: 16px;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 400;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+  margin-left: 16px;
+  margin-right: 16px;
+}
+
+.para {
+  margin-top: 1ex;
+}
+
+.bold {
+  font-weight: 400;
+}
+
+.banner {
+  margin: 0 0 0 0;
+}
+
+.banner-graphic {
+  width: 100%;
+  margin: 0 0 0 0;
+}
+
+.title-logo {
+  width: 3em;
+  vertical-align: middle;
+  margin-right: 0.5em;
+}
