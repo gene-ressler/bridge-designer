@@ -24,13 +24,15 @@ mv "$site_source/browser" "$site_source/app"
 sed -i 's@base href="/"@base href="/bridge-designer/app/"@' "$site_source/app/index.html"
 
 if [[ -z "$(git status --porcelain)" ]]; then
-  echo 'No changes to commit.'
-  exit;
+  echo 'No changes to commit. Continue with push anyway? (Y/n)'
+  read -sn1 key
+  if [[ "$key" == 'n' ]]; then
+    exit;
+  fi
 fi
 echo "Commit changes, switch from branch ${old_branch} to publish-pages, merge, and push? (Y/n))"
 read -sn1 key
-if [[ "$key" != 'n' ]]
-then
+if [[ "$key" != 'n' ]]; then
   git add --all
   git commit -m 'Publish pages.'
   git switch publish-pages
