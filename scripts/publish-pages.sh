@@ -5,6 +5,7 @@
 
 old_branch=$(git branch --show-current)
 
+# Ensure the worktree is in a known good state.
 if [[ -n "$(git status --porcelain)" || "$old_branch" != "main" ]]; then
   echo "Worktree must be clean. Branch must be main."
   exit 1
@@ -22,6 +23,10 @@ mv "$site_source/browser" "$site_source/app"
 # Edit the base URL of the root page to match the sites location.
 sed -i 's@base href="/"@base href="/bridge-designer/app/"@' "$site_source/app/index.html"
 
+if [[ -z "$(git status --porcelain)" ]]; then
+  echo 'No changes to commit.'
+  exit;
+fi
 echo "Commit changes, switch from branch ${old_branch} to publish-pages, merge, and push? (Y/n))"
 read -sn1 key
 if [[ "$key" != 'n' ]]
