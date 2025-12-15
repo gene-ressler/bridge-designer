@@ -3,8 +3,10 @@
 
 #!/bin/bash
 
-if [[ -n "$(git status --porcelain)" ]]; then
-  echo "Worktree must be clean."
+old_branch=$(git branch --show-current)
+
+if [[ -n "$(git status --porcelain)" || "$old_branch" != "main" ]]; then
+  echo "Worktree must be clean. Branch must be main."
   exit 1
 fi
 
@@ -20,13 +22,12 @@ mv "$site_source/browser" "$site_source/app"
 # Edit the base URL of the root page to match the sites location.
 sed -i 's@base href="/"@base href="/bridge-designer/app/"@' "$site_source/app/index.html"
 
-# Switch to publishing branch and update it to current, including new pages.
-old_branch=$(git branch --show-current)
-
-echo "Switch from branch ${old_branch} to publish-pages, merge, and push? (Y/n))"
+echo "Commit changes, switch from branch ${old_branch} to publish-pages, merge, and push? (Y/n))"
 read -sn1 key
 if [[ "$key" != 'n' ]]
 then
+  git add --all
+  git commit -m 'Publish pages.'
   git switch publish-pages
   git merge main
   # Push to trigger publish
