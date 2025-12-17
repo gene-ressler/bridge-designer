@@ -10,7 +10,8 @@ import { Gusset, GussetsService } from '../../shared/services/gussets.service';
 /**
  * Container for geometry of printed objects.  Must be created per current bridge.
  *
- * All values are  in world meters. Caller is responsible for scaling to printer coordinates.
+ * All values are in world meters unless noted. Caller is responsible for 
+ * scaling to printer coordinates.
  */
 export class Print3dGeometry {
   // Dimensions.
@@ -68,6 +69,9 @@ export class Print3dGeometry {
     this.gussets = gussetsService.createGussets(minFeatureSizeWorldM * 1000);
     this.bridgeWidth = 2 * bridgeService.bridgeHalfWidth;
     this.roadwayWidth = 2 * SiteConstants.DECK_HALF_WIDTH;
+
+    // The short variable names in this contructor 
+    // correspond to the pencil sketch in img/geometry.png.
 
     const pmhs = 0.75 * minFeatureSizeWorldM; // pin member half size (width and height)
     const dbhw = pmhs + minFeatureSizeWorldM; // deck beam half width
