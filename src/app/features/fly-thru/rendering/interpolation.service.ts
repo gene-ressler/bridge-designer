@@ -264,7 +264,7 @@ class SourceInterpolator implements Interpolator {
 /**
  * Interpolator for the bridge collapse animation that bi-interpolates positions between a "base" analysis
  * (in practice one where a member fails) and a "dummy" one (in practice one with the same failed
- * members severely weakend). The dummy will have extreme joint displacements, a gross approximation of
+ * members severely weakened). The dummy will have extreme joint displacements, a gross approximation of
  * collapse. For non-position values, i.e. those related to member forces, this interpolator delegates
  * directly to the base. Forces in the dummy aren't useful.
  */

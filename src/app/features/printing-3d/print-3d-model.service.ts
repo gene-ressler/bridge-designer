@@ -15,6 +15,9 @@ export type Mat2x3 = [number, number, number, number, number, number];
 type WasmModule = ReturnType<typeof Module> extends Promise<infer R> ? R : never;
 type ManifoldClass = WasmModule['Manifold'];
 
+/** Small offset in millimeters to prevent slivers when subtracting manifolds. */
+const FUDGE = 0.001;
+
 @Injectable({ providedIn: 'root' })
 export class Print3dModelService {
   private _manifoldClass: ManifoldClass | undefined;
@@ -195,10 +198,10 @@ export class Print3dModelService {
   private buildStandardPanel(gmy: Print3dGeometry): Manifold {
     const zipper = this.manifoldClass.extrude(gmy.zipper, gmy.zipperThickness).rotate(0, 90, 0);
     const zipperHole = this.manifoldClass.extrude(gmy.zipperHole, gmy.zipperThickness).rotate(0, 90, 0);
-    const zipperZ = gmy.deckPanelZOffset + 0.001; // fudge to prevent sliver from subtract
+    const zipperZ = gmy.deckPanelZOffset - 0.001; // fudge to prevent sliver from subtract
     return this.extrudeCentered(gmy.standardDeckPanel, gmy.roadwayWidth)
       .add(zipper.translate(gmy.deckPanelZipperX, zipperZ, 0))
-      .subtract(zipperHole.translate(-gmy.deckBeamHalfWidth - 0.001, zipperZ)) // fudge again
+      .subtract(zipperHole.translate(-gmy.deckBeamHalfWidth - FUDGE, zipperZ))
       .rotate(-90, 0, 0)
       .translate(gmy.standardDeckPanelXOffset, gmy.deckPanelYOffset, gmy.deckPanelZOffset);
   }
@@ -208,8 +211,8 @@ export class Print3dModelService {
     const zipper = this.manifoldClass.extrude(gmy.zipperHole, gmy.zipperThickness).rotate(0, 90, 0);
     const zipperZ = gmy.deckPanelZOffset + 0.001; // fudge to prevent sliver from subtract
     return this.extrudeCentered(gmy.centerDeckBeam, gmy.roadwayWidth)
-      .subtract(zipper.translate(-gmy.deckBeamHalfWidth - 0.001, zipperZ))
-      .subtract(zipper.translate(gmy.deckBeamHalfWidth - gmy.zipperThickness + 0.001, zipperZ))
+      .subtract(zipper.translate(-gmy.deckBeamHalfWidth - FUDGE, zipperZ))
+      .subtract(zipper.translate(gmy.deckBeamHalfWidth - gmy.zipperThickness + FUDGE, zipperZ))
       .rotate(-90, 0, 0)
       .translate(gmy.centerDeckBeamXOffset, gmy.deckPanelYOffset, gmy.deckPanelZOffset);
   }

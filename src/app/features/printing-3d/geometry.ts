@@ -80,7 +80,7 @@ export class Print3dGeometry {
     const pch = 0.3; // pier cusp hieght
     const bv = 0.05; // bevel
     const dah = 4; // display abutment height (below step)
-    const cbh = 0.4; // Cross beam height including flange
+    const cbh = 0.5; // Cross beam height including flange
 
     const pht = Math.sqrt(3) * phs; // pillow height
     const shw = Math.max(phs, dbhw + fw); // step half width
@@ -123,7 +123,7 @@ export class Print3dGeometry {
     const y2 = y0 - pch;
     const y3 = y1 + pch;
 
-    const fh = minFeatureSizeWorldM;
+    const fh = 1.5 * minFeatureSizeWorldM;
     const pmi = minFeatureSizeWorldM; // pin member inset (into cross member)
 
     const z0 = baseY;
@@ -246,17 +246,17 @@ export class Print3dGeometry {
     ];
     this.centerDeckBeamXOffset = dbhw;
 
-    // Zipper.
+    // Zipper. Dimensions in mm.
 
     const ftd = 4 * minFeatureSizeWorldM; // full tooth depth
     const tht = minFeatureSizeWorldM; // tooth height
     const ol = minFeatureSizeWorldM; // tooth overlap
-    const zx0 = -1.5 * ftd;
-    const zx1 = -0.5 * ftd;
-    const zx2 = zx1 + ol;
-    const zx4 = 0.5 * ftd;
-    const zx3 = zx4 - ol;
-    const zx5 = 1.5 * ftd;
+    const zx0 = -1.5 * ftd - ol;
+    const zx1 = -0.5 * ftd - ol;
+    const zx2 = -0.5 * ftd;
+    const zx3 = 0.5 * ftd;
+    const zx4 = 0.5 * ftd + ol;
+    const zx5 = 1.5 * ftd + ol;
     const zy0 = -2 * tht;
     const zy1 = -tht;
 
@@ -277,17 +277,18 @@ export class Print3dGeometry {
 
     this.zipper = [zb, zk, zl, ze, zf, zj, zi, zd, zc, zh, zg, za];
 
-    const zha: Vec2 = [zx0 - wiggleWorldM, zy1 + wiggleWorldM];
-    const zhb: Vec2 = [zx1 - wiggleWorldM, zy1 + wiggleWorldM];
-    const zhc: Vec2 = [zx2 + wiggleWorldM, zy1 - wiggleWorldM];
-    const zhd: Vec2 = [zx3 - wiggleWorldM, zy1 - wiggleWorldM];
-    const zhe: Vec2 = [zx4 + wiggleWorldM, zy1 + wiggleWorldM];
-    const zhf: Vec2 = [zx5 + wiggleWorldM, zy1 + wiggleWorldM];
+    const zha: Vec2 = [zx0 - wiggleWorldM, zy1 - wiggleWorldM];
+    const zhb: Vec2 = [zx1 - wiggleWorldM, zy1 - wiggleWorldM];
+    const zhc: Vec2 = [zx2 + wiggleWorldM, zy1 + wiggleWorldM];
+    const zhd: Vec2 = [zx3 - wiggleWorldM, zy1 + wiggleWorldM];
+    const zhe: Vec2 = [zx4 + wiggleWorldM, zy1 - wiggleWorldM];
+    const zhf: Vec2 = [zx5 + wiggleWorldM, zy1 - wiggleWorldM];
 
-    const zhg: Vec2 = [zx0 - wiggleWorldM, 0];
-    const zhh: Vec2 = [zx2 + wiggleWorldM, 0];
-    const zhi: Vec2 = [zx3 - wiggleWorldM, 0];
-    const zhj: Vec2 = [zx5 + wiggleWorldM, 0];
+    // Extend above deck for clean subtract.
+    const zhg: Vec2 = [zx0 - wiggleWorldM, 1];
+    const zhh: Vec2 = [zx2 + wiggleWorldM, 1];
+    const zhi: Vec2 = [zx3 - wiggleWorldM, 1];
+    const zhj: Vec2 = [zx5 + wiggleWorldM, 1];
 
     const zhk: Vec2 = [zx1 - wiggleWorldM, zy0 - 2 * wiggleWorldM];
     const zhl: Vec2 = [zx4 + wiggleWorldM, zy0 - 2 * wiggleWorldM];
