@@ -14,7 +14,7 @@ import { FormsModule } from '@angular/forms';
 import { jqxNumberInputComponent, jqxNumberInputModule } from 'jqwidgets-ng/jqxnumberinput';
 import { jqxWindowComponent, jqxWindowModule } from 'jqwidgets-ng/jqxwindow';
 import { EventBrokerService, EventOrigin } from '../../../shared/services/event-broker.service';
-import { Print3dModelInfo, Printing3dConfig, Printing3dService } from '../printing-3d.service';
+import { Print3dModelInfo, Printing3dService } from '../printing-3d.service';
 import { jqxSliderComponent } from 'jqwidgets-ng/jqxslider';
 import { SaveMarkService } from '../../save-load/save-mark.service';
 import { DEFAULT_SAVE_FILE_NAME } from '../../save-load/save-load.service';
@@ -29,8 +29,11 @@ import { SessionStateService } from '../../../shared/services/session-state.serv
 })
 export class Print3dDialogComponent implements AfterViewInit {
   modelInfo: Print3dModelInfo = new Print3dModelInfo();
-  config: Printing3dConfig = new Printing3dConfig();
   scaleSlider!: jqxSliderComponent;
+  minFeatureSizeMm: string = '1.2' // 3 * .4mm typical print width
+  wiggleMm: string = '0.2'; // Reasonable join slop for Prusa Original
+  modelMmPerWorldM: number = 5.6; // 250mm / 44M rounded to 0.2
+  baseFileName: string = DEFAULT_SAVE_FILE_NAME;
 
   @ViewChild('dialog') dialog!: jqxWindowComponent;
   @ViewChild('minFeatureSizeInput') minFeatureSizeInput!: jqxNumberInputComponent;
@@ -61,7 +64,7 @@ export class Print3dDialogComponent implements AfterViewInit {
         step: 0.1,
         showTicks: true,
         template: 'primary',
-        value: this.config.modelMmPerWorldM,
+        value: this.modelMmPerWorldM,
       },
       () => this.handleScaleSliderChange(),
     );
@@ -89,25 +92,30 @@ export class Print3dDialogComponent implements AfterViewInit {
   /** Prints OBJ files for the current bridge and config. */
   async handleOkButtonClick(): Promise<void> {
     this.dialog.close();
-    await this.printing3dService.emit3dPrint(this.config);
+    await this.printing3dService.emit3dPrint(
+      this.modelMmPerWorldM,
+      Number.parseFloat(this.minFeatureSizeMm),
+      Number.parseFloat(this.wiggleMm),
+      this.baseFileName,
+    );
   }
 
   /** Sets up dialog fields for current bridge and its edit state. */
   async handleDialogOpen(): Promise<void> {
     // Initialize the default export file name base from the save file name.
     const initBaseFileName = this.saveMarkService.savedFileName || DEFAULT_SAVE_FILE_NAME;
-    this.config.baseFileName = initBaseFileName.replace(/\.bdc$/, '');
+    this.baseFileName = initBaseFileName.replace(/\.bdc$/, '');
     this.unscaledModelInfo = await this.printing3dService.getUnscaledModelInfo();
-    this.modelInfo = this.unscaledModelInfo.applyScale(this.config.modelMmPerWorldM);
+    this.modelInfo = this.unscaledModelInfo.applyScale(this.modelMmPerWorldM);
     this.changeDetectorRef.detectChanges();
   }
 
   handleScaleSliderChange(): void {
-    this.config.modelMmPerWorldM = this.scaleSlider.value();
+    this.modelMmPerWorldM = this.scaleSlider.value();
     if (this.unscaledModelInfo === undefined) {
       return;
     }
-    this.modelInfo = this.unscaledModelInfo.applyScale(this.config.modelMmPerWorldM);
+    this.modelInfo = this.unscaledModelInfo.applyScale(this.modelMmPerWorldM);
     this.changeDetectorRef.detectChanges();
   }
 
@@ -127,12 +135,18 @@ export class Print3dDialogComponent implements AfterViewInit {
 
   dehydrate(): State {
     return {
-      config: this.config,
+      minFeatureSizeMm: this.minFeatureSizeMm,
+      wiggleMm: this.wiggleMm,
+      modelMmPerWorldM: this.modelMmPerWorldM,
+      baseFileName: this.baseFileName,
     };
   }
 
   rehydrate(state: State): void {
-    Object.assign(this.config, state.config);
+    this.minFeatureSizeMm = state.minFeatureSizeMm;
+    this.wiggleMm = state.wiggleMm;
+    this.modelMmPerWorldM = state.modelMmPerWorldM;
+    this.baseFileName = state.baseFileName;
   }
 
   ngAfterViewInit(): void {
@@ -141,11 +155,14 @@ export class Print3dDialogComponent implements AfterViewInit {
       'print3d.dialog',
       () => this.dehydrate(),
       state => this.rehydrate(state),
-      true,  // essential
+      true, // essential
     );
   }
 }
 
 type State = {
-  config: Printing3dConfig;
+  minFeatureSizeMm: string;
+  wiggleMm: string;
+  modelMmPerWorldM: number;
+  baseFileName: string;
 };

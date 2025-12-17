@@ -94,3 +94,5 @@ We thank the providers now and forever.
 - `firebase deploy` # sends build to external dev server
 - `cd src/app/features/fly-thru/shaders && python3 build.py` # builds shaders
 - `cd src/app/features/fly-thru/models && python3 build.py` # builds models from .obj files
+- `scripts/publish-pages.sh` on clean worktree pushes /docs to github
+

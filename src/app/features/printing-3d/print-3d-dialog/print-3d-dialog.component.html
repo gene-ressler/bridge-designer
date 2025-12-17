@@ -37,7 +37,7 @@
           [digits]="3"
           [decimalDigits]="1"
           [groupSeparator]="''"
-          [(ngModel)]="config.minFeatureSizeMm"
+          [(ngModel)]="minFeatureSizeMm"
         ></jqxNumberInput>
       </div>
       <div class="input-label">Wiggle room (millimeters):</div>
@@ -50,13 +50,13 @@
           [digits]="3"
           [decimalDigits]="2"
           [groupSeparator]="''"
-          [(ngModel)]="config.wiggleMm"
+          [(ngModel)]="wiggleMm"
         ></jqxNumberInput>
       </div>
     </div>
     <div class="two-column-container">
       <div class="para">
-        <div>Scale: {{ config.modelMmPerWorldM.toFixed(2) }} model millimeters per world meter</div>
+        <div>Scale: {{ modelMmPerWorldM }} model millimeters per world meter</div>
         <ng-container #scaleSliderContainer></ng-container>
       </div>
       <div class="para">
@@ -101,7 +101,7 @@
             style="width: 200px"
             type="text"
             maxlength="40"
-            [(ngModel)]="config.baseFileName"
+            [(ngModel)]="baseFileName"
           />
         </div>
       </div>
@@ -118,15 +118,15 @@
           </thead>
           <tbody>
             <tr>
-              <td>{{ config.baseFileName }}-abutments</td>
+              <td>{{ baseFileName }}-abutments</td>
               <td>{{ abutmentsFileContents }}</td>
             </tr>
             <tr>
-              <td>{{ config.baseFileName }}-cross-members.obj</td>
+              <td>{{ baseFileName }}-cross-members.obj</td>
               <td>{{ crossMembersFileContents }}</td>
             </tr>
             <tr>
-              <td>{{ config.baseFileName }}-trusses.obj</td>
+              <td>{{ baseFileName }}-trusses.obj</td>
               <td>{{ trussesFileContents }}</td>
             </tr>
           </tbody>

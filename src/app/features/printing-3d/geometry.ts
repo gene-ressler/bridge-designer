@@ -162,9 +162,9 @@ export class Print3dGeometry {
     const yy: Vec2 = [0, z3];
     const zz: Vec2 = [x9, 0];
 
-    // Pin beam coords
-    const i: Vec2 = [x5, z2];
-    const j: Vec2 = [x6, z2];
+    // Pillow coords. In own coords, not bridge.
+    const i: Vec2 = [x5, -pht];
+    const j: Vec2 = [x6, -pht];
 
     // Abutment coords
     const k: Vec2 = [x4, z1];

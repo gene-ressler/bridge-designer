@@ -5,23 +5,6 @@ import { Injectable } from '@angular/core';
 import { Manifold, Mesh, Vec3 } from 'manifold-3d';
 import { cleanup } from 'manifold-3d/lib/garbage-collector.js';
 import { Mat2x3, Print3dModelService } from './print-3d-model.service';
-import { DEFAULT_SAVE_FILE_NAME } from '../save-load/save-load.service';
-
-/** A mutable set of user-settable config parameters for a print. */
-export class Printing3dConfig {
-  /**
-   * @param modelMmPerWorldM model millimeters per world meter
-   * @param minFeatureSizeMm minimum printable feature size
-   * @param wiggleMm "slop" at joins to prevent over-tight fits
-   * @param baseFileName base filename of downloads
-   */
-  constructor(
-    public modelMmPerWorldM: number = 5.6, // A median value: 250 / 44 rounded to 0.2
-    public minFeatureSizeMm: number = 1.2,
-    public wiggleMm: number = 0.2,
-    public baseFileName: string = DEFAULT_SAVE_FILE_NAME,
-  ) {}
-}
 
 /** Information about a printable model provided to user as feedback. */
 export class Print3dModelInfo {
@@ -33,14 +16,6 @@ export class Print3dModelInfo {
     public printHeight: number = 0,
     public maxHeightPart: string = '<none>',
   ) {}
-
-  /* Not currently used.
-  mergeOther(other: Print3dModelInfo): void {
-    this.mergeWidth(other.printWidth, other.maxWidthPart);
-    this.mergeDepth(other.printDepth, other.maxDepthPart);
-    this.mergeHeight(other.printHeight, other.maxHeightPart);
-  }
-  */
 
   mergeManifold(manifold: Manifold, part: string): void {
     const bb = manifold.boundingBox();
@@ -124,13 +99,15 @@ export class Printing3dService {
     return Promise.resolve(info);
   }
 
-  public async emit3dPrint(config: Printing3dConfig): Promise<void> {
+  public async emit3dPrint(
+    modelMmPerWorldM: number,
+    minFeatureSize: number,
+    wiggle: number,
+    baseFileName: string,
+  ): Promise<void> {
     // Load Manifold.
     await this.print3dModelService.initialize();
 
-    const modelMmPerWorldM = config.modelMmPerWorldM;
-    const minFeatureSize = config.minFeatureSizeMm;
-    const wiggle = config.wiggleMm;
     const gmy = this.print3dModelService.getGeometry(modelMmPerWorldM, minFeatureSize, wiggle);
 
     // ---- Trusses ----
@@ -155,7 +132,7 @@ export class Printing3dService {
     const rearTruss = this.print3dModelService.buildTruss(gmy, rearTrussXform);
 
     this.saveMeshAndFree(rearTruss, 'RearTruss', trussesText, trussesContext);
-    this.downloadObjFileText(trussesText, config.baseFileName, 'trusses');
+    this.downloadObjFileText(trussesText, baseFileName, 'trusses');
 
     // ---- Placement control ----
 
@@ -197,7 +174,7 @@ export class Printing3dService {
       this.saveMeshAndFree(pier, 'Pier', abutmentsText, abutmentsContext);
       advancePlacementX(pier);
     }
-    this.downloadObjFileText(abutmentsText, config.baseFileName, 'abutments');
+    this.downloadObjFileText(abutmentsText, baseFileName, 'abutments');
 
     // ---- Cross members
 
@@ -234,7 +211,7 @@ export class Printing3dService {
         advancePlacementX(panel);
       }
     }
-    this.downloadObjFileText(crossMembersText, config.baseFileName, 'cross-members');
+    this.downloadObjFileText(crossMembersText, baseFileName, 'cross-members');
   }
 
   // TODO: Could make these more descriptive. E.g. add counts.

@@ -109,6 +109,15 @@ export class SiteConstants {
     ] as [number, number][]
   ).map(pair => new Point2D(...pair));
 
+  /** Pillow block below supported joints, connected to abutment or pier. */
+  static readonly PILLOW_POINTS: Point2D[] = (
+    [
+      [0, 0],
+      [-this.ABUTMENT_FACE_X, this.ABUTMENT_STEP_HEIGHT],
+      [this.ABUTMENT_FACE_X, this.ABUTMENT_STEP_HEIGHT],
+    ]
+  ).map(pair => new Point2D(...pair));
+
   static readonly ARCH_ABUTMENT_POINTS: TaggedPoint2D<PointTag | undefined>[] = (
     [
       // #region(collapsed) TABLE
@@ -129,18 +138,18 @@ export class SiteConstants {
   static readonly PIER_POINTS: TaggedPoint2D<PointTag | undefined>[] = (
     [
       // #region(collapsed) TABLE
-      [0.5, -0.2],
-      [0.5, -0.2, PointTag.HEIGHT_ADJUSTED],
-      [0.75, -0.2, PointTag.HEIGHT_ADJUSTED],
+      [0.5, this.ABUTMENT_STEP_HEIGHT],
+      [0.5, this.ABUTMENT_STEP_HEIGHT, PointTag.HEIGHT_ADJUSTED],
+      [0.75, this.ABUTMENT_STEP_HEIGHT, PointTag.HEIGHT_ADJUSTED],
       [0.75, -7.5, PointTag.HEIGHT_ADJUSTED],
       [1.4, -7.5, PointTag.HEIGHT_ADJUSTED],
       [1.4, -8.0, PointTag.HEIGHT_ADJUSTED],
       [-1.4, -8.0, PointTag.HEIGHT_ADJUSTED],
       [-1.4, -7.5, PointTag.HEIGHT_ADJUSTED],
       [-0.75, -7.5, PointTag.HEIGHT_ADJUSTED],
-      [-0.75, -0.2, PointTag.HEIGHT_ADJUSTED],
-      [-0.5, -0.2, PointTag.HEIGHT_ADJUSTED],
-      [-0.5, -0.2],
+      [-0.75, this.ABUTMENT_STEP_HEIGHT, PointTag.HEIGHT_ADJUSTED],
+      [-0.5, this.ABUTMENT_STEP_HEIGHT, PointTag.HEIGHT_ADJUSTED],
+      [-0.5, this.ABUTMENT_STEP_HEIGHT],
       // #endregion
     ] as [number, number, PointTag | undefined][]
   ).map(triple => new TaggedPoint2D<PointTag | undefined>(...triple));
