@@ -88,47 +88,47 @@ describe('InterpolationService', () => {
   });
 
   it('should return roadway coords if left of the bridge', () => {
-    interpolator.withParameter(-4).getLoadPosition(load, rotation);
+    interpolator.setParameter(-4).getLoadPosition(load, rotation);
 
     expect(load).toNearlyEqual(vec2.fromValues(-4, 4.8));
     expect(vec2.normalize(rotation, rotation)).toNearlyEqual(vec2.fromValues(0.7071, -0.7071), 1e-3);
 
-    interpolator.withParameter(-2).getLoadPosition(load, rotation);
+    interpolator.setParameter(-2).getLoadPosition(load, rotation);
 
     expect(load).toNearlyEqual(vec2.fromValues(-2, 2.8));
     expect(vec2.normalize(rotation, rotation)).toNearlyEqual(vec2.fromValues(0.7071, -0.7071), 1e-3);
   });
 
   it('should return roadway coords if right of the bridge', () => {
-    interpolator.withParameter(14).getLoadPosition(load, rotation);
+    interpolator.setParameter(14).getLoadPosition(load, rotation);
 
     expect(load).toNearlyEqual(vec2.fromValues(14, 2.8));
     // Rear tire still on the bridge.
     expect(vec2.normalize(rotation, rotation)).toNearlyEqual(vec2.fromValues(0.9683, 0.2503), 1e-3);
 
-    interpolator.withParameter(16).getLoadPosition(load, rotation);
+    interpolator.setParameter(16).getLoadPosition(load, rotation);
 
     expect(load).toNearlyEqual(vec2.fromValues(16, 4.8));
     expect(vec2.normalize(rotation, rotation)).toNearlyEqual(vec2.fromValues(0.7071, 0.7071), 1e-3);
   });
 
   it('should honor exaggeration for load case zero', () => {
-    const actualLocations = interpolator.withParameter(-4).getAllDisplacedJointLocations(new Float32Array(8));
+    const actualLocations = interpolator.setParameter(-4).getAllDisplacedJointLocations(new Float32Array(8));
     settings.exaggeration = 2;
-    const exaggeratedLocations = interpolator.withParameter(-4).getAllDisplacedJointLocations(new Float32Array(8));
+    const exaggeratedLocations = interpolator.setParameter(-4).getAllDisplacedJointLocations(new Float32Array(8));
     expect(exaggeratedLocations[0]).toBe(2 * actualLocations[0]);
   });
 
   it('should honor exaggeration for load case on bridge', () => {
     const zeroForceInterpolator = service.createDeadLoadingInterpolator(0);
     const zeroForceLocations = zeroForceInterpolator
-      .withParameter(6)
+      .setParameter(6)
       .getAllDisplacedJointLocations(new Float32Array(8));
 
-    const actualLocations = interpolator.withParameter(6).getAllDisplacedJointLocations(new Float32Array(8));
+    const actualLocations = interpolator.setParameter(6).getAllDisplacedJointLocations(new Float32Array(8));
 
     settings.exaggeration = 2;
-    const exaggeratedLocations = interpolator.withParameter(6).getAllDisplacedJointLocations(new Float32Array(8));
+    const exaggeratedLocations = interpolator.setParameter(6).getAllDisplacedJointLocations(new Float32Array(8));
 
     const actualDisplacement = vec2.sub([0, 0], actualLocations.slice(2, 2), zeroForceLocations.slice(2, 2));
     const exaggeratedDisplacement = vec2.sub([0, 0], exaggeratedLocations.slice(2, 2), zeroForceLocations.slice(2, 2));
@@ -142,7 +142,7 @@ describe('InterpolationService', () => {
     for (let x = -1; x <= 14; x += 0.5) {
       const location = vec2.create();
       const rotation = vec2.create();
-      interpolator.withParameter(x).getLoadPosition(location, rotation);
+      interpolator.setParameter(x).getLoadPosition(location, rotation);
       locations.push(location[0], location[1]);
       rotations.push(rotation[0], rotation[1]);
     }

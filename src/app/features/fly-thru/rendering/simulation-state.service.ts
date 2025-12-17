@@ -79,9 +79,7 @@ export class SimulationStateService {
     this.phase = SimulationPhase.DEAD_LOADING;
     this.loadAlpha = 0;
     this.endParameter = this.bridgeService.designConditions.spanLength + SimulationStateService.END_PARAMETER_PAST_SPAN;
-    this.deadLoadingInterpolator
-      .withParameter(SimulationStateService.START_PARAMETER)
-      .getLoadPosition(this.wayPoint, this.rotation);
+    this.deadLoadingInterpolator.setParameter(0).getLoadPosition(this.wayPoint, this.rotation);
     this.collapsingInterpolator = undefined;
     this.notifyPhaseChange();
   }
@@ -143,7 +141,7 @@ export class SimulationStateService {
           this.lastLoadAdvanceMillis = undefined;
           return this.advance(clockMillis);
         }
-        this.deadLoadingInterpolator.withParameter(tDeadLoading);
+        this.deadLoadingInterpolator.setParameter(tDeadLoading);
         if (this.deadLoadingInterpolator.failedMemberCount > 0) {
           startCollapsing(this.deadLoadingInterpolator);
           return;
@@ -188,7 +186,7 @@ export class SimulationStateService {
         break;
       case SimulationPhase.COLLAPSING:
         const tRaw = (clockMillis - this.phaseStartClockMillis) * SimulationStateService.INV_COLLAPSING_MILLIS;
-        this.collapsingInterpolator?.withParameter(Math.min(1, tRaw)).getLoadPosition(this.wayPoint, this.rotation);
+        this.collapsingInterpolator!.setParameter(Math.min(1, tRaw)).getLoadPosition(this.wayPoint, this.rotation);
         break;
     }
   }
@@ -201,7 +199,7 @@ export class SimulationStateService {
         : this.traversingInterpolator.parameter +
           this.settingsService.speedMetersPerMilli * (clockMillis - this.lastLoadAdvanceMillis);
     this.lastLoadAdvanceMillis = clockMillis;
-    this.traversingInterpolator.withParameter(t).getLoadPosition(this.wayPoint, this.rotation);
+    this.traversingInterpolator.setParameter(t).getLoadPosition(this.wayPoint, this.rotation);
   }
 
   private notifyPhaseChange() {

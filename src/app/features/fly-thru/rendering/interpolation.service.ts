@@ -40,7 +40,7 @@ export interface Interpolator {
   /** Member force/strength ratios after the last parameter advance. */
   readonly memberForceStrengthRatios: Float32Array;
   /** Returns the interpolator advanced to a new parameter value. */
-  withParameter(t: number): Interpolator;
+  setParameter(t: number): Interpolator;
   /** Gets front tire contact and load rotation as a unit vector at current parameter. */
   getLoadPosition(frontOut: vec2, rotationOut: vec2): void;
   /** Gets the displaced (with exaggeration) joint locations at current parameter. */
@@ -95,7 +95,7 @@ class SourceInterpolator implements Interpolator {
   ) {}
 
   /** Sets the context for interpolations by all other methods. */
-  public withParameter(t: number): Interpolator {
+  public setParameter(t: number): Interpolator {
     return this.setContextForParameter(this.ctx, t).updateMemberFailureStatus();
   }
 
@@ -205,7 +205,6 @@ class SourceInterpolator implements Interpolator {
     const hasReachedDeck = t >= leftmostJointX - cantilever;
     const hasntLeftDeck = t <= rightmostJointX + cantilever;
     ctx.isOnDeck = hasReachedDeck && hasntLeftDeck;
-    // This remains 0 one panel length left of bridge, as desired for left cantilever.
     ctx.leftLoadCase = Math.trunc(ctx.tBridge);
     if (ctx.leftLoadCase === panelIndexMax && hasntLeftDeck) {
       // Still on right cantilever. Interpolate with last panel.
@@ -218,6 +217,7 @@ class SourceInterpolator implements Interpolator {
       ctx.rightLoadCase = ctx.tPanel = NaN;
       return this;
     }
+    // This is normally in [0,1], but not for cantilevers.
     ctx.tPanel = ctx.tBridge - ctx.leftLoadCase;
     // If front tire has left the deck, but back hasn't, right load case is dead load only.
     ctx.rightLoadCase = ctx.leftLoadCase === panelIndexMax ? 0 : ctx.leftLoadCase + 1;
@@ -261,6 +261,32 @@ class SourceInterpolator implements Interpolator {
   }
 }
 
+/*
+ * Interpolator operating on bi-source wrapping no load and dead load sources 
+ * to drive the dead loading animation. Same as a normal source interpolator
+ * except for new `setParameter()` semantics. Parameter value is delegated to 
+ * the bi-source. Therefore truck stays in initial position while member forces
+ * change.
+ */
+class DeadLoadingInterpolator extends SourceInterpolator {
+  constructor(
+    service: InterpolationService,
+    source: BiInterpolatorSource,
+    private readonly t: number,
+  ) {
+    super(service, source);
+    super.setParameter(t);
+  }
+
+  /** Sets the parameter of the underlying bi-source and refreshes. */
+  override setParameter(t: number): Interpolator {
+    const source = this.source as BiInterpolatorSource;
+    source.setParameter(t);
+    super.setParameter(this.t);
+    return this;
+  }
+}
+
 /**
  * Interpolator for the bridge collapse animation that bi-interpolates positions between a "base" analysis
  * (in practice one where a member fails) and a "dummy" one (in practice one with the same failed
@@ -282,7 +308,7 @@ class CollapseInterpolator implements Interpolator {
     this.collapseSource = new BiInterpolatorSource(failedInterpolator.source, collapsedAnalysisSource);
     // Interpolator for positions with parameter frozen at the failure point
     const t = failedInterpolator.parameter;
-    this.interpolator = new SourceInterpolator(service, this.collapseSource).withParameter(t);
+    this.interpolator = new SourceInterpolator(service, this.collapseSource).setParameter(t);
   }
 
   /** The data source of the base failed interpolator. */
@@ -291,8 +317,8 @@ class CollapseInterpolator implements Interpolator {
   }
 
   /** Sets the source parameter: zero is the base, one is the dummy collapse. Advancing approximates collapse.  */
-  public withParameter(t: number): Interpolator {
-    this.collapseSource.withParameter(t);
+  public setParameter(t: number): Interpolator {
+    this.collapseSource.setParameter(t);
     return this;
   }
 
@@ -377,7 +403,8 @@ class AnalysisInterpolationSource implements InterpolatorSource {
     }
     const leftLoadCaseForce = this.analysisService.getMemberForce(ctx.leftLoadCase, index);
     const rightLoadCaseForce = this.analysisService.getMemberForce(ctx.rightLoadCase, index);
-    return Utility.lerp(leftLoadCaseForce, rightLoadCaseForce, ctx.tPanel);
+    const t = Utility.clamp(ctx.tPanel, 0, 1); // Clamp for cantilevers.
+    return Utility.lerp(leftLoadCaseForce, rightLoadCaseForce, t);
   }
 }
 
@@ -410,8 +437,8 @@ class BiInterpolatorSource implements InterpolatorSource {
     return aForce + this.t * (bForce - aForce);
   }
 
-  public withParameter(t: number): BiInterpolatorSource {
-    this.t = t;
+  public setParameter(t: number): BiInterpolatorSource {
+    this.t = Utility.clamp(t, 0, 1);
     return this;
   }
 }
@@ -442,17 +469,9 @@ export class InterpolationService {
 
   /** Creates an interpolator between zero and dead load conditions with given load location. A valid underlying analysis is required. */
   public createDeadLoadingInterpolator(t: number): Interpolator {
-    const source = new AnalysisInterpolationSource(this.analysisService);
-    const deadLoadingSource = new BiInterpolatorSource(InterpolationService.ZERO_FORCE_INTERPOLATION_SOURCE, source);
-    const interpolator = new SourceInterpolator(this, deadLoadingSource).withParameter(t);
-    // Monkey patch the interpolator's parameter setter to operate on the bi-source.
-    const interpolatorWithParameter = interpolator.withParameter.bind(interpolator);
-    interpolator.withParameter = tSource => {
-      deadLoadingSource.withParameter(tSource);
-      interpolatorWithParameter(t); // Refresh interpolator internal state with new source value
-      return interpolator;
-    };
-    return interpolator;
+    const deadLoadSource = new AnalysisInterpolationSource(this.analysisService);
+    const biSource = new BiInterpolatorSource(InterpolationService.ZERO_FORCE_INTERPOLATION_SOURCE, deadLoadSource);
+    return new DeadLoadingInterpolator(this, biSource, t);
   }
 
   /**
