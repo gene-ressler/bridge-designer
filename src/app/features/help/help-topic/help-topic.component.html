@@ -3083,8 +3083,9 @@
       ><img
         alt=""
         src="img/help/goback.png"
-    /></topic-link>
-    <span class="b"> Go back one step</span>
+      />
+      <span class="b"> Go back one step</span></topic-link
+    >
   </div>
   <div class="p">
     <topic-link name="hlp_try_new_configuration"
@@ -3539,7 +3540,6 @@
     <topic-link name="hlp_not_realistic">what's not realistic about the Bridge Designer?</topic-link>
   </div>
 </ng-template>
-<!-- edited -->
 <ng-template topic-name="hlp_record_design">
   <h1>Record your design</h1>
   <div class="p">
@@ -3547,16 +3547,18 @@
       ><img
         alt=""
         src="img/help/gotodp.png"
-    /></topic-link>
-    <span class="b"> How to design a bridge</span>
+      />
+      <span class="b"> How to design a bridge</span></topic-link
+    >
   </div>
   <div class="p">
     <topic-link name="hlp_choose_optimum"
       ><img
         alt=""
         src="img/help/goback.png"
-    /></topic-link>
-    <span class="b"> Go back one step</span>
+      />
+      <span class="b"> Go back one step</span></topic-link
+    >
   </div>
   <div class="p btop">
     Once you've completed your design, you should record it to document your efforts and use as a reference for future
@@ -3570,13 +3572,17 @@
     </li>
     <li><topic-link name="hlp_print_drawing">Print a drawing of your design</topic-link>.</li>
     <li><topic-link name="hlp_print_load_test">Print the load test results</topic-link>.</li>
+    <li><topic-link name="hlp_export_to_3dprint">Export files to 3d print your design</topic-link>.</li>
   </ol>
   <h2 class="btop">Notes and tips</h2>
   <div class="p">
     Don't wait until your design is complete to save it as a bridge design file. Save early and save often, just in
     case....
   </div>
-  <div class="p">You can also 3d-print a display model of your design.</div>
+  <div class="p">
+    Keep <topic-popup name="hlp_remember_my_work">remember my work</topic-popup> checked unless there's a great reason
+    not to. <span class="bd-emph">Bridge Designer</span> will remember your design even if your computer fails.
+  </div>
 </ng-template>
 <ng-template topic-name="hlp_redo">
   <h1>Redo button</h1>
@@ -3586,27 +3592,26 @@
       src="img/help/btnredo.png"
     />
     Click the <span class="b">Redo button</span> to
-    <topic-link name="hlp_using_undo">restore a change to your structural model</topic-link> that was mistakenly undone.
+    <topic-link name="hlp_using_undo">restore a change to your structural model</topic-link> that was previously undone.
   </div>
   <h2 class="btop">Notes and tips</h2>
   <div class="p">
-    The Redo button is located on the <topic-link name="hlp_toolbars">Main Toolbar</topic-link>. It can also be accessed
-    from the <topic-link name="hlp_menu_bar">Edit menu</topic-link>.
+    The redo button is located on the <topic-link name="hlp_toolbars">Main Toolbar</topic-link>. It can also be found in
+    the <topic-link name="hlp_menu_bar">Edit menu</topic-link>.
   </div>
-  <div class="p">
-    The Redo button works in conjunction with the <topic-popup name="hlp_undo">Undo button</topic-popup>.
-  </div>
+  <div class="p">The redo button works together with the <topic-popup name="hlp_undo">undo button</topic-popup>.</div>
 </ng-template>
 <ng-template topic-name="hlp_remember_my_work">
   <h1>Remember my work</h1>
   <div class="p">
     The <span class="bd-emph">Bridge Designer</span> can keep track of all your work so that it's still there even if
-    you refresh or close and restart your browser. To enable this feature, check the
+    you refresh or close and restart your browser or your computer fails. To enable this feature, check the
     <span class="b">remember my work</span> entry at the bottom of the edit menu. It's best to keep this checked nearly
-    all the time. The exception is when using a shared a login user ID with others on the same computer. Unchecking the
-    box as you leave prevents them from seeing your design.
+    all the time. The exception is when using a shared login ID with others on the same computer. Unchecking the box as
+    you leave prevents them from seeing your design.
   </div>
 </ng-template>
+<!-- edited -->
 <ng-template topic-name="hlp_report_cost">
   <h1>Report cost calculations button</h1>
   <div class="p">
