@@ -107,6 +107,7 @@ export class AppComponent implements AfterViewInit {
       this.eventBrokerService.uiModeRequest.next({ origin: EventOrigin.APP, data: 'initial' });
       this.eventBrokerService.tipRequest.next({ origin: EventOrigin.APP, data: 'startup' });
     }
+    this.handleUrlParameters();
   }
 
   /** Takes the welcome step of the startup tip+welcome sequence. */
@@ -114,5 +115,32 @@ export class AppComponent implements AfterViewInit {
     if (isStartupTip) {
       this.eventBrokerService.welcomeRequest.next({ origin: EventOrigin.APP });
     }
+  }
+
+  /** Handles initial URL parameters then deletes them. */
+  private handleUrlParameters(): void {
+    const url = new URL(window.location.href);
+    const params = new URLSearchParams(window.location.search);
+    const reset = 'reset';
+
+    // Allow user to reset local storage with URL query string "?reset".
+    if (params.get(reset) !== null) {
+      // Probably already cleared. See SessionStateService.
+      localStorage.clear();
+      params.delete(reset);
+    }
+
+    // Show a help topic after all else is ready.
+    const help = 'help';
+    const helpTopic = params.get(help);
+    if (helpTopic !== null) {
+      const data = { topic: helpTopic || 'hlp_how_to' };
+      this.eventBrokerService.helpRequest.next({ origin: EventOrigin.APP, data });
+      params.delete(help);
+    }
+
+    // Update the browser's displayed URL without reloading.
+    const resetUrl = `${url.origin}${url.pathname}?${params.toString()}`;
+    window.history.pushState({}, '', resetUrl);
   }
 }

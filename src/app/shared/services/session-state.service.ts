@@ -17,15 +17,10 @@ export class SessionStateService {
     // Allow user to reset local storage with URL query string "?reset".
     // Here to ensure no possible reads are already complete.
     // Too early for Angular active route, so use window object.
-    const url = new URL(window.location.href);
+    // The reset param is deleted at app level after view init.
     const params = new URLSearchParams(window.location.search);
-    const reset = 'reset';
-    if (params.get(reset) !== null) {
+    if (params.get('reset') !== null) {
       localStorage.clear();
-      params.delete(reset);
-      const resetUrl = `${url.origin}${url.pathname}?${params.toString()}`;
-      // Update the browser's displayed URL without reloading.
-      window.history.pushState({}, '', resetUrl);
     }
     eventBrokerService.sessionStateEnableToggle.subscribe(eventInfo => {
       this.isEnabled = eventInfo.data !== false;
