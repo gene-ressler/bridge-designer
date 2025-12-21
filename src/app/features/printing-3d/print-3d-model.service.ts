@@ -134,7 +134,7 @@ export class Print3dModelService {
     const cutout = this.manifoldClass
       .extrude([gmy.abutmentCutout], gmy.abutmentWidth + 2 * FUDGE)
       .rotate(90, 0, 90)
-      .translate(-FUDGE, 0, 0);
+      .translate(-FUDGE, 0, gmy.baseThickness);
     const depth = gmy.bridgeWidth;
     return this.manifoldClass
       .extrude([gmy.abutment], depth)
@@ -148,9 +148,10 @@ export class Print3dModelService {
 
   public buildPier(gmy: Print3dGeometry, x: number): Manifold {
     const tab = this.extrudeCentered(gmy.tab, 2 * gmy.tabThickness).translate(gmy.pierXOffset, 0, gmy.pierTopZ);
-    const cutout = this.manifoldClass.extrude([gmy.pierCutout], gmy.pierWidth + 2 * FUDGE)
+    const cutout = this.manifoldClass
+      .extrude([gmy.pierCutout], gmy.pierWidth + 2 * FUDGE)
       .rotate(90, 0, 90)
-      .translate(-FUDGE, 0, 0);
+      .translate(-FUDGE, 0, gmy.baseThickness);
     return this.manifoldClass
       .extrude(gmy.pier, gmy.pierHeight, undefined, undefined, [gmy.pierTaperX, 1.2])
       .rotate(180, 0, 0) // Flip taper.
@@ -171,7 +172,7 @@ export class Print3dModelService {
     const cutout = this.manifoldClass
       .extrude([gmy.abutmentCutout], gmy.abutmentWidth + 2 * FUDGE)
       .rotate(90, 0, 90)
-      .translate(-FUDGE, 0, 0);
+      .translate(-FUDGE, 0, gmy.baseThickness);
     const depth = gmy.bridgeWidth;
     return this.manifoldClass
       .extrude([gmy.anchorage], depth)
@@ -185,14 +186,13 @@ export class Print3dModelService {
 
   /** Returns pinned cross member for given cross-membered joint, */
   public buildCrossMember(gmy: Print3dGeometry, joint: Joint, x: number, y: number): Manifold {
-    const pinMember = this.buildPinMember(gmy);
     return this.isPillowJoint(joint)
-      ? pinMember
+      ? this.buildPinMember(gmy, true) // With foot.
           .add(this.buildPillow(gmy))
           .translate(gmy.pillowXOffset, gmy.pinMemberYOffset, gmy.pinMemberXOffset)
           .scale(gmy.modelMmPerWorldM)
           .translate(x, y, 0)
-      : pinMember
+      : this.buildPinMember(gmy)
           .translate(gmy.pinMemberXOffset, gmy.pinMemberYOffset, gmy.pinMemberXOffset)
           .scale(gmy.modelMmPerWorldM)
           .translate(x, y, 0);
@@ -244,9 +244,12 @@ export class Print3dModelService {
   }
 
   /** Returns pin cross-member in world coords centered on the origin. */
-  private buildPinMember(gmy: Print3dGeometry): Manifold {
+  private buildPinMember(gmy: Print3dGeometry, hasFoot?: boolean): Manifold {
     const pin = this.extrudeCentered(gmy.pin, gmy.bridgeWidth);
-    const member = this.extrudeCentered(gmy.pinMember, gmy.roadwayWidth);
+    let member = this.extrudeCentered(gmy.pinMember, gmy.roadwayWidth);
+    if (hasFoot) {
+      member = member.add(this.extrudeCentered(gmy.pinMemberFoot, gmy.roadwayWidth));
+    }
     return member.add(pin).rotate(90, 0, 0); // Rotate z axis to y.
   }
 

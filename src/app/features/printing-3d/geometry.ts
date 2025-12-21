@@ -1,7 +1,7 @@
 /* Copyright (c) 2025-2026 Gene Ressler
    SPDX-License-Identifier: GPL-3.0-or-later */
 
-import { Vec2 } from 'manifold-3d';
+import { Polygons, Vec2 } from 'manifold-3d';
 import { SiteConstants } from '../../shared/classes/site-constants';
 import { BridgeService } from '../../shared/services/bridge.service';
 import { DesignConditions } from '../../shared/services/design-conditions.service';
@@ -10,7 +10,7 @@ import { Gusset, GussetsService } from '../../shared/services/gussets.service';
 /**
  * Container for geometry of printed objects.  Must be created per current bridge.
  *
- * All values are in world meters unless noted. Caller is responsible for 
+ * All values are in world meters unless noted. Caller is responsible for
  * scaling to printer coordinates.
  */
 export class Print3dGeometry {
@@ -20,37 +20,38 @@ export class Print3dGeometry {
 
   // Polygons.
   public readonly abutment: Vec2[];
-  /** Abutment cutout polygon to extrude works for anchorages, too. */
-  public readonly abutmentCutout: Vec2[];
+  public readonly abutmentCutout: Vec2[]; // Anchorages, too.
   public readonly abutmentShelfZ: number;
   public readonly abutmentWidth: number;
   public readonly abutmentXOffset: number;
   public readonly anchorage: Vec2[];
-  public readonly anchorageXOffset: number;
   public readonly anchorageTopZ: number;
+  public readonly anchorageXOffset: number;
+  public readonly baseThickness: number;
   public readonly centerDeckBeam: Vec2[];
   public readonly centerDeckBeamXOffset: number;
   public readonly deckBeamHalfWidth: number;
   public readonly deckPanelYOffset: number;
-  public readonly deckPanelZOffset: number;
   public readonly deckPanelZipperX: number;
+  public readonly deckPanelZOffset: number;
   public readonly endDeckPanel: Vec2[];
   public readonly endDeckPanelXOffset: number;
   public readonly gussets: Gusset[];
   public readonly pier: Vec2[];
   public readonly pierCutout: Vec2[];
   public readonly pierHeight: number;
-  public readonly pierXOffset: number;
-  public readonly pierTopZ: number;
   public readonly pierTaperX: number;
+  public readonly pierTopZ: number;
   public readonly pierWidth: number;
+  public readonly pierXOffset: number;
   public readonly pillow: Vec2[];
-  public readonly pillowXOffset: number;
   public readonly pillowHeight: number;
+  public readonly pillowXOffset: number;
   public readonly pin: Vec2[];
   public readonly pinHole: Vec2[];
   public readonly pinHoleSize: number;
   public readonly pinMember: Vec2[];
+  public readonly pinMemberFoot: Polygons;
   public readonly pinMemberXOffset: number;
   public readonly pinMemberYOffset: number;
   public readonly standardDeckPanel: Vec2[];
@@ -75,7 +76,7 @@ export class Print3dGeometry {
     this.bridgeWidth = 2 * bridgeService.bridgeHalfWidth;
     this.roadwayWidth = 2 * SiteConstants.DECK_HALF_WIDTH;
 
-    // The short variable names in this contructor 
+    // The short variable names in this contructor
     // correspond to the pencil sketch in img/geometry.png.
 
     const pmhs = 0.75 * minFeatureSizeWorldM; // pin member half size (width and height)
@@ -90,7 +91,8 @@ export class Print3dGeometry {
     const bv = 0.05; // bevel
     const dah = 4; // display abutment height (below step)
     const cbh = 0.5; // Cross beam height including flange
-    const cot = 1 ; // Cutout (abutment and pier) minimum thickness
+    const cot = 1; // Cutout (abutment and pier) minimum thickness
+    const pfh = 0.2 / modelMmPerWorldM; // Pin foot height (layer thickness)
 
     const pht = Math.sqrt(3) * phs; // pillow height
     const shw = Math.max(phs, dbhw + fw); // step half width
@@ -180,6 +182,16 @@ export class Print3dGeometry {
     const yyh: Vec2 = [0, z3 - wiggleWorldM];
     const zzh: Vec2 = [x9 + wiggleWorldM, 0];
 
+    // Pin foot coords.
+    const fa: Vec2 = [-phs, z3];
+    const fb: Vec2 = [phs, z3];
+    const fc: Vec2 = [-phs, z3 + pfh];
+    const fd: Vec2 = [x8 - pfh, z3 + pfh];
+    const fe: Vec2 = [x9 + pfh, z3 + pfh];
+    const fg: Vec2 = [phs, z3 + pfh];
+    const ft: Vec2 = [x8 + pfh, z3];
+    const fu: Vec2 = [x9 - pfh, z3];
+
     // Pillow coords. In own coords, not bridge.
     const i: Vec2 = [x5, -pht];
     const j: Vec2 = [x6, -pht];
@@ -204,11 +216,12 @@ export class Print3dGeometry {
 
     this.abutment = [p, q, k, l, m, n];
     this.abutmentXOffset = -x0;
+    this.baseThickness = 2 / modelMmPerWorldM; // 2mm
 
     // Abutment cutout.
 
     let acx0 = -bridgeService.bridgeHalfWidth + cot;
-    const acx1 = 0; 
+    const acx1 = 0;
     let acx2 = bridgeService.bridgeHalfWidth - cot;
     const acy0 = z0;
     const acy1 = z2 - cot;
@@ -223,7 +236,7 @@ export class Print3dGeometry {
     const acc: Vec2 = [acx1, acy1];
     this.abutmentCutout = [aca, acb, acc];
     this.abutmentWidth = x1 - x0;
-    
+
     // Anchorage.
     this.anchorage = [p, q, m, n];
     this.anchorageXOffset = -x0;
@@ -244,14 +257,14 @@ export class Print3dGeometry {
     ];
     this.endDeckPanelXOffset = shw;
 
-    // Pier 
+    // Pier
     this.pier = [r, s, t, u, v, w];
     this.pierTaperX = 2;
     this.pierXOffset = -this.pierTaperX * x2;
 
     // Pier cutout
     let pcx0 = -bridgeService.bridgeHalfWidth + cot;
-    const pcx1 = 0; 
+    const pcx1 = 0;
     let pcx2 = bridgeService.bridgeHalfWidth - cot;
     const pcy1 = this.pierTopZ - cot;
     const pcy0 = z0;
@@ -267,6 +280,8 @@ export class Print3dGeometry {
     this.pierCutout = [pca, pcb, pcc];
     this.pierWidth = x1 - x0;
 
+    // Cross-member
+
     this.pillow = [i, j, O];
     this.pillowHeight = pht;
     this.pillowXOffset = phs;
@@ -276,6 +291,7 @@ export class Print3dGeometry {
     this.pinMember = [tt, uu, jj, ii];
     this.pinMemberXOffset = pmhs;
     this.pinMemberYOffset = 0.5 * this.bridgeWidth;
+    this.pinMemberFoot = [[fa, ft, fd, fc], [fu, fb, fg, fe]];
 
     // prettier-ignore
     this.standardDeckPanel = [
