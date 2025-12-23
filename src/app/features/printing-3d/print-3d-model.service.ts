@@ -52,13 +52,12 @@ export class Print3dModelService {
     return this.bridgeService.designConditions.isPier;
   }
 
-  /** Returns a list of text IDs for anchorages present in the current bridge. */
-  public get anchorages(): string[] {
-    const conditions = this.bridgeService.designConditions;
-    const rtn = [];
-    if (conditions.isLeftAnchorage) rtn.push('Left');
-    if (conditions.isRightAnchorage) rtn.push('Right');
-    return rtn;
+  public get isLeftAnchorage(): boolean {
+    return this.bridgeService.designConditions.isLeftAnchorage;
+  }
+
+  public get isRightAnchorage(): boolean {
+    return this.bridgeService.designConditions.isRightAnchorage;
   }
 
   public get deckPanelCount(): number {
@@ -126,22 +125,38 @@ export class Print3dModelService {
 
   /** Returns as a manifold a single abutment at given placement x-coordinate. */
   public buildAbutment(gmy: Print3dGeometry, x: number): Manifold {
-    const tab = this.extrudeCentered(gmy.tab, 2 * gmy.tabThickness).translate(
-      gmy.abutmentXOffset,
-      0,
-      gmy.abutmentShelfZ,
-    );
+    const rawTab = this.extrudeCentered(gmy.tab, 2 * gmy.tabThickness);
+    const tab = rawTab.translate(gmy.abutmentXOffset, 0, gmy.abutmentShelfZ);
     const cutout = this.manifoldClass
-      .extrude([gmy.abutmentCutout], gmy.abutmentWidth + 2 * FUDGE)
+      .extrude(gmy.abutmentCutout, gmy.abutmentWidth + 2 * FUDGE)
       .rotate(90, 0, 90)
-      .translate(-FUDGE, 0, gmy.baseThickness);
+      .translate(-FUDGE, 0, 0);
     const depth = gmy.bridgeWidth;
-    return this.manifoldClass
-      .extrude([gmy.abutment], depth)
-      .translate(gmy.abutmentXOffset, 0, -0.5 * depth)
+    return this.extrudeCentered(gmy.abutment, depth)
+      .translate(gmy.abutmentXOffset, 0, 0)
       .rotate(90, 0, 0) // Rotate y axis to z.
       .subtract(cutout)
       .add(tab)
+      .scale(gmy.modelMmPerWorldM)
+      .translate(x, 0, 0);
+  }
+
+  /** Returns as a manifold a single abutment with anchorage step at given placement x-coordinate. */
+  public buildAbutmentWithAnchorage(gmy: Print3dGeometry, x: number): Manifold {
+    const rawTab = this.extrudeCentered(gmy.tab, 2 * gmy.tabThickness);
+    const abutmentTab = rawTab.translate(gmy.abutmentWithAnchorageXOffset, 0, gmy.abutmentShelfZ);
+    const anchorageTab = rawTab.translate(gmy.anchorageX + gmy.abutmentWithAnchorageXOffset, 0, gmy.abutmentShelfZ);
+    const cutout = this.manifoldClass
+      .extrude(gmy.abutmentCutout, gmy.abutmentWithAnchorageWidth + 2 * FUDGE)
+      .rotate(90, 0, 90)
+      .translate(-FUDGE, 0, 0);
+    const depth = gmy.bridgeWidth;
+    return this.extrudeCentered(gmy.abutmentWithAnchorage, depth)
+      .translate(gmy.abutmentWithAnchorageXOffset, 0, 0)
+      .rotate(90, 0, 0) // Rotate y axis to z.
+      .subtract(cutout)
+      .add(abutmentTab)
+      .add(anchorageTab)
       .scale(gmy.modelMmPerWorldM)
       .translate(x, 0, 0);
   }
@@ -149,35 +164,13 @@ export class Print3dModelService {
   public buildPier(gmy: Print3dGeometry, x: number): Manifold {
     const tab = this.extrudeCentered(gmy.tab, 2 * gmy.tabThickness).translate(gmy.pierXOffset, 0, gmy.pierTopZ);
     const cutout = this.manifoldClass
-      .extrude([gmy.pierCutout], gmy.pierWidth + 2 * FUDGE)
+      .extrude(gmy.pierCutout, gmy.pierWidth + 2 * FUDGE)
       .rotate(90, 0, 90)
-      .translate(-FUDGE, 0, gmy.baseThickness);
+      .translate(-FUDGE, 0, 0);
     return this.manifoldClass
       .extrude(gmy.pier, gmy.pierHeight, undefined, undefined, [gmy.pierTaperX, 1.2])
       .rotate(180, 0, 0) // Flip taper.
       .translate(gmy.pierXOffset, 0, gmy.pierTopZ)
-      .subtract(cutout)
-      .add(tab)
-      .scale(gmy.modelMmPerWorldM)
-      .translate(x, 0, 0);
-  }
-
-  public buildAnchorage(gmy: Print3dGeometry, x: number): Manifold {
-    const tab = this.extrudeCentered(gmy.tab, 2 * gmy.tabThickness).translate(
-      gmy.anchorageXOffset,
-      0,
-      gmy.anchorageTopZ,
-    );
-    // Abutment cutout works for anchorages, too.
-    const cutout = this.manifoldClass
-      .extrude([gmy.abutmentCutout], gmy.abutmentWidth + 2 * FUDGE)
-      .rotate(90, 0, 90)
-      .translate(-FUDGE, 0, gmy.baseThickness);
-    const depth = gmy.bridgeWidth;
-    return this.manifoldClass
-      .extrude([gmy.anchorage], depth)
-      .translate(gmy.anchorageXOffset, 0, -0.5 * depth)
-      .rotate(90, 0, 0) // Rotate y axis to z.
       .subtract(cutout)
       .add(tab)
       .scale(gmy.modelMmPerWorldM)

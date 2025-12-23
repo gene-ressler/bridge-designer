@@ -23,11 +23,11 @@ export class Print3dGeometry {
   public readonly abutmentCutout: Vec2[]; // Anchorages, too.
   public readonly abutmentShelfZ: number;
   public readonly abutmentWidth: number;
+  public readonly abutmentWithAnchorage: Vec2[];
+  public readonly abutmentWithAnchorageWidth: number;
+  public readonly abutmentWithAnchorageXOffset: number;
   public readonly abutmentXOffset: number;
-  public readonly anchorage: Vec2[];
-  public readonly anchorageTopZ: number;
-  public readonly anchorageXOffset: number;
-  public readonly baseThickness: number;
+  public readonly anchorageX: number;
   public readonly centerDeckBeam: Vec2[];
   public readonly centerDeckBeamXOffset: number;
   public readonly deckBeamHalfWidth: number;
@@ -85,18 +85,19 @@ export class Print3dGeometry {
     const fw = minFeatureSizeWorldM; // flange width
     const phs = 0.6; // pillow half size (all 3 sides)
     const dphw = 0.5; // Desired pier half width
-    const aw = 4; // approach width
+    const aw = DesignConditions.PANEL_SIZE_WORLD; // approach width; must allow anchorage 45
     const pw = DesignConditions.PANEL_SIZE_WORLD; // panel width
     const pch = 0.3; // pier cusp hieght
     const bv = 0.05; // bevel
     const dah = 4; // display abutment height (below step)
     const cbh = 0.5; // Cross beam height including flange
-    const cot = 1; // Cutout (abutment and pier) minimum thickness
+    const cot = 1.1; // Cutout (abutment and pier) minimum thickness
     const pfh = 0.2 / modelMmPerWorldM; // Pin foot height (layer thickness)
 
     const pht = Math.sqrt(3) * phs; // pillow height
     const shw = Math.max(phs, dbhw + fw); // step half width
     const phw = Math.max(phs, dphw); // pier half width
+    const cft = 2.0 / modelMmPerWorldM; // cutout foot thickness
 
     const conditions = bridgeService.designConditions;
     const archHeight = conditions.isArch ? conditions.underClearance : 0;
@@ -112,7 +113,6 @@ export class Print3dGeometry {
       this.pierTopZ = this.pierHeight = 0;
     }
     this.abutmentShelfZ = shelfY;
-    this.anchorageTopZ = -pht;
 
     const x0 = -aw - shw;
     const x1 = shw;
@@ -129,6 +129,9 @@ export class Print3dGeometry {
     const x13 = dbhw + fw;
     const x14 = pw - dbhw - fw - wiggleWorldM;
     const x15 = pw - dbhw - wiggleWorldM;
+    const x17 = -SiteConstants.ANCHOR_OFFSET;
+    const x18 = x17 - shw;
+    const x19 = Math.max(x17 + shw, x0);
 
     const y0 = -bridgeService.bridgeHalfWidth;
     const y1 = bridgeService.bridgeHalfWidth;
@@ -146,6 +149,7 @@ export class Print3dGeometry {
     const z5 = pmhs;
     const z6 = cbh + pmhs - pmi - fh;
     const z7 = cbh + pmhs - pmi;
+    const z8 = z2 - shw;
     const O: Vec2 = [0, 0];
 
     // Panel coords
@@ -204,6 +208,13 @@ export class Print3dGeometry {
     const p: Vec2 = [x1, z2];
     const q: Vec2 = [x4, z2];
 
+    // Anchorage extension
+
+    const gb: Vec2 = [x19, z2];
+    const gc: Vec2 = [x18, z2];
+    const gd: Vec2 = [x18, z8];
+    const ge: Vec2 = [x19, z1];
+
     // Pier coords.
     const r: Vec2 = [0, y2];
     const s: Vec2 = [x3, y0];
@@ -215,15 +226,17 @@ export class Print3dGeometry {
     // Abutment.
 
     this.abutment = [p, q, k, l, m, n];
+    this.abutmentWithAnchorage = [p, q, k, ge, gb, gc, gd, m, n];
     this.abutmentXOffset = -x0;
-    this.baseThickness = 2 / modelMmPerWorldM; // 2mm
+    this.abutmentWithAnchorageXOffset = -x18;
+    this.anchorageX = x17;
 
     // Abutment cutout.
 
     let acx0 = -bridgeService.bridgeHalfWidth + cot;
     const acx1 = 0;
     let acx2 = bridgeService.bridgeHalfWidth - cot;
-    const acy0 = z0;
+    const acy0 = z0 + cft; 
     const acy1 = z2 - cot;
     // Don't let the arch angle be shallower than 45 degrees.
     if (acy1 - acy0 < acx1 - acx0) {
@@ -236,10 +249,7 @@ export class Print3dGeometry {
     const acc: Vec2 = [acx1, acy1];
     this.abutmentCutout = [aca, acb, acc];
     this.abutmentWidth = x1 - x0;
-
-    // Anchorage.
-    this.anchorage = [p, q, m, n];
-    this.anchorageXOffset = -x0;
+    this.abutmentWithAnchorageWidth = x1 - x18;
 
     // Deck panels.
     this.deckBeamHalfWidth = dbhw;
@@ -267,7 +277,7 @@ export class Print3dGeometry {
     const pcx1 = 0;
     let pcx2 = bridgeService.bridgeHalfWidth - cot;
     const pcy1 = this.pierTopZ - cot;
-    const pcy0 = z0;
+    const pcy0 = z0 +  cft;
     // Don't let the arch angle be shallower than 45 degrees.
     if (pcy1 - pcy0 < pcx1 - pcx0) {
       const ht = Math.max(0, pcy1 - pcy0);

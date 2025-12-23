@@ -91,10 +91,6 @@ export class Printing3dService {
       const pier = this.print3dModelService.buildPier(gmy, 0);
       info.mergeManifold(pier, 'pier');
     }
-    if (this.print3dModelService.anchorages.length > 0) {
-      const anchorage = this.print3dModelService.buildAnchorage(gmy, 0);
-      info.mergeManifold(anchorage, 'anchorage');
-    }
     cleanup(); // Free manifold memory.
     return Promise.resolve(info);
   }
@@ -149,20 +145,17 @@ export class Printing3dService {
     const abutmentsText: string[] = [];
     const abutmentsContext = new ObjFileContext();
 
-    const leftAbutment = this.print3dModelService.buildAbutment(gmy, placementX);
+    const leftAbutment = this.print3dModelService.isLeftAnchorage
+      ? this.print3dModelService.buildAbutmentWithAnchorage(gmy, placementX)
+      : this.print3dModelService.buildAbutment(gmy, placementX);
     advancePlacementX(leftAbutment);
     this.saveMeshAndFree(leftAbutment, 'LeftAbutment', abutmentsText, abutmentsContext);
 
-    const rightAbutment = this.print3dModelService.buildAbutment(gmy, placementX);
+    const rightAbutment = this.print3dModelService.isRightAnchorage
+      ? this.print3dModelService.buildAbutmentWithAnchorage(gmy, placementX)
+      : this.print3dModelService.buildAbutment(gmy, placementX);
     advancePlacementX(rightAbutment);
     this.saveMeshAndFree(rightAbutment, 'RightAbutment', abutmentsText, abutmentsContext);
-
-    // ---- Anchorages ----
-    for (const side of this.print3dModelService.anchorages) {
-      const anchorage = this.print3dModelService.buildAnchorage(gmy, placementX);
-      advancePlacementX(anchorage);
-      this.saveMeshAndFree(anchorage, `${side}Anchorage`, abutmentsText, abutmentsContext);
-    }
 
     // ---- Pier ----
 
@@ -216,7 +209,7 @@ export class Printing3dService {
     if (this.print3dModelService.isPier) {
       rtn.push('pier');
     }
-    switch (this.print3dModelService.anchorages.length) {
+    switch (+this.print3dModelService.isLeftAnchorage + +this.print3dModelService.isRightAnchorage) {
       case 0:
         break;
       case 1:
