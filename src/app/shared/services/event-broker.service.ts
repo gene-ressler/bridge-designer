@@ -91,6 +91,7 @@ export class EventBrokerService {
   public readonly loadSampleRequest = new Subject<EventInfo>();
   public readonly loadSketchRequest = new Subject<EventInfo>();
   public readonly loadTemplateRequest = new Subject<EventInfo>();
+  public readonly memberDetailsRequest = new Subject<EventInfo>();
   public readonly memberEditRequest = new Subject<EventInfo>();
   public readonly memberNumbersToggle = new Subject<EventInfo>();
   public readonly memberSizeDecreaseRequest = new Subject<EventInfo>();

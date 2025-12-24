@@ -1,0 +1,18 @@
+/* Copyright (c) 2025-2026 Gene Ressler
+   SPDX-License-Identifier: GPL-3.0-or-later */
+
+.header {
+  font-weight: 700;
+}
+
+.body {
+  margin: 8px;
+}
+
+.buttons {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+}

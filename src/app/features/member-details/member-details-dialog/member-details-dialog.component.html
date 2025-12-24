@@ -1,0 +1,22 @@
+<!-- Copyright (c) 2025-2026 Gene Ressler
+     SPDX-License-Identifier: GPL-3.0-or-later -->
+
+<jqxWindow
+  #dialog
+  [isModal]="false"
+  [autoOpen]="false"
+  [width]="500"
+  [height]="800"
+>
+  <div class="header">Member details</div>
+  <div class="body">
+    <div class="buttons">
+      <jqxButton
+        (onClick)="dialog.close()"
+        [width]="'110px'"
+        style="margin-right: 8px"
+        >Close</jqxButton
+      >
+    </div>
+  </div>
+</jqxWindow>
