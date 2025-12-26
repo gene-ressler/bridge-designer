@@ -8,17 +8,16 @@
 - Complete help edit
   - @ 60%
 - Member details
-- Printing, 3D
+- Consider auto-placement of 3d print objects. Big project.
 
 ## Issues
 
+- Add browser checks. Disable features or entire app. See features.js for ideas.
 - Help should be its own window. 
   - Maybe not since BD best in full screen mode anyway?
   - Use router to select either help or BD.
 - Central texture manager. Should initiate loading all at startup.
 - Defer loading of late/intermittent use code: help, print, fly-through.
-- Limited hardware resilience? Need more info.
-  - Add pre-run inventory for browser type and WebGL2 availability.
 
 # Fixed issues
 
