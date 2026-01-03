@@ -43,15 +43,18 @@ export class WorkflowManagementService {
     // Analysis completion.
     eventBrokerService.analysisCompletion.subscribe(eventInfo => {
       const status = eventInfo.data;
+      let isValidForAnimation = false;
       if (status === AnalysisStatus.UNSTABLE) {
         eventBrokerService.unstableBridgeDialogOpenRequest.next({ origin: EventOrigin.SERVICE });
       } else if (status === AnalysisStatus.FAILS_SLENDERNESS) {
         eventBrokerService.slendernessFailDialogOpenRequest.next({ origin: EventOrigin.SERVICE });
+      } else {
+        isValidForAnimation = true;
       }
-      const isValid = isAnalysisValidForReport(status);
-      uiStateService.disable(eventBrokerService.analysisReportRequest, !isValid);
-      uiStateService.disable(eventBrokerService.memberDetailsReportRequest, !isValid);
-      if (isValid && showAnimation) {
+      const isValidForReport = isAnalysisValidForReport(status);
+      uiStateService.disable(eventBrokerService.analysisReportRequest, !isValidForReport);
+      uiStateService.disable(eventBrokerService.memberDetailsReportRequest, !isValidForReport);
+      if (isValidForAnimation && showAnimation) {
         eventBrokerService.uiModeRequest.next({ origin: EventOrigin.SERVICE, data: 'animation' });
       } else {
         // Toggle the design mode back to the drafting panel with no change to UI mode.

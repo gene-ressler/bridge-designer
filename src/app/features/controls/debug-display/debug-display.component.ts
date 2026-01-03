@@ -23,6 +23,8 @@ export class DebugDisplayComponent implements AfterViewInit {
     this.eventBrokerService.displayDebugTextRequest.subscribe(eventInfo => {
       this.text = eventInfo.data;
       this.changeDetectorRef.detectChanges();
+      // Clear the last timeout (if any) and create a new one to 
+      // erase the display after no new requests for a while.
       clearTimeout(this.eraseTimeout);
       this.eraseTimeout = setTimeout(() => {
         this.text = '';

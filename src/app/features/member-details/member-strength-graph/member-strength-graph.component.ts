@@ -347,8 +347,31 @@ export class MemberStrengthGraphComponet implements OnChanges {
       }
     }
     if (this.member) {
+      this.renderSlendernessLengthLimit(ctx, this.member);
       this.renderBracket(ctx, this.member, true);
     }
+  }
+
+  private renderSlendernessLengthLimit(ctx: CanvasRenderingContext2D, member: Member): void {
+    const allowableSlenderness = this.bridgeService.designConditions.allowableSlenderness;
+    if (allowableSlenderness === Number.POSITIVE_INFINITY) {
+      return;
+    }
+    const savedStrokeStyle = ctx.strokeStyle;
+    const savedLineDash = ctx.getLineDash();
+
+    const gmy = this.geometry;
+    const maxLength = allowableSlenderness / member.shape.inverseRadiusOfGyration;
+    const x = lengthToPixel(gmy, maxLength);
+    ctx.strokeStyle = 'magenta';
+    ctx.setLineDash([6, 6]);
+    ctx.beginPath()
+    ctx.moveTo(x, gmy.originY);
+    ctx.lineTo(x, gmy.originY - gmy.yAxisLength);
+    ctx.stroke();
+
+    ctx.strokeStyle = savedStrokeStyle;
+    ctx.setLineDash(savedLineDash);
   }
 
   private renderBracket(ctx: CanvasRenderingContext2D, member: Member, highlight: boolean): void {
