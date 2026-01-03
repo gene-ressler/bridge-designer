@@ -18,7 +18,7 @@ export class MaterialSectionWeight {
   }
 
   public get cost(): number {
-    return this.memberKg * this.material.getCost(this.section) * 2;
+    return this.memberKg * this.material.getCostPerKg(this.section) * 2;
   }
 }
 

@@ -19,22 +19,14 @@ export class ViewportTransform2D {
   private _yWindow = 0;
   private _widthWindow = 1;
   private _heightWindow = 1;
-  // private _vpTx = 0.5;
-  // private _vpTy = 0.5;
-  //private _vpX = 0.5;
-  //private _vpY = 0.5;
   private _xViewport = 0;
   private _yViewport = 0;
-  //private _zWindow = 0;
   private _widthViewport = 1;
   private _heightViewport = 1;
   private _xMargin = 0;
   private _yMargin = 0;
   private _xScaleFactor = 1;
   private _yScaleFactor = 1;
-  //private _zScale = 1;
-  //private _nWindowUpdates = 0;
-  //private _nViewportUpdates = 0;
   private _hAlign = Justification.CENTER;
   private _vAlign = Justification.CENTER;
 
@@ -118,22 +110,6 @@ export class ViewportTransform2D {
     return dst;
   }
 
-  /** 
-   * Set vanishing point as a fraction/parameter of x and y viewport. 
-   * Also the window z-coordinate, which governs scale.
-   *
-  public setVanishingPoint(vpTx: number, vpTy: number, zWindow: number) {
-    this._vpTx = vpTx;
-    this._vpTy = vpTy;
-    this._zWindow = zWindow;
-  }*/
-
-  /*
-  public set zScale(zScale: number) {
-    this._zScale = zScale;
-  }
-  */
-
   private setScaleFactor(): void {
     if (this._widthWindow === 0 || this._heightWindow === 0) {
       this._xScaleFactor = this._yScaleFactor = 1;
@@ -167,13 +143,6 @@ export class ViewportTransform2D {
           break;
       }
     }
-    /*
-    this._vpX = this.worldToViewportX(
-      this._xWindow + this._vpTx * this._widthWindow
-    );
-    this._vpY = this.worldToViewportY(
-      this._yWindow + this._vpTy * this._heightWindow
-    );*/
   }
 
   private static copySign(x: number, signSource: number): number {

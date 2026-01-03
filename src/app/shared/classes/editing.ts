@@ -43,12 +43,12 @@ export class EditCommandPlaceholder extends EditCommand {
   }
 }
 
+/** Operations applicable to editable lists. */
 export class EditableUtility {
   /**
    * Merges a list of new Editables into a mutable target list. The list must have indexes in
    * ascending order (not checked). These are used to place the new items. The target is re-indexed.
-   * The selected index set, if given, is also adjusted to the new numbering. (It can be safely omitted
-   * if merging at the end of the target.)
+   * The selected index set is also adjusted to the new numbering. 
    */
   public static merge<T extends Editable>(tgt: T[], src: T[], selected: Set<number>): void {
     let iTgtSrc: number = tgt.length - 1;
@@ -96,12 +96,12 @@ export class EditableUtility {
     }
   }
 
-  /** Swap the contents of the given item with the contents of the same-index item in the given vector. */
+  /** Swap contents of the given source item and the same-indexed item in the given target vector. */
   public static exchange<T extends Editable>(tgt: T[], src: T): void {
     src.swapContents(tgt[src.index]);
   }
 
-  /** Swap the contents of the given items with the contents of the same-index items in the given vector. */
+  /** Swap contents of the given source items and the same-indexed items in the given target vector. */
   public static exchangeAll<T extends Editable>(tgt: T[], src: T[]): void {
     src.forEach(item => this.exchange(tgt, item));
   }

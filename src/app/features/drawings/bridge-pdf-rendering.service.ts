@@ -16,7 +16,7 @@ const DIMENSION_GAP = 4;
 const DIMENSION_EXTENSION = 1.5;
 const SUPPORT_HALF_WIDTH = 2.5;
 
-/** Renderer for the bridge structure at the top of a PPF page. */
+/** Renderer for the bridge structure at the top of a PDF page. */
 @Injectable({ providedIn: 'root' })
 export class BridgePdfRenderingService {
   private scale: number = 1;
@@ -31,13 +31,13 @@ export class BridgePdfRenderingService {
   ) {}
 
   /**
-   * Makes the bridge drawing at the top of the page and returns a y-coordinate for drawing to continue below.
+   * Makes the bridge drawing at the top of the page and returns a y-coordinate for drawing to continue.
    *
    * Drawing coordinates are millimeters on the page, origin upper left (courtesy jsPDF).
    */
   public draw(doc: jsPDF): number {
-    // Determine drawing box for bridge and set transformation. Find two scales causiong the dimensioned
-    // bridge to fill the page width and a fixed fraction of the height. Use the smaller.
+    // Determine drawing box for bridge and set transformation. Find two scales causing the dimensioned
+    // bridge to fill the page width and a fixed fraction of the height. Use the smaller of the two.
     const bridgeExtent = this.bridgeService.getWorldExtent();
     const verticalDimensionCount = bridgeExtent.y0 < 0 && bridgeExtent.y0 + bridgeExtent.height > 0 ? 2 : 1;
     const verticalDimensionMargin = SUPPORT_HALF_WIDTH + verticalDimensionCount * DIMENSION_GAP;
@@ -47,7 +47,7 @@ export class BridgePdfRenderingService {
     this.scale = Math.min(drawingWidthMm / bridgeExtent.width, drawingHeightMm / bridgeExtent.height);
     this.translateX = 0.5 * (pageWidth - this.scale * bridgeExtent.width) - bridgeExtent.x0 * this.scale;
     this.translateY = DRAWING_MARGIN_MM + this.scale * (bridgeExtent.height + bridgeExtent.y0);
-    // Set drawing environment.]
+    // Set drawing environment.
     doc.setLineWidth(DRAWING_LINE_WIDTH_MM);
     this.setUpTilingPatterns(doc);
     // Get non-overlapping label positions.
@@ -213,7 +213,7 @@ export class BridgePdfRenderingService {
    *   |<------
    *   |
    *   |  dimension gap
-   *   |<-----
+   *   |<------
    *
    * ```
    */

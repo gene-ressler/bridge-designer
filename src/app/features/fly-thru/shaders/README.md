@@ -89,9 +89,10 @@ We get diffuse and specular light reflected from wires using a rough approximati
 one pixel-wide planar facet at the wire's centerline, always facing the viewer. Mathematically the facet normal is the
 projection of the eye vector onto the plane having the wire's direction vector as a normal.
 
-![Wire lighting geometry](img/wire.png) 
+![Wire lighting geometry](img/wire.png)
 
-In this diagram, the facet is oriented edge-on to the viewer and not depicted.  Happily, this is a cheap calculation. All inputs must be normalized.
+In this diagram, the facet is oriented edge-on to the viewer and not depicted. Happily, this is a cheap calculation. All
+inputs must be normalized.
 
 ```
 vec3 normal = normalize(eye - dot(eye, direction) * direction)

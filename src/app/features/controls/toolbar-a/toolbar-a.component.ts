@@ -36,6 +36,7 @@ const enum Tools {
   COST_REPORT,
   STATUS,
   LOAD_TEST_REPORT,
+  MEMBER_DETAILS_REPORT,
   DEBUG_DISPLAY,
 }
 
@@ -56,6 +57,7 @@ export class ToolbarAComponent implements AfterViewInit {
     'custom button button button | ' +
     'custom button | ' +
     'custom | ' +
+    'button | ' +
     'button | ' +
     'custom';
 
@@ -148,6 +150,9 @@ export class ToolbarAComponent implements AfterViewInit {
       case Tools.LOAD_TEST_REPORT:
         WidgetHelper.initToolbarImgButton('Show load test details', 'img/loadtestreport.png', tool, true);
         break;
+      case Tools.MEMBER_DETAILS_REPORT:
+        WidgetHelper.initToolbarImgButton('Show member analysis', 'img/memberreport.png', tool, true);
+        break;
       case Tools.DEBUG_DISPLAY:
         this.componentService.load(DebugDisplayComponent, tool[0]);
         break;
@@ -172,6 +177,7 @@ export class ToolbarAComponent implements AfterViewInit {
     );
     this.uiStateService.registerPlainToolbarButton(tools[Tools.GOTO_ITERATION], eventBroker.loadDesignIterationRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.LOAD_TEST_REPORT], eventBroker.analysisReportRequest);
+    this.uiStateService.registerPlainToolbarButton(tools[Tools.MEMBER_DETAILS_REPORT], eventBroker.memberDetailsReportRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.NEW], eventBroker.newDesignRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.OPEN], eventBroker.loadBridgeFileRequest);
     this.uiStateService.registerPlainToolbarButton(tools[Tools.PRINT], eventBroker.printRequest);

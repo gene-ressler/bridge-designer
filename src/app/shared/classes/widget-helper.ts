@@ -1,7 +1,9 @@
 /* Copyright (c) 2025-2026 Gene Ressler
    SPDX-License-Identifier: GPL-3.0-or-later */
 
+import { ViewContainerRef } from '@angular/core';
 import { jqxDropDownListComponent } from 'jqwidgets-ng/jqxdropdownlist';
+import { jqxSliderComponent } from 'jqwidgets-ng/jqxslider';
 
 export const enum StandardCursor {
   ARROW = 'default',
@@ -63,6 +65,20 @@ export class WidgetHelper {
     if (title) {
       img.title = title;
     }
+  }
+
+  public static setUpSlider(
+    containerRef: ViewContainerRef,
+    inputs: { [key: string]: any },
+    onChange: (event?: any) => void,
+  ): jqxSliderComponent {
+    const sliderRef = containerRef.createComponent(jqxSliderComponent);
+    for (const [key, value] of Object.entries(inputs)) {
+      sliderRef.setInput(key, value);
+    }
+    sliderRef.instance.onChange.subscribe(onChange);
+    sliderRef.changeDetectorRef.detectChanges();
+    return sliderRef.instance;
   }
 
   private static addButtonImg(imgSrc: string, title: string, tool: any) {

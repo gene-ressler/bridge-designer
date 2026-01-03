@@ -178,15 +178,15 @@ export class AnalysisService {
       cosX[i] = dx / length[i];
       cosY[i] = dy / length[i];
     }
-    const nLoadInstances = conditions.loadedJointCount;
-    const pointLoads = Utility.create2dFloat64Array(nLoadInstances, nEquations);
+    const loadCaseCount = conditions.loadedJointCount;
+    const pointLoads = Utility.create2dFloat64Array(loadCaseCount, nEquations);
     for (let im = 0; im < nMembers; im++) {
       const member = members[im];
       const deadLoad =
         (AnalysisService.deadLoadFactor * member.shape.area * length[im] * member.material.density * 9.8066) / 2000.0;
       const dof1 = 2 * member.a.index + 1;
       const dof2 = 2 * member.b.index + 1;
-      for (let ilc = 0; ilc < nLoadInstances; ilc++) {
+      for (let ilc = 0; ilc < loadCaseCount; ilc++) {
         pointLoads[ilc][dof1] -= deadLoad;
         pointLoads[ilc][dof2] -= deadLoad;
       }
@@ -195,11 +195,11 @@ export class AnalysisService {
       conditions.deckType === DeckType.MEDIUM_STRENGTH
         ? AnalysisService.deadLoadFactor * 120.265 + 33.097
         : AnalysisService.deadLoadFactor * 82.608 + 33.097;
-    for (let ij = 0; ij < conditions.loadedJointCount; ij++) {
+    for (let ij = 0; ij < loadCaseCount; ij++) {
       const dof = 2 * ij + 1;
-      for (let ilc = 0; ilc < nLoadInstances; ilc++) {
+      for (let ilc = 0; ilc < loadCaseCount; ilc++) {
         let load = pointDeadLoad;
-        if (ij === 0 || ij === conditions.loadedJointCount - 1) {
+        if (ij === 0 || ij === loadCaseCount - 1) {
           load /= 2;
         }
         pointLoads[ilc][dof] -= load;
@@ -207,7 +207,7 @@ export class AnalysisService {
     }
     // Standard (light) truck.
     const [frontAxleLoad, rearAxleLoad] = conditions.loadType === LoadType.STANDARD_TRUCK ? [71, 181] : [137, 137];
-    for (let ilc = 1; ilc < nLoadInstances; ilc++) {
+    for (let ilc = 1; ilc < loadCaseCount; ilc++) {
       const iFront = 2 * ilc + 1;
       const iRear = iFront - 2;
       pointLoads[ilc][iFront] -= AnalysisService.liveLoadFactor * frontAxleLoad;
@@ -216,7 +216,7 @@ export class AnalysisService {
     const xRestraint = new BitVector(nJoints);
     const yRestraint = new BitVector(nJoints);
     xRestraint.setBit(0);
-    yRestraint.setBit(0).setBit(conditions.loadedJointCount - 1);
+    yRestraint.setBit(0).setBit(loadCaseCount - 1);
     if (conditions.isPier) {
       const i = conditions.pierJointIndex;
       xRestraint.setBit(i);
@@ -235,7 +235,7 @@ export class AnalysisService {
         .clearBit(0)
         .setBit(i)
         .setBit(i + 1)
-        .clearBit(conditions.loadedJointCount - 1);
+        .clearBit(loadCaseCount - 1);
     }
     if (conditions.isLeftAnchorage) {
       const i = conditions.leftAnchorageJointIndex;
@@ -280,7 +280,7 @@ export class AnalysisService {
       stiffness[j2y][j2x] += xy;
       stiffness[j2y][j2y] += yy;
     }
-    for (let ilc = 0; ilc < nLoadInstances; ilc++) {
+    for (let ilc = 0; ilc < loadCaseCount; ilc++) {
       for (let ij = 0; ij < nJoints; ij++) {
         if (xRestraint.getBit(ij)) {
           const ix = 2 * ij;
@@ -324,12 +324,12 @@ export class AnalysisService {
       }
       stiffness[ie][ie] = pivr;
     }
-    this.memberForce = Utility.create2dFloat64Array(nLoadInstances, nMembers);
-    this.memberFails = Utility.create2dBitArray(nLoadInstances, nMembers);
-    this.jointDisplacement = Utility.create2dFloat64Array(nLoadInstances, nEquations);
+    this.memberForce = Utility.create2dFloat64Array(loadCaseCount, nMembers);
+    this.memberFails = Utility.create2dBitArray(loadCaseCount, nMembers);
+    this.jointDisplacement = Utility.create2dFloat64Array(loadCaseCount, nEquations);
     const displacementA = vec2.create();
     const displacementB = vec2.create();
-    for (let ilc = 0; ilc < nLoadInstances; ilc++) {
+    for (let ilc = 0; ilc < loadCaseCount; ilc++) {
       for (let ie = 0; ie < nEquations; ie++) {
         let tmp = 0;
         for (let je = 0; je < nEquations; je++) {
@@ -371,7 +371,7 @@ export class AnalysisService {
       let maxCompression: number = 0;
       let maxTension: number = 0;
       // Failure tests use f/s > 1 to match calculations elsewhere even though f > s is a bit cheaper.
-      for (let ilc = 0; ilc < nLoadInstances; ilc++) {
+      for (let ilc = 0; ilc < loadCaseCount; ilc++) {
         let force = this.memberForce[ilc][im];
         let isMemberFailed: boolean;
         if (force < 0) {

@@ -1,0 +1,148 @@
+<!-- Copyright (c) 2025-2026 Gene Ressler
+     SPDX-License-Identifier: GPL-3.0-or-later -->
+
+<jqxWindow
+  #dialog
+  [isModal]="true"
+  [autoOpen]="false"
+  [width]="438"
+  [height]="802"
+  [initContent]="initDialogContent"
+  [modalOpacity]="0.1"
+  (onOpen)="handleOpen()"
+  (onClose)="handleClose()"
+>
+  <div class="header">Member analysis</div>
+  <div class="content">
+    <fieldset>
+      <legend>Material specification</legend>
+      <stock-dropdown
+        #stockDropdown
+        [width]="392"
+        [membersPartitionedByStock]="membersPartitionedByStock"
+        (onStockSelection)="handleStockSelection($event)"
+      ></stock-dropdown>
+      <div class="title">Members</div>
+      <table class="std-width">
+        <tbody>
+          <tr>
+            <td>{{ memberNumberList }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="title">Properties</div>
+      <table class="std-width">
+        <tbody>
+          <tr>
+            <td>Material</td>
+            <td>{{ material }}</td>
+          </tr>
+          <tr>
+            <td>Yield stress (F<sub>y</sub>)</td>
+            <td>{{ materialYieldStress }} kN per sq. meter</td>
+          </tr>
+          <tr>
+            <td>Modulus of elasticity (E)</td>
+            <td>{{ materialModulus }} kN per sq. meter</td>
+          </tr>
+          <tr>
+            <td>Mass density</td>
+            <td>{{ materialDensity }} kg per cubic meter</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="std-width" style="display: flex; justify-content: space-between">
+        <div>
+          <div class="title">Dimensions</div>
+          <table>
+            <tbody>
+              <tr>
+                <td>Cross-section</td>
+                <td>{{ materialCrossSection }}</td>
+              </tr>
+              <tr>
+                <td>Size</td>
+                <td>{{ materialCrossSectionSize }}</td>
+              </tr>
+              <tr>
+                <td>Area</td>
+                <td>{{ materialCrossSectionArea }} sq. meters</td>
+              </tr>
+              <tr>
+                <td>Moment of inertia</td>
+                <td>{{ materialCrossSectionMoment }} meters<sup>4</sup></td>
+              </tr>
+              <tr>
+                <td>Unit cost</td>
+                <td>{{ materialCostPerMeter }} per meter</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <div class="title">Section (mm)</div>
+          <section-diagram
+            [width]="120"
+            [height]="103"
+            [member]="selectedMembers?.[0]"
+          ></section-diagram>
+        </div>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Analysis</legend>
+      <div>
+        <div class="title">Select member</div>
+        <div style="display: grid; grid-template-columns: max-content auto">
+          <div>
+            <ng-container #memberSliderContainer></ng-container>
+          </div>
+          <div style="justify-self: end">
+            <jqxCheckBox
+              style="float: right"
+              [width]="80"
+              [height]="20"
+              [checked]="true"
+              (onChange)="handleZoomCheckBoxChange($event)"
+              >Focus</jqxCheckBox
+            >
+          </div>
+        </div>
+      </div>
+      <div class="title">Strength vs length</div>
+      <member-strength-graph
+        [width]="392"
+        [height]="196"
+        [membersPartitionedByStock]="membersPartitionedByStock"
+        [selectedMembers]="selectedMembers"
+        [member]="selectedMember"
+        [zoom]="zoom"
+      ></member-strength-graph>
+      <div class="title">Properties</div>
+      <table class="std-width">
+        <tbody>
+          <tr>
+            <td>Length</td>
+            <td style="width: 120px">{{ memberLength }} meters</td>
+            <td style="color: blue; padding-left: 40px">Tension</td>
+            <td>{{ passFailTension }}</td>
+          </tr>
+          <tr>
+            <td>Cost (2 trusses)</td>
+            <td>{{ memberCost }}</td>
+            <td style="color: red; padding-left: 40px">Compression</td>
+            <td>{{ passFailCompression }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </fieldset>
+    <div class="buttons">
+      <jqxButton
+        (onClick)="dialog.close()"
+        [width]="'110px'"
+        style="margin-right: 4px"
+        >Close</jqxButton
+      >
+    </div>
+  </div>
+</jqxWindow>

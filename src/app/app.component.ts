@@ -11,6 +11,7 @@ import { EventBrokerService, EventOrigin } from './shared/services/event-broker.
 import { FlyThruPaneComponent } from './features/fly-thru/pane/fly-thru-pane.component';
 import { HelpDialogComponent } from './features/help/help-dialog/help-dialog.component';
 import { LoadTestReportDialogComponent } from './features/testing/load-test-report-dialog/load-test-report-dialog.component';
+import { MemberDetailsDialogComponent } from './features/member-details/member-details-dialog/member-details-dialog.component';
 import { MemberEditDialogComponent } from './features/drafting/member-edit-dialog/member-edit-dialog.component';
 import { MemberTableComponent } from './features/drafting/member-table/member-table.component';
 import { MenusComponent } from './features/controls/menus/menus.component';
@@ -43,6 +44,7 @@ import { Print3dDialogComponent } from './features/printing-3d/print-3d-dialog/p
     FlyThruPaneComponent,
     HelpDialogComponent,
     LoadTestReportDialogComponent,
+    MemberDetailsDialogComponent,
     MemberEditDialogComponent,
     MemberTableComponent,
     MenusComponent,

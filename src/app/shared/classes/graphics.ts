@@ -747,4 +747,63 @@ export class Graphics {
     Graphics.drawArrow(ctx, x0, y0, x1, y1, halfWidth, length);
     Graphics.drawArrowhead(ctx, x1, y1, x0, y0, halfWidth, length);
   }
+
+  /**
+   * Adds a clockwise rectangle with rounded corners of given
+   * radius to the given context, but doesn't stroke it.
+   * Width and height assumed non-negative. Built-in
+   * roundRect() is too new.
+   */
+  public static drawRoundRect(
+    ctx: CanvasRenderingContext2D,
+    x0: number,
+    y0: number,
+    width: number,
+    height: number,
+    r: number,
+  ) {
+    const rt = 0;
+    const up = -0.5 * Math.PI;
+    const lf = Math.PI;
+    const dn = 0.5 * Math.PI;
+    const x1 = x0 + width;
+    const y1 = y0 + height;
+    const x0r = x0 + r;
+    const y0r = y0 + r;
+    const x1r = x1 - r;
+    const y1r = y1 - r;
+    ctx.beginPath();
+    ctx.arc(x0r, y0r, r, lf, up);
+    ctx.lineTo(x1r, y0);
+    ctx.arc(x1r, y0r, r, up, rt);
+    ctx.lineTo(x1, y1r);
+    ctx.arc(x1r, y1r, r, rt, dn);
+    ctx.lineTo(x1, y1);
+    ctx.arc(x0r, y1r, r, dn, lf);
+    ctx.closePath();
+  }
+
+  public static clearTextBox(
+    ctx: CanvasRenderingContext2D,
+    text: string,
+    x: number,
+    y: number,
+    rect?: Rectangle2DInterface,
+    pad: number = 2,
+  ): void {
+    const metrics = ctx.measureText(text);
+    const left = x - metrics.actualBoundingBoxLeft - pad;
+    const right = x + metrics.actualBoundingBoxRight + pad;
+    const top = y - metrics.actualBoundingBoxAscent - pad;
+    const bottom = y + metrics.actualBoundingBoxDescent + pad;
+    const width = right - left;
+    const height = bottom - top;
+    ctx.clearRect(left, top, width, height);
+    if (rect) {
+      rect.x0 = left;
+      rect.y0 = top;
+      rect.width = width;
+      rect.height = height;
+    }
+  }
 }

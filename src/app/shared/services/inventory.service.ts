@@ -15,7 +15,7 @@ export class Material {
     readonly cost: number[],
   ) {}
 
-  public getCost(crossSection: CrossSection): number {
+  public getCostPerKg(crossSection: CrossSection): number {
     return this.cost[crossSection.index];
   }
 }
@@ -118,7 +118,7 @@ export class Shape {
   }
 
   public toString(): string {
-    return this.name + ' mm ' + this.section;
+    return `${this.name}mm ${this.section.name.toLowerCase()}`
   }
 }
 
@@ -144,6 +144,7 @@ export class StockId {
     public sizeIndex: number,
   ) {}
 
+  /** Converts this ID into the material and shape it represents or undefined if none. */
   public toMaterialAndShape(): { material: Material; shape: Shape } | undefined {
     return this.materialIndex < 0 || this.sectionIndex < 0 || this.sizeIndex < 0
       ? undefined
@@ -153,8 +154,10 @@ export class StockId {
         };
   }
 
-  public get key() {
-    return `StockId:${this.materialIndex}.${this.sectionIndex}.${this.sizeIndex}`;
+  /** Returns a key for sorting and grouping stock canonically. */
+  public get key(): string {
+    // Only sizes have indices more than 9.
+    return `StockId:${this.materialIndex}.${this.sectionIndex}.${String(this.sizeIndex).padStart(2, '0')}`;
   }
 }
 

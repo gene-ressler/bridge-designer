@@ -58,7 +58,7 @@ export class CartoonRenderingService {
     const text = 'Title block';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'bottom';
-    ctx.font = 'italic 14px sans-serif';
+    ctx.font = 'italic 12px sans-serif';
     const textMetrics = ctx.measureText(text);
     const margin = 8;
     const height = margin + textMetrics.actualBoundingBoxAscent + margin;

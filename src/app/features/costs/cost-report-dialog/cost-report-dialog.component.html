@@ -32,8 +32,8 @@
               </td>
               <td colspan="4">{{ item.material.name }} {{ item.section.name.toLowerCase() }}</td>
               <td>
-                ({{ toFixed(item.memberKg) }} kg) × ({{ toDollars(item.material.getCost(item.section)) }} per kg) × (2
-                trusses)
+                ({{ toFixed(item.memberKg) }} kg) × ({{ toDollars(item.material.getCostPerKg(item.section)) }} per kg) ×
+                (2 trusses)
               </td>
               <td class="shrink-to-fit">=</td>
               <td class="numeric">{{ toDollars(item.cost) }}</td>

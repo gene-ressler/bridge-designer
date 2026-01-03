@@ -83,6 +83,7 @@ export class UiStateService {
     this.addDisableOverrides(eventBrokerService.inventorySelectionChange, initialAndAnimation);
     this.addDisableOverrides(eventBrokerService.loadDesignIterationRequest, initialAndAnimation);
     this.addDisableOverrides(eventBrokerService.loadTemplateRequest, initialAndAnimation);
+    this.addDisableOverrides(eventBrokerService.memberDetailsReportRequest, initial, true);
     this.addDisableOverrides(eventBrokerService.memberNumbersToggle, initialAndAnimation);
     this.addDisableOverrides(eventBrokerService.memberSizeDecreaseRequest, initialAndAnimation);
     this.addDisableOverrides(eventBrokerService.memberSizeIncreaseRequest, initialAndAnimation);

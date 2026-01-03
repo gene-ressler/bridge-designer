@@ -269,7 +269,7 @@ export class DesignMemberRenderingService {
     const y = (a.y + b.y) * 0.5 + 1; // +1 centers on horizontal-ish members.
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = '9px';
+    ctx.font = '12px sans-serif';
     const number = memberNumber.toString();
     const metrics = ctx.measureText(number);
     this.labelRectangle.x0 = x - metrics.actualBoundingBoxLeft;

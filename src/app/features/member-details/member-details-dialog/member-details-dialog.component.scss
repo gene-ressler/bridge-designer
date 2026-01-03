@@ -1,0 +1,51 @@
+/* Copyright (c) 2025-2026 Gene Ressler
+   SPDX-License-Identifier: GPL-3.0-or-later */
+
+.buttons {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+}
+
+.content {
+  margin: 8px;
+}
+
+.control-grouping {
+  border-style: ridge;
+  border-width: 2px;
+  padding: 5px;
+}
+
+legend {
+  font-weight: 700;
+  color: darkblue;
+}
+
+.header {
+  font-weight: 700;
+}
+
+.properties {
+  background-color: white;
+  border: 1px solid black;
+}
+
+.title {
+  font-weight: bold;
+  margin-top: 6px;
+}
+
+table {
+  border: 1px solid black;
+}
+
+table td {
+  padding-right: 4px;
+}
+
+.std-width {
+  width: 392px;
+}

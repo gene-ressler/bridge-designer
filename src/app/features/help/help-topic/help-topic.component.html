@@ -727,15 +727,15 @@
     <span class="i"><topic-popup name="glos_aashto">AASHTO</topic-popup>&nbsp;LRFD Bridge Design Specifications</span>.
   </div>
   <div class="p">
-    To see a graph of compressive strength, as a function of member length, see the
-    <topic-link name="hlp_member_details">member details tab</topic-link>.
+    To see a graph of compressive strength as a function of member length, see the
+    <topic-link name="hlp_member_details">member analysis</topic-link> in the report menu after testing your bridge.
   </div>
   <div class="p">
     To obtain the numerical values of <span class="bi">F<sub>y</sub></span> and <span class="bi">E</span> for a given
     <topic-link name="hlp_materials">material</topic-link> and <span class="bi">A</span> and
     <span class="bi">I</span> for a given <topic-popup name="hlp_crossxsection">cross-section</topic-popup> and
-    <topic-popup name="glos_member_size">member size</topic-popup>, click the
-    <topic-link name="hlp_member_details">member details tab</topic-link>.
+    <topic-popup name="glos_member_size">member size</topic-popup>, first test on your bridge, then select
+    <topic-link name="hlp_member_details">member analysis</topic-link> in the report menu, or use the toolbar button.
   </div>
   <div class="p">
     The <span class="bd-emph">Bridge Designer</span> calculates the compressive strength of each member in your
@@ -2588,8 +2588,9 @@
   <div class="p">
     To determine the numerical values of <topic-popup name="glos_yield_stress">yield stress</topic-popup>,
     <topic-popup name="glos_mass_density">mass density</topic-popup>, and modulus of elasticity for a given material,
-    use the <topic-link name="hlp_member_details">member details tab</topic-link>. To determine the unit cost of a
-    material, check the <topic-link name="hlp_report_cost">cost calculations report</topic-link>.
+    select <topic-link name="hlp_member_details">member analysis</topic-link> in the report menu after testing your
+    bridge. To determine the costs of materials, check the
+    <topic-link name="hlp_report_cost">cost calculations report</topic-link>.
   </div>
 </ng-template>
 <ng-template topic-name="hlp_member_list">
@@ -2787,6 +2788,7 @@
   <div class="p">Report</div>
   <div class="p in1"><topic-popup name="hlp_report_cost">Cost calculations</topic-popup></div>
   <div class="p in1"><topic-popup name="hlp_report_load_test">Load test results</topic-popup></div>
+  <div class="p in1"><topic-popup name="hlp_member_details">Member analysis</topic-popup></div>
   <div class="p">Help</div>
   <div class="p in1"><topic-popup name="hlp_tip_of">Tip of the day</topic-popup></div>
 </ng-template>
@@ -3682,20 +3684,27 @@
   </div>
 </ng-template>
 <ng-template topic-name="hlp_member_details">
-  <h1>Member details</h1>
+  <h1>Member analysis report</h1>
   <div class="p">
-    <span class="b">Member Details</span> is an interactive explorer that displays detailed engineering information
-    about the <topic-link name="hlp_materials">materials</topic-link>,
+    <img
+      alt="Report member analysis button"
+      src="img/help/memberreport.png"
+    />
+    Click the
+    <img
+      style="float: right; width: 300px"
+      src="img/help/memberdataspike.png"
+      alt="Member data spike graphic"
+    />
+    <span class="b">Report member analysis button</span> or to display a member analysis report. This is an interactive
+    explorer that displays detailed engineering information about the
+    <topic-link name="hlp_materials">materials</topic-link>,
     <topic-popup name="hlp_crossxsection">cross-sections</topic-popup>, and
-    <topic-popup name="glos_member_size">sizes</topic-popup> of all selected
-    <topic-popup name="glos_members">members</topic-popup>. When no members are selected, it displays information about
-    all the members in the <topic-popup name="hlp_member_properties">Member properties lists</topic-popup>.
+    <topic-popup name="glos_member_size">sizes</topic-popup> of
+    <topic-popup name="glos_members">members</topic-popup> in your current design. It also shows member strength vs. the
+    <topic-popup name="glos_forces">forces</topic-popup> that acted on each member during the previous load test.
   </div>
-  <div class="p">
-    Member details and the <topic-link name="hlp_member_list">member list</topic-link> occupy the same screen location.
-    If the member list is visible, change to member details by clicking its tab at the upper right corner.
-  </div>
-  <div class="p">Member details include:</div>
+  <div class="p">Member analysis includes:</div>
   <ol>
     <li>
       Material properties:
@@ -3717,17 +3726,30 @@
     <li>The cost per meter of a member made with the selected material, cross-section, and size.</li>
   </ol>
   <div class="p">
-    If members are selected a separate members tab is presented for each set of members consisting of the same material
-    and cross-section. The lengths of these members are drawn as vertical lines on the strength curve with one
-    highlighted. The highlighted member can be selected with the Member: selector
-    <img src="img/help/memdetmemsel.png" />. Click the arrow buttons or select a member number from the drop down list.
-    All tabs can be drawn on a single strength curve by selecting the <img src="img/help/graphallcheck.png" /> check
+    Members are grouped by material and cross-section. Use the <span class="b">material specification</span> menu at the
+    top to pick one. The graphs will show the corresponding strengh vs. length curve. Each member in the material group
+    will have a &quot;data spike&quot; as shown. All spikes except one will be ghosts drawn in pale colors. Pick the
+    member to highlight with the slider labeled <span class="b">select member</span>.
+  </div>
+  <div class="p">
+    To see ghost spikes for the entire bridge rather than just one material group, uncheck the
+    <span class="b">focus</span>
     box.
+  </div>
+  <div class="p">
+    Members failing the <topic-popup name="glos_slenderness">slenderness check</topic-popup>, or close to it, will have
+    a dotted vertical <span class="c6b">magenta</span> line at the maximum length a member with this material spec is
+    allowed to have.
   </div>
   <h2 class="btop">Notes and tips</h2>
   <div class="p">
-    Member length and cost will be shown in the Member Details only when exactly one member is selected.
+    The currently selected member is also highlighted in the member table and drawing board. Check it out!
   </div>
+  <div class="p">
+    When the top of either force range in the data spike is higher than the corresponding strength, the member fails!
+  </div>
+  <div class="p">Forces have a range because they usually vary as the truck load moves across the bridge.</div>
+  <div class="p">Force ranges may be hard to see if the forces were near zero.</div>
 </ng-template>
 <ng-template topic-name="hlp_roller_support">
   <h1>Roller support</h1>
@@ -5515,7 +5537,12 @@
     <li>
       <span class="b">Export a 3D model of your design!</span> In addition to the beautiful blueprint-style printed
       version of your bridge that has long been part of <span class="bd-emph">Bridge Designer</span>, it can now export
-      an STL file, suitable as input for your favorite 3d printer.
+      OBJ files suitable for your favorite 3d printer.
+    </li>
+    <li>
+      <span class="b">Member analysis report.</span> An upgrade of the old member details tab, this interactive explorer
+      supplements the members list with dynamically updated engineering information about member cross-sections,
+      materials, lengths, costs, forces, and strength. You can dig deep into what makes your bridge work.
     </li>
     <li>
       Late updates of previous <span class="bd-emph">Bridge Designer</span> versions are still there:
@@ -5525,16 +5552,12 @@
           animation of your completed bridge to observe its performance while the truck load drives over the deck.
         </li>
         <li>
-          <span class="b">Member details.</span> An interactive member details explorer supplements the members list
-          with dynamically updated engineering information about member cross-sections, materials, lengths, and costs.
-        </li>
-        <li>
           <span class="b">Deep undo.</span> The old limit of 5 is now 100. Undo and redo
           <span class="i">your last hundred edits</span> for the current design iteration.
         </li>
         <li>
           <span class="b">Iterations tree view.</span> Track your design iterations with a view that shows the history
-          of each one. The old chronological list is also still available.
+          of each one. The chronological list is also still available.
         </li>
         <li>
           <span class="b">Click and drag member list selections.</span> Click and drag to select a group of members in

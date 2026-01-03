@@ -1,6 +1,3 @@
-/* Copyright (c) 2025-2026 Gene Ressler
-   SPDX-License-Identifier: GPL-3.0-or-later */
-
 type HelpIndexData = {
   id: string,
   title: string,
@@ -94,41 +91,44 @@ export const HELP_INDEX_DATA: HelpIndexData[] = [
     title: 'Assembling your bridge model',
     text: 'instructions assume youve aleady printed parts model using instructions >exporting obj files prepare' +
           ' build things youll need assemble printed parts flat clean work surface protected glue spills paper ' +
-          'shelf paper large paper bag flattend work crazy glue otherwise called cyanoacrylate plastic glue bon' +
-          'd parts together xacto knife box cutter single edge razor blade trim parts needed fine sand paper 15' +
-          '0 220 grit nail file roll sticky tape kind scotch tape duct tape even better tool expand holes diame' +
-          'ter equal minimum feature size slightly larger theyre small fit corresponding pins micro drill bit p' +
-          'in vice tool spin bit ideal pinch possible use large sewing need heated candle soften move plastic c' +
-          'areful begin laying parts type good way avoid confusion draw grid 11 boxes 3 inches square build sur' +
-          'vace covering paper label 1 11 sort parts support cross members 1 per support identical theyre used ' +
-          'different places abutments 2 note may appear quite different picture depending design example arch a' +
-          'butments taller pier 0 1 anchorages 0 1 2 deck end panels 2 deck mid panels 2 less total number deck' +
-          ' segments deck cross members one per unsupported deck joint may 3 9 deck join beam 1 trusses 2 deck ' +
-          'assembly fixture 1 isnt part bridge youll use hold pieces place others assembled simple cross member' +
-          's one per joint types count varies abutments 2 pier 0 1 anchorage blocks 0 1 2 steps complete model ' +
-          'step use trimming tool and/or hole drill make joint fit well gaps excessive tightness applying glue ' +
-          'may take time patient glue two support cross members 1 slots two deck end panels 2 set aside grid sq' +
-          'uare 2 dry bridge pier glue another support cross member 1 deck mid panel 3 otherwise go next step s' +
-          'et aside grid square 3 dry glue deck cross member 4 deck join beam 5 set aside grid square 5 take br' +
-          'eak wait glue applied far solid continuing glue still wet asking trouble dry fit whole deck arrangin' +
-          'g deck panels 2 3 4 top side shown diagram glue use tools ensure panels fit together tightly compare' +
-          ' positions cross member pins holes truss deck panel joints must able match exactly first last deck p' +
-          'ins cannot farther apart first last truss joint holes little closer together fine. use sandpaper bla' +
-          'de remove bit material panel everything matches keep panels dry fit left right order avoid confusion' +
-          ' assembling deck tune cross member pins truss holes needed pin fits hole shoulder shown. tuning mean' +
-          's using cutter sandpaper nail file hole drill needle needed make pin hole sizes match attach trusses' +
-          ' 6 deck assembly fixture 7 deck joints right end bridge. right end mean right side bridge appears br' +
-          'idge designer poke fixtures pins two rightmost deck joint holes truss dont use glue use narrow strip' +
-          ' sticky tape hold trusses fixture starting left side bridge add dry fitted deck panels one time work' +
-          'ing right gluing go sure keep panels correct order strip tape trusses joint keep things place glue s' +
-          'ets needed reach assembly fixure remove tape holding place substitute final deck panels take break l' +
-          'ett everything dry completely add simple cross members 7 one per joint hole anchorage joint glue sup' +
-          'port cross member pillows triangular sections deck corresponding abutment 9 pier 10 bridge one point' +
-          ' model stand flat abutments pier bridge anchorages glue remaining one two support cross members 1 an' +
-          'chorage block 11 glue pins anchorage support cross member respective holes trusses model sitting fla' +
-          't surface ensure correct orientation youre done notes tips consider printing assembly instructions p' +
-          'aper ticking go avoid confusion satisfying assembling bridge model challenging methodical work stead' +
-          'ily something goes wrong reprint parts need try'
+          'shelf paper large paper bag flattend work cyanoacrylate glue crazy glue another plastic glue bond pa' +
+          'rts xacto knife box cutter single edge razor blade trim parts needed fine sand paper 150 220 grit na' +
+          'il file tool expand holes diameter equal minimum feature size slightly larger theyre small fit corre' +
+          'sponding pins tapered xacto blade work micro drill bit pin vice tool spin bit ideal careful begin la' +
+          'ying parts type good way avoid confusion draw grid nine boxes three inches square build surface cove' +
+          'ring paper label 1 9 sort parts ref name qty 1 support cross member 2 5 2 deck end panel 2 3 deck mi' +
+          'd panel varies 4 pin cross member varies 5 join deck beam 1 7 truss 2 8 abutment 2 9 pier 0 1 import' +
+          'ant notes tell difference deck end mid panels looking tabs slots fit together mid panel end panels t' +
+          'abs abutments look bit different picture one associated anchorage case extra step tab support crossm' +
+          'ember pillow used connect anchored members build steps complete model step use trimming tool and/or ' +
+          'hole drill make joint fit well gaps excessive tightness applying glue may take time patient glue two' +
+          ' support cross members 1 slots two deck end panels 2 set aside grid square 2 dry bridge pier deck he' +
+          'ight glue another support cross member 1 deck mid panel 3 otherwise go next step set aside grid squa' +
+          're 3 dry glue pin cross member 4 deck join beam 5 glue remaining pin cross members 4 remaining deck ' +
+          'mid panels 3 numbers match glue deck join beam 5 onto one deck end panels 2 return assembly square 5' +
+          ' dry take break wait glue applied far solid dry fit whole deck arranging deck panels 2 3 4 5 top sid' +
+          'e shown diagram glue end panels go end deck level pier panel one must also right position use tools ' +
+          'ensure panels fit together completely test pair panels make sure joint pins farther apart deck joint' +
+          's truss wont able attach remove material panel tabs sandpaper file keep panels dry fit left right or' +
+          'der avoid confusion assembling deck tune cross member pins truss holes needed pin fits hole shoulder' +
+          ' shown. tuning means using cutter sandpaper nail file hole drill needle needed make pin hole sizes m' +
+          'atch identify insides trusses smooth flat assembled inside surfaces point toward deck opposite sides' +
+          ' thickened gusset joint. >outside truss point away deck attach two leftmost deck joints trusses 7 fo' +
+          'ur pins deck join beam assembly 5 . make sure inside truss points toward deck take break wait deck j' +
+          'oin beam connections trusses solid add deck panels one time working right deck join beam assembly gl' +
+          'uing go sure keep panels correct order dry fitted take break let deck panels dry completely add rest' +
+          ' pin cross members 4 truss joints make sure skip support joints abutments pier anchorages well get l' +
+          'ater glue support cross member 1 pillows triangular sections abutment 8 tab fits slot bridge anchora' +
+          'ges theres second tab second support cross member glue pillow finally bridge pier glue last pillow t' +
+          'ab attach truss abutments fit abutment pins corresponding truss pin holes includes anchorage pins br' +
+          'idge glue yet make sure abutments sitting flat surface add drop glue joint take break make sure brid' +
+          'e attachment abutments solid attache glue piers pins truss one make sure abutments pier sitting flat' +
+          ' surface glue sets youre done notes tips consider printing blueprint bridge assembly instructions pa' +
+          'per truss configuration ready reference steps ticking go strangely satisfying bridge parts particula' +
+          'rly big spans anchorages tiny youre feeling crafty try printing truss two pieces obtain bridge twice' +
+          ' scale one print would allow need cut truss half slicer software print half separately glue together' +
+          ' first step assembly assembling bridge model challenging methodical work steadily something goes wro' +
+          'ng reprint parts need try good luck project'
   },
   {
     id: 'glos_astm',
@@ -239,12 +239,13 @@ export const HELP_INDEX_DATA: HelpIndexData[] = [
           'es inelastic λ ≤ 2.25 elastic λ > 2.25 buckling failure modes ϕ = 0.90 resistance factor member comp' +
           'ression f y yield stress cross sectional area member π 3.14159.. e modulus elasticity material momen' +
           't inertia member l length member notes tips equations taken 1994 aashto lrfd bridge design specifica' +
-          'tions see graph compressive strength function member length see member details tab obtain numerical ' +
-          'values f y e given material given cross section member size click member details tab bridge designer' +
-          ' calculates compressive strength member structural model load test compressive strength member alway' +
-          's less tensile strength member relatively long slender difference quite substantial number 0.88 equa' +
-          'tion accounts fact actual structural members never perfectly straight slight crookedness actual stru' +
-          'ctural members buckle internal force average 12% lower theory predicts'
+          'tions see graph compressive strength function member length see member analysis report menu testing ' +
+          'bridge obtain numerical values f y e given material given cross section member size first test bridg' +
+          'e select member analysis report menu use toolbar button bridge designer calculates compressive stren' +
+          'gth member structural model load test compressive strength member always less tensile strength membe' +
+          'r relatively long slender difference quite substantial number 0.88 equation accounts fact actual str' +
+          'uctural members never perfectly straight slight crookedness actual structural members buckle interna' +
+          'l force average 12% lower theory predicts'
   },
   {
     id: 'glos_concrete',
@@ -955,22 +956,26 @@ export const HELP_INDEX_DATA: HelpIndexData[] = [
           'd low alloy steel strongest expensive three three materials approximately density modulus elasticity' +
           ' best material often varies structure structure design may use one youll need experiment determine m' +
           'aterials best design determine numerical values yield stress mass density modulus elasticity given m' +
-          'aterial use member details tab determine unit cost material check cost calculations report'
+          'aterial select member analysis report menu testing bridge determine costs materials check cost calcu' +
+          'lations report'
   },
   {
     id: 'hlp_member_details',
-    title: 'Member details',
-    text: 'member details interactive explorer displays detailed engineering information materials cross sectio' +
-          'ns sizes selected members members selected displays information members member properties lists memb' +
-          'er details member list occupy screen location. member list visible change member details clicking ta' +
-          'b upper right corner member details include material properties yield stress modulus elasticity mass' +
-          ' density cross section properties cross sectional area moment inertia graph member strength vs lengt' +
-          'h tension yielding compression buckling maximum member length passing slenderness test also shown co' +
-          'st per meter member made selected material cross section size members selected separate members tab ' +
-          'presented set members consisting material cross section lengths members drawn vertical lines strengt' +
-          'h curve one highlighted highlighted member selected member selector click arrow buttons select membe' +
-          'r number drop list. tabs drawn single strength curve selecting check box notes tips member length co' +
-          'st shown member details exactly one member selected'
+    title: 'Member analysis report',
+    text: 'select report member analysis press toolbar button see member analysis report interactive explorer d' +
+          'isplays detailed engineering information materials cross sections sizes members current design also ' +
+          'shows member strength vs forces acted member previous load test member analysis includes material pr' +
+          'operties yield stress modulus elasticity mass density cross section properties cross sectional area ' +
+          'moment inertia graph member strength vs length tension yielding compression buckling maximum member ' +
+          'length passing slenderness test also shown cost per meter member made selected material cross sectio' +
+          'n size members grouped material cross section use material specification selector top report pick on' +
+          'e graphs show corresponding strengh vs length curve member material group data spike shown spikes ex' +
+          'cept one ghosts drawn pale colors pick member highlight slider labeled select member see ghost spike' +
+          's entire bridge rather one material group uncheck focus box members failing slenderness check close ' +
+          'dotted vertical magenta line maximum length member material spec allowed notes tips currently select' +
+          'ed member also highlighted member table drawing board check top either force range data spike higher' +
+          ' corresponding strength member fails forces range usually vary truck load moves across bridge force ' +
+          'ranges may hard see forces near zero'
   },
   {
     id: 'glos_member_force',
@@ -1056,7 +1061,7 @@ export const HELP_INDEX_DATA: HelpIndexData[] = [
           'crease member size decrease member size remember work view design tools animation controls member li' +
           'st rulers title block member numbers symmetry guides template grid resolution drawing tools joint to' +
           'ol member tool select tool eraser tool test drawing board load test show animation auto correct erro' +
-          'rs report cost calculations load test results help tip day'
+          'rs report cost calculations load test results member analysis help tip day'
   },
   {
     id: 'glos_modulus_of_elasticity',
@@ -1248,14 +1253,15 @@ export const HELP_INDEX_DATA: HelpIndexData[] = [
     title: 'Record your design',
     text: 'design bridge go back one step youve completed design record document efforts use reference future d' +
           'esigns record final design save design bridge design file print drawing design print load test resul' +
-          'ts notes tips dont wait design complete save bridge design file save early save often case... also 3' +
-          'd print display model design'
+          'ts export files 3d print design notes tips dont wait design complete save bridge design file save ea' +
+          'rly save often case... keep remember work checked unless theres great reason bridge designer remembe' +
+          'r design even computer fails'
   },
   {
     id: 'hlp_redo',
     title: 'Redo button',
-    text: 'click redo button restore change structural model mistakenly undone notes tips redo button located m' +
-          'ain toolbar also accessed edit menu redo button works conjunction undo button'
+    text: 'click redo button restore change structural model previously undone notes tips redo button located m' +
+          'ain toolbar also found edit menu redo button works together undo button'
   },
   {
     id: 'glos_reinforced_concrete',
@@ -1267,9 +1273,9 @@ export const HELP_INDEX_DATA: HelpIndexData[] = [
   {
     id: 'hlp_remember_my_work',
     title: 'Remember my work',
-    text: 'bridge designer keep track work still even refresh close restart browser enable feature check rememb' +
-          'er work entry bottom edit menu best keep checked nearly time exception using shared login user id ot' +
-          'hers computer unchecking box leave prevents seeing design'
+    text: 'bridge designer keep track work still even refresh close restart browser computer fails enable featu' +
+          're check remember work entry bottom edit menu best keep checked nearly time exception using shared l' +
+          'ogin id others computer unchecking box leave prevents seeing design'
   },
   {
     id: 'hlp_report_cost',
@@ -1945,13 +1951,14 @@ export const HELP_INDEX_DATA: HelpIndexData[] = [
           'm team teacher new features please enjoy checking possibilities.. installation required bridge desig' +
           'ner works recent versions browsers hit web site chrome edge firefox updated 2024 later recommended e' +
           'xport 3d model design addition beautiful blueprint style printed version bridge long part bridge des' +
-          'igner export stl file suitable input favorite 3d printer late updates previous bridge designer versi' +
-          'ons still 3d walk completed bridges walk fly around animation completed bridge observe performance t' +
-          'ruck load drives deck member details interactive member details explorer supplements members list dy' +
-          'namically updated engineering information member cross sections materials lengths costs deep undo ol' +
-          'd limit 5 100 undo redo last hundred edits current design iteration iterations tree view track desig' +
-          'n iterations view shows history one old chronological list also still available click drag member li' +
-          'st selections click drag select group members member list'
+          'igner export obj files suitable favorite 3d printer member analysis report upgrade old member detail' +
+          's tab interactive explorer supplements members list dynamically updated engineering information memb' +
+          'er cross sections materials lengths costs forces strength dig deep makes bridge work late updates pr' +
+          'evious bridge designer versions still 3d walk completed bridges walk fly around animation completed ' +
+          'bridge observe performance truck load drives deck deep undo old limit 5 100 undo redo last hundred e' +
+          'dits current design iteration iterations tree view track design iterations view shows history one ch' +
+          'ronological list also still available click drag member list selections click drag select group memb' +
+          'ers member list'
   },
   {
     id: 'hlp_undo_vs_go_back',

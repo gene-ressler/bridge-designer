@@ -11,7 +11,6 @@ import { SiteConstants } from '../classes/site-constants';
 import { DesignConditions, DesignConditionsService } from './design-conditions.service';
 import { AllowedShapeChangeMask, InventoryService, StockId } from './inventory.service';
 import { BridgeSketchModel } from '../classes/bridge-sketch.model';
-import { SelectedSet } from '../../features/drafting/shared/selected-elements-service';
 import { DraftingPanelState, PersistenceService, SaveSet } from './persistence.service';
 import { SessionStateService } from './session-state.service';
 import { BridgeSketchService } from './bridge-sketch.service';
@@ -252,26 +251,19 @@ export class BridgeService {
     return this.bridge.members.filter(member => rectangle.containsPoint(member.a) && rectangle.containsPoint(member.b));
   }
 
-  /** Returns an array of arrays of selected members, Each inner array contains those having the same stock. Sorting is on ascending member number: inner then first element of outer. */
-  public partitionSelectedMembersByStock(selectedSet: SelectedSet): Member[][] {
-    const membersByStockId = new Map<string, Member[]>();
-    for (let memberIndex of selectedSet) {
-      const member = this.bridge.members[memberIndex];
-      const memberStockId = member.stockId;
-      const memberStockIdKey = memberStockId.key;
-      const memberList = membersByStockId.get(memberStockIdKey);
-      if (memberList === undefined) {
-        membersByStockId.set(memberStockIdKey, [member]);
-      } else {
-        memberList.push(member);
-      }
+  /** Returns all members grouped by material, section, size in a canonical order. Inner member lists in index order. */
+  public partitionMembersByStock(): Member[][] {
+    const membersByStockId: {[key: string]: Member[]} = {};
+    for (const member of this.bridge.members) {
+      const key = member.stockId.key;
+      membersByStockId[key] ||= [];
+      membersByStockId[key].push(member);
     }
-    const result = Array.from(membersByStockId.values());
-    for (let inner of result) {
-      inner.sort((a, b) => a.index - b.index);
+    const entries = Object.entries(membersByStockId);
+    for (const pair of entries) {
+      pair[1].sort((a, b) => a.index - b.index);
     }
-    result.sort((a, b) => a[0].index - b[0].index);
-    return result;
+    return  entries.sort((a, b) => a[0].localeCompare(b[0], 'en-US')).map(pair => pair[1]);
   }
 
   /** Returns whether a member with given end points would intersect the high peir, if the conditions have one. */
@@ -339,7 +331,7 @@ export class BridgeService {
 
   /**
    * Return the offset from the roadway centerline to the center plane of the truss.
-   * Useful for drawing the truss in three dimensions. 
+   * Useful for drawing the truss in three dimensions.
    */
   public get trussCenterlineOffset(): number {
     return SiteConstants.DECK_HALF_WIDTH + this.maxDeckMemberSizeMm * 0.0005 + SiteConstants.GUSSET_THICKNESS;
@@ -353,7 +345,7 @@ export class BridgeService {
     const bits = new BitVector(this.bridge.members.length);
     const minClearance = SiteConstants.MIN_ROADWAY_CLEARANCE;
     for (const member of this.bridge.members) {
-      if (member.a.y >= minClearance && member.b.y >= minClearance || member.a.y <= 0 && member.b.y <= 0) {
+      if ((member.a.y >= minClearance && member.b.y >= minClearance) || (member.a.y <= 0 && member.b.y <= 0)) {
         bits.setBit(member.index);
       }
     }

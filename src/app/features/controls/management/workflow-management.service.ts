@@ -42,16 +42,19 @@ export class WorkflowManagementService {
 
     // Analysis completion.
     eventBrokerService.analysisCompletion.subscribe(eventInfo => {
-      let isValidTestResult = false;
-      if (eventInfo.data === AnalysisStatus.UNSTABLE) {
+      const status = eventInfo.data;
+      let isValidForAnimation = false;
+      if (status === AnalysisStatus.UNSTABLE) {
         eventBrokerService.unstableBridgeDialogOpenRequest.next({ origin: EventOrigin.SERVICE });
-      } else if (eventInfo.data === AnalysisStatus.FAILS_SLENDERNESS) {
+      } else if (status === AnalysisStatus.FAILS_SLENDERNESS) {
         eventBrokerService.slendernessFailDialogOpenRequest.next({ origin: EventOrigin.SERVICE });
       } else {
-        isValidTestResult = true;
+        isValidForAnimation = true;
       }
-      uiStateService.disable(eventBrokerService.analysisReportRequest, !isValidTestResult);
-      if (isValidTestResult && showAnimation) {
+      const isValidForReport = isAnalysisValidForReport(status);
+      uiStateService.disable(eventBrokerService.analysisReportRequest, !isValidForReport);
+      uiStateService.disable(eventBrokerService.memberDetailsReportRequest, !isValidForReport);
+      if (isValidForAnimation && showAnimation) {
         eventBrokerService.uiModeRequest.next({ origin: EventOrigin.SERVICE, data: 'animation' });
       } else {
         // Toggle the design mode back to the drafting panel with no change to UI mode.
@@ -97,7 +100,9 @@ export class WorkflowManagementService {
 
     // Edit command completion.
     eventBrokerService.editCommandCompletion.subscribe(eventInfo => {
-      uiStateService.disable(eventBrokerService.analysisReportRequest, !analysisValidityService.isLastAnalysisValid);
+      const disableReports = !analysisValidityService.isLastAnalysisValid || !isAnalysisValidForReport();
+      uiStateService.disable(eventBrokerService.analysisReportRequest, disableReports);
+      uiStateService.disable(eventBrokerService.memberDetailsReportRequest, disableReports);
       uiStateService.disable(eventBrokerService.undoRequest, eventInfo.data.doneCount === 0);
       uiStateService.disable(eventBrokerService.redoRequest, eventInfo.data.undoneCount === 0);
       // Update the inventory selector only if members have been changed (not added).
@@ -147,6 +152,7 @@ export class WorkflowManagementService {
       uiStateService.disable(eventBrokerService.undoRequest);
       uiStateService.disable(eventBrokerService.redoRequest);
       uiStateService.disable(eventBrokerService.analysisReportRequest);
+      uiStateService.disable(eventBrokerService.memberDetailsReportRequest);
       eventBrokerService.uiModeRequest.next({ origin: EventOrigin.SERVICE, data: 'drafting' });
       eventBrokerService.editModeSelection.next({ origin: EventOrigin.SERVICE, data: CursorMode.JOINTS });
       eventBrokerService.loadInventorySelectorRequest.next({
@@ -215,6 +221,10 @@ export class WorkflowManagementService {
         increment,
       );
       undoManagerService.do(changeMembersCommand);
+    }
+
+    function isAnalysisValidForReport(status: AnalysisStatus = analysisService.status): boolean {
+      return status !== AnalysisStatus.NONE && status !== AnalysisStatus.UNSTABLE;
     }
   }
 }

@@ -19,6 +19,7 @@ import { jqxSliderComponent } from 'jqwidgets-ng/jqxslider';
 import { SaveMarkService } from '../../save-load/save-mark.service';
 import { DEFAULT_SAVE_FILE_NAME } from '../../save-load/save-load.service';
 import { SessionStateService } from '../../../shared/services/session-state.service';
+import { WidgetHelper } from '../../../shared/classes/widget-helper';
 
 @Component({
   selector: 'print-3d-parameters-dialog',
@@ -53,7 +54,7 @@ export class Print3dDialogComponent implements AfterViewInit {
   }
 
   initDialogContent(): void {
-    this.scaleSlider = Print3dDialogComponent.setUpSlider(
+    this.scaleSlider = WidgetHelper.setUpSlider(
       this.scaleSliderContainer,
       {
         height: 44,
@@ -117,20 +118,6 @@ export class Print3dDialogComponent implements AfterViewInit {
     }
     this.modelInfo = this.unscaledModelInfo.applyScale(this.modelMmPerWorldM);
     this.changeDetectorRef.detectChanges();
-  }
-
-  private static setUpSlider(
-    containerRef: ViewContainerRef,
-    inputs: { [key: string]: any },
-    onChange: () => void,
-  ): jqxSliderComponent {
-    const sliderRef = containerRef.createComponent(jqxSliderComponent);
-    for (const [key, value] of Object.entries(inputs)) {
-      sliderRef.setInput(key, value);
-    }
-    sliderRef.instance.onChange.subscribe(onChange);
-    sliderRef.changeDetectorRef.detectChanges();
-    return sliderRef.instance;
   }
 
   dehydrate(): State {
