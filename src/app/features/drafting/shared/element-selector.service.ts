@@ -12,6 +12,8 @@ import { HotElementService } from './hot-element.service';
 import { SelectedElementsService } from './selected-elements-service';
 import { Member } from '../../../shared/classes/member.model';
 
+export type SelectionStash = { joints: number[]; members: number[] };
+
 /** Algorithms for selecting bridge elements. */
 @Injectable({ providedIn: 'root' })
 export class ElementSelectorService {
@@ -91,6 +93,32 @@ export class ElementSelectorService {
     }
     selectedMembers.clear();
     indexes.forEach(index => selectedMembers.add(index));
+    this.sendSelectedElementsChange(origin);
+  }
+
+
+  /** Returns a representation of the current selection and clears it. */
+  public stashSelection(origin: EventOrigin): SelectionStash {
+    const wasSelected: SelectionStash = { joints: [], members: [] };
+    const selectedElements = this.selectedElementsService.selectedElements;
+
+    wasSelected.joints.push(...selectedElements.selectedJoints);
+    wasSelected.members.push(...selectedElements.selectedMembers);
+
+    selectedElements.selectedJoints.clear();
+    selectedElements.selectedMembers.clear();
+
+    this.sendSelectedElementsChange(origin);
+    return wasSelected;
+  }
+
+  /** Restores a formerly stash selection. */
+  public restoreSelection(stash: SelectionStash, origin: EventOrigin): void {
+    const selectedElements = this.selectedElementsService.selectedElements;
+    selectedElements.selectedJoints.clear();
+    selectedElements.selectedMembers.clear();
+    stash.joints.forEach(jointIndex => selectedElements.selectedJoints.add(jointIndex));
+    stash.members.forEach(memberIndex => selectedElements.selectedMembers.add(memberIndex));
     this.sendSelectedElementsChange(origin);
   }
 

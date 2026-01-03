@@ -276,7 +276,11 @@ export class MemberStrengthGraphComponet implements OnChanges {
 
     // horizontal lines
     const rightX = gmy.originX + gmy.xAxisLength;
-    for (let strength = gmy.yAxisDivisionSize, i = 0; i < gmy.yAxisDivisionCount; ++i, strength += gmy.yAxisDivisionSize) {
+    for (
+      let strength = gmy.yAxisDivisionSize, i = 0;
+      i < gmy.yAxisDivisionCount;
+      ++i, strength += gmy.yAxisDivisionSize
+    ) {
       const y = strengthToPixel(gmy, strength);
       ctx.moveTo(gmy.originX, y);
       ctx.lineTo(rightX, y);
@@ -337,7 +341,7 @@ export class MemberStrengthGraphComponet implements OnChanges {
     if (analysisStatus === AnalysisStatus.NONE || analysisStatus === AnalysisStatus.UNSTABLE) {
       return;
     }
-    if (this.zoom && this.selectedMembers) {
+    if (this.selectedMembers) {
       for (const member of this.selectedMembers) {
         this.renderBracket(ctx, member, false);
       }

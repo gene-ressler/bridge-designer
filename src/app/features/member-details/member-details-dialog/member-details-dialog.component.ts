@@ -12,7 +12,7 @@ import {
 import { jqxButtonModule } from 'jqwidgets-ng/jqxbuttons';
 import { jqxDropDownListModule } from 'jqwidgets-ng/jqxdropdownlist';
 import { jqxWindowComponent, jqxWindowModule } from 'jqwidgets-ng/jqxwindow';
-import { EventBrokerService } from '../../../shared/services/event-broker.service';
+import { EventBrokerService, EventOrigin } from '../../../shared/services/event-broker.service';
 import { jqxSliderComponent, jqxSliderModule } from 'jqwidgets-ng/jqxslider';
 import { MemberStrengthGraphComponet } from '../member-strength-graph/member-strength-graph.component';
 import { SectionDiagramComponent } from '../section-diagram/section-diagram.component';
@@ -23,6 +23,7 @@ import { BridgeCostService } from '../../../shared/services/bridge-cost.service'
 import { COUNT_FORMATTER, DOLLARS_FORMATTER, FIXED_FORMATTER } from '../../../shared/classes/utility';
 import { BridgeService } from '../../../shared/services/bridge.service';
 import { jqxCheckBoxModule } from 'jqwidgets-ng/jqxcheckbox';
+import { ElementSelectorService, SelectionStash } from '../../drafting/shared/element-selector.service';
 
 @Component({
   selector: 'member-details-dialog',
@@ -58,6 +59,7 @@ export class MemberDetailsDialogComponent implements AfterViewInit {
   passFailTension: string = '?';
   selectedMember: Member | undefined;
   selectedMembers: Member[] | undefined;
+  selectionStash: SelectionStash | undefined;
   zoom: boolean = true;
   readonly sliderOptions = {
     width: 286,
@@ -83,6 +85,7 @@ export class MemberDetailsDialogComponent implements AfterViewInit {
   constructor(
     private readonly bridgeService: BridgeService,
     private readonly changeDetectorRef: ChangeDetectorRef,
+    private readonly elementSelectorService: ElementSelectorService,
     private readonly eventBrokerService: EventBrokerService,
   ) {
     // jqWidgets binds unuseful "this" in callbacks. Get the one we want.
@@ -100,8 +103,16 @@ export class MemberDetailsDialogComponent implements AfterViewInit {
     return this.selectedMembers?.[index].number.toString() ?? '-';
   }
 
-  handleOnOpen(): void {
+  handleOpen(): void {
     this.membersPartitionedByStock = this.bridgeService.partitionMembersByStock();
+    this.selectionStash = this.elementSelectorService.stashSelection(EventOrigin.MEMBER_DETAILS_DIALOG);
+  }
+
+  handleClose(): void {
+    if (this.selectionStash) {
+      this.elementSelectorService.restoreSelection(this.selectionStash, EventOrigin.MEMBER_DETAILS_DIALOG);
+      this.selectionStash = undefined;
+    }
   }
 
   handleMemberSliderChange(event: any): void {
@@ -145,11 +156,13 @@ export class MemberDetailsDialogComponent implements AfterViewInit {
     this.memberLength = FIXED_FORMATTER.format(member.lengthM);
     this.passFailCompression = member.compressionForceStrengthRatio > 1 ? 'fail' : 'pass';
     this.passFailTension = member.tensionForceStrengthRatio > 1 ? 'fail' : 'pass';
+    // Highlight the member in the drafting panel and also select its material.
+    this.elementSelectorService.setSelectedMembers([member.index], EventOrigin.MEMBER_DETAILS_DIALOG);
     this.changeDetectorRef.detectChanges();
   }
 
   ngAfterViewInit(): void {
-    this.eventBrokerService.memberDetailsRequest.subscribe(() => this.dialog.open());
+    this.eventBrokerService.memberDetailsReportRequest.subscribe(() => this.dialog.open());
   }
 }
 

@@ -19,6 +19,7 @@ export const enum EventOrigin {
   DRAFTING_PANEL,
   FLY_THRU_SETTINGS_DIALOG,
   LOAD_TEST_REPORT_DIALOG,
+  MEMBER_DETAILS_DIALOG,
   MEMBER_EDIT_DIALOG,
   MEMBER_TABLE,
   MENU,
@@ -91,7 +92,7 @@ export class EventBrokerService {
   public readonly loadSampleRequest = new Subject<EventInfo>();
   public readonly loadSketchRequest = new Subject<EventInfo>();
   public readonly loadTemplateRequest = new Subject<EventInfo>();
-  public readonly memberDetailsRequest = new Subject<EventInfo>();
+  public readonly memberDetailsReportRequest = new Subject<EventInfo>();
   public readonly memberEditRequest = new Subject<EventInfo>();
   public readonly memberNumbersToggle = new Subject<EventInfo>();
   public readonly memberSizeDecreaseRequest = new Subject<EventInfo>();

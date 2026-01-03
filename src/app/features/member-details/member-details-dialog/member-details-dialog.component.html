@@ -5,10 +5,12 @@
   #dialog
   [isModal]="true"
   [autoOpen]="false"
-  [width]="440"
+  [width]="438"
   [height]="802"
   [initContent]="initDialogContent"
-  (onOpen)="handleOnOpen()"
+  [modalOpacity]="0.1"
+  (onOpen)="handleOpen()"
+  (onClose)="handleClose()"
 >
   <div class="header">Member material details</div>
   <div class="content">
@@ -49,7 +51,7 @@
           </tr>
         </tbody>
       </table>
-      <div style="display: flex; justify-content: space-between">
+      <div class="std-width" style="display: flex; justify-content: space-between">
         <div>
           <div class="title">Dimensions</div>
           <table>
