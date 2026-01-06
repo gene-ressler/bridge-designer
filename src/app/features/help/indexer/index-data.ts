@@ -28,6 +28,24 @@ export const HELP_INDEX_DATA: HelpIndexData[] = [
           ' location cases dynamic load allowance 1.33'
   },
   {
+    id: 'hlp_browser',
+    title: 'About your browser...',
+    text: 'best make bridge designer work computing devices mouse similar gadget plus broad range date browser ' +
+          'software work phones sorry dont support pure touch devices like smart phones pads mouse browsers dat' +
+          'e versions fine based recent chromium google chrome microsoft edge chromium open source opera firefo' +
+          'x chromium firefox based browers may work fine unfortunately cant support apple safari screen resolu' +
+          'tion least 1200 800 pixels better mouse accurate mouse like pointing device example track pad track ' +
+          'ball fine fix problems switch browsers upgrade startup warning complained unsupported browser missin' +
+          'g html css features try installing current version one supported browsers device unable try latest p' +
+          'ossible version google chrome thats best chance success adjust settings hardware needed startup warn' +
+          'ing included screen resolution mouse youll need adjust replace hardware pro tips screen resolution u' +
+          'sually choice check operating systems display settings screen resolutions around minimum set browser' +
+          ' full screen mode use possible pixels many devices support adding mouse often dollars check web take' +
+          ' chances bridge designer might okay current brower despite warnings though features likely disabled ' +
+          'work poorly youll notified disabled features give try clicking cancel warning dialog youll notified ' +
+          'disabled features'
+  },
+  {
     id: 'glos_abutment',
     title: 'Abutment',
     text: 'abutment stone concrete wall supports one end bridge span abutment also acts retaining wall holding ' +
@@ -962,20 +980,20 @@ export const HELP_INDEX_DATA: HelpIndexData[] = [
   {
     id: 'hlp_member_details',
     title: 'Member analysis report',
-    text: 'select report member analysis press toolbar button see member analysis report interactive explorer d' +
-          'isplays detailed engineering information materials cross sections sizes members current design also ' +
-          'shows member strength vs forces acted member previous load test member analysis includes material pr' +
-          'operties yield stress modulus elasticity mass density cross section properties cross sectional area ' +
-          'moment inertia graph member strength vs length tension yielding compression buckling maximum member ' +
-          'length passing slenderness test also shown cost per meter member made selected material cross sectio' +
-          'n size members grouped material cross section use material specification selector top report pick on' +
-          'e graphs show corresponding strengh vs length curve member material group data spike shown spikes ex' +
-          'cept one ghosts drawn pale colors pick member highlight slider labeled select member see ghost spike' +
-          's entire bridge rather one material group uncheck focus box members failing slenderness check close ' +
-          'dotted vertical magenta line maximum length member material spec allowed notes tips currently select' +
-          'ed member also highlighted member table drawing board check top either force range data spike higher' +
-          ' corresponding strength member fails forces range usually vary truck load moves across bridge force ' +
-          'ranges may hard see forces near zero'
+    text: 'click report member analysis button display member analysis report interactive explorer shows detail' +
+          'ed engineering information materials cross sections sizes members current design also shows member s' +
+          'trength vs forces acted member previous load test member analysis includes material properties yield' +
+          ' stress modulus elasticity mass density cross section properties cross sectional area moment inertia' +
+          ' graph member strength vs length tension yielding compression buckling maximum member length passing' +
+          ' slenderness test also shown cost per meter member made selected material cross section size members' +
+          ' grouped material cross section use material specification menu top pick one graphs show correspondi' +
+          'ng strengh vs length curve member material group data spike labeled number shown spikes except one g' +
+          'hosts drawn pale colors pick member highlight slider labeled select member see ghost spikes entire b' +
+          'ridge rather one material group uncheck focus box members failing slenderness check close dotted ver' +
+          'tical magenta line maximum length member material spec allowed notes tips currently selected member ' +
+          'also highlighted member table drawing board check top either force range data spike higher correspon' +
+          'ding strength member fails. otherwise fine forces range vary truck load moves across bridge force ra' +
+          'nges may hard see forces near zero'
   },
   {
     id: 'glos_member_force',

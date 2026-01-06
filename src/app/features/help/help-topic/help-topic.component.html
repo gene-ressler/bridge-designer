@@ -242,6 +242,61 @@
     <topic-popup name="glos_structural_model">structural model</topic-popup> more difficult.
   </div>
 </ng-template>
+<ng-template topic-name="hlp_browser">
+  <h1>About your browser...</h1>
+  <div class="p">
+    We do our best to make <span class="bd-emph">Bridge Designer</span> work with most computing devices having a mouse
+    or similar gadget plus a broad range of up-to-date browser software.
+  </div>
+  <h2>What should work</h2>
+  <div class="p">
+    <span class="b">Not phones.</span> Sorry. We don't support pure touch devices like most smart phones and pads with
+    no mouse.
+  </div>
+  <div class="p">
+    <span class="b">Browsers.</span> Up-to-date versions of these should be fine:
+    <ul>
+      <li>
+        Based on recent Chromium:
+        <ul>
+          <li>Google Chrome</li>
+          <li>Microsoft Edge</li>
+          <li>Chromium, open source</li>
+          <li>Opera</li>
+        </ul>
+      </li>
+      <li>Firefox</li>
+    </ul>
+    Other Chromium- and Firefox-based browers may work fine. Unfortunately, we can't support Apple Safari.
+  </div>
+  <div class="p"><span class="b">Screen resolution.</span> At least 1200 by 800 pixels. More is better.</div>
+  <div class="p">
+    <span class="b">Mouse.</span> An accurate mouse-like pointing device. For example, a track pad or track ball should
+    be fine.
+  </div>
+  <h2>How to fix problems</h2>
+  <div>
+    <span class="b">Switch browsers or upgrade.</span> If a startup warning complained about an unsupported browser or
+    missing HTML or CSS features, try installing the current version of one of the supported browsers. If your device is
+    unable, try the latest possible version of Google Chrome. That's the best chance of success.
+  </div>
+  <div class="p">
+    <span class="b">Adjust settings or hardware as needed.</span> If a startup warning included screen resolution or
+    mouse, you'll need to adjust or replace hardware. Pro tips:
+    <ul>
+      <li>Screen resolution is usually a choice. Check your operating system's display settings.</li>
+      <li>
+        For screen resolutions around the minimum, set the browser to full screen mode to use all possible pixels.
+      </li>
+      <li>Many devices support adding a mouse, often for just a few dollars. Check the web.</li>
+    </ul>
+  </div>
+  <div class="p">
+    <span class="b">Take your chances.</span> Bridge Designer might be okay with the current brower despite the
+    warnings, though some features are likely to be disabled or work poorly. You'll be notified about disabled features. 
+    Give it a try by clicking Cancel in the warning dialog.
+  </div>
+</ng-template>
 <ng-template topic-name="hlp_drawing_board">
   <h1>Drawing board</h1>
   <div class="p">
@@ -2082,7 +2137,7 @@
   </div>
   <div class="p">
     When you use the <span class="bd-emph">Bridge Designer</span>, you will experience the engineering design process in
-    simplified form. You will <topic-link name="hlp_how_to">design a highway bridge</topic-link> in much the same way
+    a simplified form. You will <topic-link name="hlp_how_to">design a highway bridge</topic-link> in much the same way
     that practicing civil engineers design real highway bridges.
   </div>
   <ul>
@@ -3696,8 +3751,8 @@
       src="img/help/memberdataspike.png"
       alt="Member data spike graphic"
     />
-    <span class="b">Report member analysis button</span> or to display a member analysis report. This is an interactive
-    explorer that displays detailed engineering information about the
+    <span class="b">Report member analysis button</span> to display the member analysis report. This is an interactive
+    explorer that shows detailed engineering information about the
     <topic-link name="hlp_materials">materials</topic-link>,
     <topic-popup name="hlp_crossxsection">cross-sections</topic-popup>, and
     <topic-popup name="glos_member_size">sizes</topic-popup> of
@@ -3728,8 +3783,9 @@
   <div class="p">
     Members are grouped by material and cross-section. Use the <span class="b">material specification</span> menu at the
     top to pick one. The graphs will show the corresponding strengh vs. length curve. Each member in the material group
-    will have a &quot;data spike&quot; as shown. All spikes except one will be ghosts drawn in pale colors. Pick the
-    member to highlight with the slider labeled <span class="b">select member</span>.
+    will have a &quot;data spike&quot; labeled with its number as shown. All spikes except one will be
+    &quot;ghosts&quot; drawn in pale colors. Pick the member to highlight with the slider labeled
+    <span class="b">select member</span>.
   </div>
   <div class="p">
     To see ghost spikes for the entire bridge rather than just one material group, uncheck the
@@ -3746,9 +3802,10 @@
     The currently selected member is also highlighted in the member table and drawing board. Check it out!
   </div>
   <div class="p">
-    When the top of either force range in the data spike is higher than the corresponding strength, the member fails!
+    When the top of either force range in the data spike is higher than the corresponding strength, the member fails.
+    Otherwise it's just fine.
   </div>
-  <div class="p">Forces have a range because they usually vary as the truck load moves across the bridge.</div>
+  <div class="p">Forces have a range because they vary as the truck load moves across the bridge.</div>
   <div class="p">Force ranges may be hard to see if the forces were near zero.</div>
 </ng-template>
 <ng-template topic-name="hlp_roller_support">

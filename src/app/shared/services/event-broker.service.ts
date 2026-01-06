@@ -14,6 +14,7 @@ import { FlyThruSettings } from '../../features/fly-thru/rendering/fly-thru-sett
 export const enum EventOrigin {
   ABOUT_DIALOG,
   APP,
+  CONFIRMATION_DIALOG,
   CURSOR_OVERLAY,
   DESIGN_ITERATION_DIALOG,
   DRAFTING_PANEL,
@@ -23,6 +24,7 @@ export const enum EventOrigin {
   MEMBER_EDIT_DIALOG,
   MEMBER_TABLE,
   MENU,
+  MISSING_BROWSER_FEATURE_DIALOG,
   PRINTING_3D_DIALOG,
   SAMPLE_DIALOG,
   SERVICE,

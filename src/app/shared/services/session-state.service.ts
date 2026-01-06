@@ -5,17 +5,19 @@ import { Injectable } from '@angular/core';
 import { EventBrokerService, EventOrigin } from './event-broker.service';
 import { VERSION } from '../classes/version';
 
+const LOCAL_STORAGE_PREFIX = 'bridge-designer';
+
 @Injectable({ providedIn: 'root' })
 export class SessionStateService {
   /** Local storage key that advances for every build via `npm run build`. */
-  private static readonly LOCAL_STORAGE_KEY = `bridge-designer.v${VERSION}`;
+  private static readonly LOCAL_STORAGE_KEY = `${LOCAL_STORAGE_PREFIX}.v${VERSION}`;
   private static readonly SESSION_KEY = 'session.service';
   private stateAccumulator: { [key: string]: Object } | undefined;
   private isEnabled: boolean = true;
 
   constructor(private readonly eventBrokerService: EventBrokerService) {
     // Allow user to reset local storage with URL query string "?reset".
-    // Here to ensure no possible reads are already complete.
+    // Here to ensure no possible session reads are already complete.
     // Too early for Angular active route, so use window object.
     // The reset param is deleted at app level after view init.
     const params = new URLSearchParams(window.location.search);
@@ -43,7 +45,7 @@ export class SessionStateService {
       this.eventBrokerService.sessionStateSaveRequest.next({ origin: EventOrigin.SERVICE, data: undefined });
     }
     this.eventBrokerService.sessionStateSaveEssentialRequest.next({ origin: EventOrigin.SERVICE, data: undefined });
-    localStorage.clear();
+    this.clearSavedState();
     localStorage.setItem(SessionStateService.LOCAL_STORAGE_KEY, JSON.stringify(this.stateAccumulator));
     this.stateAccumulator = undefined;
   }
@@ -103,6 +105,7 @@ export class SessionStateService {
     }
   }
 
+  /** Get saved state into the accumulator. May be called any number of times; loads only once. */
   private loadAccumulatorFromStorage(): void {
     if (this.stateAccumulator) {
       return;
@@ -115,6 +118,16 @@ export class SessionStateService {
       this.stateAccumulator = JSON.parse(json);
     } catch (error) {
       this.stateAccumulator = undefined;
+    }
+  }
+
+  /** Clear all old state, but keep other local storage key prefixes. Declutters storage on version bump. */
+  private clearSavedState() {
+    for (let i = 0; i < localStorage.length; ++i) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(LOCAL_STORAGE_PREFIX)) {
+        localStorage.removeItem(key);
+      }
     }
   }
 

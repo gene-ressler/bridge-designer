@@ -51,7 +51,10 @@
           </tr>
         </tbody>
       </table>
-      <div class="std-width" style="display: flex; justify-content: space-between">
+      <div
+        class="std-width"
+        style="display: flex; justify-content: space-between"
+      >
         <div>
           <div class="title">Dimensions</div>
           <table>
@@ -137,6 +140,12 @@
       </table>
     </fieldset>
     <div class="buttons">
+      <jqxButton
+        (onClick)="handleHelpButtonClick()"
+        [width]="'110px'"
+        style="margin-right: 4px"
+        >Help...</jqxButton
+      >
       <jqxButton
         (onClick)="dialog.close()"
         [width]="'110px'"

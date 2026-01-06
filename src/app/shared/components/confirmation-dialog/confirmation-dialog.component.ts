@@ -16,8 +16,9 @@ import { jqxWindowComponent, jqxWindowModule } from 'jqwidgets-ng/jqxwindow';
 import { jqxButtonModule } from 'jqwidgets-ng/jqxbuttons';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Utility } from '../../classes/utility';
+import { EventBrokerService, EventOrigin } from '../../services/event-broker.service';
 
-export type ButtonTag = 'ok' | 'yes' | 'no' | 'cancel';
+export type ButtonTag = 'ok' | 'yes' | 'no' | 'cancel' | 'help';
 
 @Component({
   selector: 'confirmation-dialog',
@@ -26,35 +27,44 @@ export type ButtonTag = 'ok' | 'yes' | 'no' | 'cancel';
   styleUrl: './confirmation-dialog.component.scss',
 })
 export class ConfirmationDialogComponent implements OnChanges {
-  @Input() buttons: ButtonTag[] = ['ok', 'yes', 'no', 'cancel'];
+  @Input() buttons: ButtonTag[] = ['ok', 'yes', 'no', 'cancel', 'help'];
   @Input() buttonWidth = 64;
-  @Input() contentHtml: string = 'Confirm by clicking OK.';
+  @Input() contentHtml: string = 'Confirm by clicking.';
   @Input() headerHtml: string = 'Confirmation';
+  @Input() helpTopic: string = 'hlp_how_to';
   sanitizedContentHtml!: SafeHtml;
   sanitizedHeaderHtml!: SafeHtml;
   @Output() readonly onButtonClick = new EventEmitter<ButtonTag>();
 
   @ViewChild('dialog') dialog!: jqxWindowComponent;
 
-  constructor(private readonly sanitizer: DomSanitizer) {}
+  constructor(
+    private readonly sanitizer: DomSanitizer,
+    private readonly eventBrokerService: EventBrokerService,
+  ) {}
 
   public open(): void {
     this.dialog.open();
   }
 
   handleButtonClick(tag: ButtonTag) {
-    this.dialog.close();
-    this.onButtonClick.emit(tag);
+    if (tag === 'help') {
+      this.eventBrokerService.helpRequest.next({
+        origin: EventOrigin.CONFIRMATION_DIALOG,
+        data: { topic: this.helpTopic },
+      });
+    } else {
+      this.dialog.close();
+      this.onButtonClick.emit(tag);
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    const contentChange = changes['contentHtml'];
-    if (contentChange) {
+    if (changes['contentHtml']) {
       const html = this.sanitizer.sanitize(SecurityContext.HTML, this.contentHtml);
       this.sanitizedContentHtml = Utility.assertNotNull(html);
     }
-    const headerChange = changes['headerHtml'];
-    if (headerChange) {
+    if (changes['headerHtml']) {
       const html = this.sanitizer.sanitize(SecurityContext.HTML, this.headerHtml);
       this.sanitizedHeaderHtml = Utility.assertNotNull(html);
     }

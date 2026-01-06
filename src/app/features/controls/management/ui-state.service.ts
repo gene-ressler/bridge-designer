@@ -16,8 +16,15 @@ export const enum ModifierMask {
   SHIFT = 0x8,
 }
 
+/** Allowed UI modes to which disable overrides can be attached. */
 export type UiMode = 'initial' | 'drafting' | 'animation' | 'unknown';
 
+/**
+ * Info paired with a subject to connote UI modes where it should be disabled 
+ * regardless of its normal disabled state. Also a place to store that normal state.
+ * Example: Drafting controls have overrides for animation mode, since the drafting
+ * panel can't be seen.
+ */
 type DisableOverride = { isDisabled: boolean; disabledModes: UiMode[] };
 
 /**
@@ -26,12 +33,16 @@ type DisableOverride = { isDisabled: boolean; disabledModes: UiMode[] };
  * This class doesn't track the state of toggle and select subjects. It only toggles
  * and selects the state of attached UI objects. When explicit state is needed, a separate
  * service should subscribe to the respective subject.
- * 
+ *
  * An exception is UI elements with registered "disable overrides." An override, as the name
- * implies, causes its element to be disabled regardless of it normal enable/disable state
+ * implies, causes its element to be disabled regardless of its normal enable/disable state
  * based on UI states specified at registration time. When the UI leaves the disabled state,
  * the element's enable/disable state is restored. This service necessarily tracks the
  * normal states for this purpose.
+ *
+ * A global disablement feature is also supported to accomodate browsers lacking capabilities
+ * that selected features require. Topics placed on the global list are immediately disabled
+ * and remain so.
  */
 @Injectable({ providedIn: 'root' })
 export class UiStateService {
@@ -44,6 +55,7 @@ export class UiStateService {
   private readonly keyInfosByKey: { [key: string]: [boolean, Subject<EventInfo>, any] } = {};
   private readonly disableOverridesBySubject = new Map<Subject<any>, DisableOverride>();
   private uiMode: UiMode = 'unknown';
+  private readonly globallyDisabledSubjects = new Set<Subject<any>>();
 
   constructor(
     private readonly eventBrokerService: EventBrokerService,
@@ -65,7 +77,7 @@ export class UiStateService {
       for (const [subject, override] of this.disableOverridesBySubject) {
         this.disableByOverride(subject, override);
       }
-      eventBrokerService.uiModeChange.next({origin: EventOrigin.SERVICE, data: this.uiMode});
+      eventBrokerService.uiModeChange.next({ origin: EventOrigin.SERVICE, data: this.uiMode });
     });
     // By-UI mode disablement setup. Must be complete before session state registration.
     const initial: UiMode[] = ['initial'];
@@ -240,6 +252,10 @@ export class UiStateService {
   }
 
   public disable(subject: Subject<any>, value: boolean = true): void {
+    // Ignore globally disabled subjects. They're already and forever disabled.
+    if (this.globallyDisabledSubjects.has(subject)) {
+      return;
+    }
     const override = this.disableOverridesBySubject.get(subject);
     if (override) {
       override.isDisabled = value;
@@ -272,6 +288,12 @@ export class UiStateService {
   public isDisabledForCurrentUiMode(subject: Subject<any>): boolean {
     const override = this.disableOverridesBySubject.get(subject);
     return override !== undefined && (override.disabledModes.includes(this.uiMode) || override.isDisabled);
+  }
+
+  /** Globally disable a subject to prevent its use entirely. */
+  public globallyDisable(subject: Subject<any>): void {
+    this.setDisabled(subject, true);
+    this.globallyDisabledSubjects.add(subject);
   }
 
   /** Dis/enables the subject based on override state. */

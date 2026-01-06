@@ -115,6 +115,14 @@ export class MemberDetailsDialogComponent implements AfterViewInit {
     }
   }
 
+  handleHelpButtonClick(): void {
+    this.eventBrokerService.helpRequest.next({
+      origin: EventOrigin.MEMBER_DETAILS_DIALOG,
+      data: { topic: 'hlp_member_details' },
+    });
+
+  }
+
   handleMemberSliderChange(event: any): void {
     const memberIndex = event?.args?.value;
     if (memberIndex !== undefined && this.selectedMembers) {

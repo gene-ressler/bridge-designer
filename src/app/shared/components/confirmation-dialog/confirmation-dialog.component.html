@@ -14,36 +14,56 @@
     [innerHTML]="sanitizedHeaderHtml"
   ></div>
   <div class="content">
-    <div class="textContent" [innerHTML]="sanitizedContentHtml"></div>
+    <div
+      class="textContent"
+      [innerHTML]="sanitizedContentHtml"
+    ></div>
     <div class="buttons">
-      <div *ngIf="buttons.includes('ok')">
-        <jqxButton
-          [width]="buttonWidth"
-          (onClick)="handleButtonClick('ok')"
-          >OK</jqxButton
-        >
-      </div>
-      <div *ngIf="buttons.includes('yes')">
-        <jqxButton
-          [width]="buttonWidth"
-          (onClick)="handleButtonClick('yes')"
-          >Yes</jqxButton
-        >
-      </div>
-      <div *ngIf="buttons.includes('no')">
-        <jqxButton
-          [width]="buttonWidth"
-          (onClick)="handleButtonClick('no')"
-          >No</jqxButton
-        >
-      </div>
-      <div *ngIf="buttons.includes('cancel')">
-        <jqxButton
-          [width]="buttonWidth"
-          (onClick)="handleButtonClick('cancel')"
-          >Cancel</jqxButton
-        >
-      </div>
+      @if (buttons.includes('help')) {
+        <div>
+          <jqxButton
+            [width]="buttonWidth"
+            (onClick)="handleButtonClick('help')"
+            >Help...</jqxButton
+          >
+        </div>
+      }
+      @if (buttons.includes('ok')) {
+        <div>
+          <jqxButton
+            [width]="buttonWidth"
+            (onClick)="handleButtonClick('ok')"
+            >OK</jqxButton
+          >
+        </div>
+      }
+      @if (buttons.includes('yes')) {
+        <div>
+          <jqxButton
+            [width]="buttonWidth"
+            (onClick)="handleButtonClick('yes')"
+            >Yes</jqxButton
+          >
+        </div>
+      }
+      @if (buttons.includes('no')) {
+        <div>
+          <jqxButton
+            [width]="buttonWidth"
+            (onClick)="handleButtonClick('no')"
+            >No</jqxButton
+          >
+        </div>
+      }
+      @if (buttons.includes('cancel')) {
+        <div>
+          <jqxButton
+            [width]="buttonWidth"
+            (onClick)="handleButtonClick('cancel')"
+            >Cancel</jqxButton
+          >
+        </div>
+      }
     </div>
   </div>
 </jqxWindow>

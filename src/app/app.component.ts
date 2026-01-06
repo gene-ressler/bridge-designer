@@ -30,6 +30,7 @@ import { WorkflowManagementService } from './features/controls/management/workfl
 import { DrawingsService } from './features/drawings/drawings.service';
 import { Printing3dService } from './features/printing-3d/printing-3d.service';
 import { Print3dDialogComponent } from './features/printing-3d/print-3d-dialog/print-3d-dialog.component';
+import { MissingFeatureDisablerDialogComponet } from './features/browser/missing-feature-disabler-dialog/missing-feature-disabler-dialog.componet';
 
 // ¯\_(ツ)_/¯
 
@@ -48,6 +49,7 @@ import { Print3dDialogComponent } from './features/printing-3d/print-3d-dialog/p
     MemberEditDialogComponent,
     MemberTableComponent,
     MenusComponent,
+    MissingFeatureDisablerDialogComponet,
     Print3dDialogComponent,
     RulerComponent,
     SampleSelectionDialogComponent,
@@ -65,10 +67,11 @@ import { Print3dDialogComponent } from './features/printing-3d/print-3d-dialog/p
   encapsulation: ViewEncapsulation.None,
 })
 export class AppComponent implements AfterViewInit {
-  @ViewChild('leftRuler') leftRuler!: RulerComponent;
   @ViewChild('bottomRuler') bottomRuler!: RulerComponent;
-  @ViewChild('memberTable') memberTable!: MemberTableComponent;
   @ViewChild('draftingAreaCover') draftingAreaCover!: ElementRef<HTMLDivElement>;
+  @ViewChild('leftRuler') leftRuler!: RulerComponent;
+  @ViewChild('memberTable') memberTable!: MemberTableComponent;
+  @ViewChild('missingFeatureDisablerDialog') missingFeatureDisablerDialog!: MissingFeatureDisablerDialogComponet;
 
   constructor(
     private readonly eventBrokerService: EventBrokerService,
@@ -102,12 +105,15 @@ export class AppComponent implements AfterViewInit {
     // Let everyone know if session management is enabled. E.g. the menu checked status.
     this.sessionStateService.restoreSessionManagementEnabled();
     // Manage the welcome sequence if there is one. Send a completion event if we're rehydrating.
-    // Not a clean place to handle this, but it's simplest.
+    // Not an obvious place to handle this, but it's simplest.
     if (this.sessionStateService.hasRestoredState) {
       this.sessionStateService.notifyRestoreComplete();
+      // Quietly disable stuff for missing browser features. The user was informed earlier (more or less).
+      this.missingFeatureDisablerDialog.disableFeatures();
     } else {
       this.eventBrokerService.uiModeRequest.next({ origin: EventOrigin.APP, data: 'initial' });
-      this.eventBrokerService.tipRequest.next({ origin: EventOrigin.APP, data: 'startup' });
+      // The dialog chains to a tip request.
+      this.missingFeatureDisablerDialog.disableAndInformUser();
     }
     this.handleUrlParameters();
   }
