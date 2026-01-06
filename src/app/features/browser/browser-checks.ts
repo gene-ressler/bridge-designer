@@ -167,7 +167,7 @@ function getFeatures(document: HTMLDocument): BrowserFeatures {
 function classifyBrowser(): Browser {
   {
     const browsersByKeyword: Record<string, Browser> = {
-      FireFox: 'Firefox',
+      Firefox: 'Firefox',
       SamsungBrowser: 'Samsung',
       Opera: 'Opera',
       OPR: 'Opera',
