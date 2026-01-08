@@ -10,7 +10,7 @@
  * @param xNew Output array: the new state after the integration step.
  * @param x Input array: the current state vector.
  * @param h Step size (time increment).
- * @param f Function that computes the derivative y = F(x).
+ * @param f Function that computes the derivative x' = y = F(x).
  * @param n Number of state vector elements. Defaults to length of x.
  * @param yTmp Temporary array for intermediate derivative calculations (optional).
  * @param xTmp Temporary array for intermediate state calculations (optional).
