@@ -101,7 +101,7 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
 
   /** Current dialog height. Varies with site cost expander state. */
   dialogHeight: number = 594;
-  readonly dialogWidth: number = 872;
+  readonly dialogWidth: number = 920;
   readonly toDollars = DOLLARS_FORMATTER.format;
   readonly toCount = COUNT_FORMATTER.format;
   readonly toFixed = FIXED_FORMATTER.format;
