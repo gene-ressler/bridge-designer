@@ -12,7 +12,7 @@ import { DesignConditions, DesignConditionsService } from './design-conditions.s
 import { AllowedShapeChangeMask, InventoryService, StockId } from './inventory.service';
 import { BridgeSketchModel } from '../classes/bridge-sketch.model';
 import { DraftingPanelState, PersistenceService, SaveSet } from './persistence.service';
-import { SessionStateService } from './session-state.service';
+import { SessionStateService } from '../../features/session-state/session-state.service';
 import { BridgeSketchService } from './bridge-sketch.service';
 import { BitVector } from '../core/bitvector';
 

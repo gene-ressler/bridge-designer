@@ -2,8 +2,8 @@
    SPDX-License-Identifier: GPL-3.0-or-later */
 
 import { Injectable } from '@angular/core';
-import { EventBrokerService, EventOrigin } from './event-broker.service';
-import { VERSION } from '../classes/version';
+import { EventBrokerService, EventOrigin } from '../../shared/services/event-broker.service';
+import { VERSION } from '../../shared/classes/version';
 
 const LOCAL_STORAGE_PREFIX = 'bridge-designer';
 
@@ -47,7 +47,18 @@ export class SessionStateService {
     this.eventBrokerService.sessionStateSaveEssentialRequest.next({ origin: EventOrigin.SERVICE, data: undefined });
     this.clearSavedState();
     localStorage.setItem(SessionStateService.LOCAL_STORAGE_KEY, JSON.stringify(this.stateAccumulator));
+    // Add token to session storage for new physical session sensing.
+    sessionStorage.setItem(SessionStateService.LOCAL_STORAGE_KEY, Date.now().toString());
     this.stateAccumulator = undefined;
+  }
+
+  /**
+   * Returns a best guess as to whether state in local storage resulted from a simple browser reload
+   * rather than closing a previous tab. If no state is present, returns false.
+   */
+  public get isCurrentStateReloaded(): boolean {
+    this.loadAccumulatorFromStorage();
+    return !!(this.stateAccumulator && sessionStorage.getItem(SessionStateService.LOCAL_STORAGE_KEY));
   }
 
   /** Returns whether non-essential saved state has been restored. */
@@ -63,9 +74,9 @@ export class SessionStateService {
   }
 
   /** Records a chunk of state associated with given key for saving and later retrieval. */
-  public recordState<T>(key: string, data: T): void {
+  public recordState(key: string, data: any): void {
     if (this.stateAccumulator) {
-      this.stateAccumulator[key] = data as Object;
+      this.stateAccumulator[key] = data;
     }
   }
 
@@ -75,7 +86,7 @@ export class SessionStateService {
     this.eventBrokerService.sessionStateRestoreCompletion.next({ origin: EventOrigin.SERVICE, data: undefined });
   }
 
-  /** Restores the whole system's session manater enabled state with a broadcast. */
+  /** Restores the whole system's session manager enabled state with a broadcast. */
   public restoreSessionManagementEnabled(): void {
     this.loadAccumulatorFromStorage();
     this.eventBrokerService.sessionStateEnableToggle.next({ origin: EventOrigin.SERVICE, data: this.isEnabled });

@@ -14,11 +14,24 @@
     [innerHTML]="sanitizedHeaderHtml"
   ></div>
   <div class="content">
-    <div
-      class="textContent"
-      [innerHTML]="sanitizedContentHtml"
-    ></div>
+    @if (contentHtml) {
+      <div
+        class="textContent"
+        [innerHTML]="sanitizedContentHtml"
+      ></div>
+    } @else {
+      <div class="textContent">
+        <ng-content></ng-content>
+      </div>
+    }
     <div class="buttons">
+      @if (rememberKey) {
+        <div class="left-button">
+          <jqxCheckBox #rememberCheckbox>
+            Remember and don't ask again
+          </jqxCheckBox>
+        </div>
+      }
       @if (buttons.includes('help')) {
         <div>
           <jqxButton

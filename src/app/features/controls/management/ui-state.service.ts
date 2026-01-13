@@ -7,7 +7,7 @@ import { EventBrokerService, EventInfo, EventOrigin } from '../../../shared/serv
 import { jqxToggleButtonComponent } from 'jqwidgets-ng/jqxtogglebutton';
 import { jqxMenuComponent } from 'jqwidgets-ng/jqxmenu';
 import { jqxButtonComponent } from 'jqwidgets-ng/jqxbuttons';
-import { SessionStateService } from '../../../shared/services/session-state.service';
+import { SessionStateService } from '../../session-state/session-state.service';
 
 export const enum ModifierMask {
   ALT = 0x1,

@@ -4,7 +4,7 @@
 import { Injectable } from '@angular/core';
 import { EventBrokerService } from '../../shared/services/event-broker.service';
 import { UndoManagerService, UndoStateToken } from '../drafting/shared/undo-manager.service';
-import { SessionStateService } from '../../shared/services/session-state.service';
+import { SessionStateService } from '../session-state/session-state.service';
 import { UndoManagerSessionStateService } from '../drafting/shared/undo-manager-session-state.service';
 
 /** A container for the bit that reflects whether the current design needs saving. */

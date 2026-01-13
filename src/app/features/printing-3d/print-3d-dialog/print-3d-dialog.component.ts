@@ -18,7 +18,7 @@ import { Print3dModelInfo, Printing3dService } from '../printing-3d.service';
 import { jqxSliderComponent } from 'jqwidgets-ng/jqxslider';
 import { SaveMarkService } from '../../save-load/save-mark.service';
 import { DEFAULT_SAVE_FILE_NAME } from '../../save-load/save-load.service';
-import { SessionStateService } from '../../../shared/services/session-state.service';
+import { SessionStateService } from '../../session-state/session-state.service';
 import { WidgetHelper } from '../../../shared/classes/widget-helper';
 
 @Component({

@@ -1,0 +1,14 @@
+<!-- Copyright (c) 2025-2026 Gene Ressler
+     SPDX-License-Identifier: GPL-3.0-or-later -->
+
+<confirmation-dialog
+  #dialog
+  [headerHtml]="'Continue previous work?'"
+  [buttons]="['yes', 'no']"
+  [rememberKey]="'freshStart.dialog'"
+  (onButtonClick)="handleButtonClick($event)"
+>
+  <p>Your earlier work is ready to go. Would you like to continue?</p>
+  <p>If so, click <b>Yes</b>.</p>
+  <p>If not, and you'd like a fresh start, click <b>No</b>.</p>
+</confirmation-dialog>

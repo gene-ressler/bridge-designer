@@ -14,7 +14,9 @@ import { EventBrokerService } from '../../../shared/services/event-broker.servic
 import { jqxCheckBoxModule, jqxCheckBoxComponent } from 'jqwidgets-ng/jqxcheckbox';
 import { jqxWindowComponent, jqxWindowModule } from 'jqwidgets-ng/jqxwindow';
 import { jqxButtonModule } from 'jqwidgets-ng/jqxbuttons';
-import { SessionStateService } from '../../../shared/services/session-state.service';
+import { SessionStateService } from '../../session-state/session-state.service';
+
+export type TipDialogKind = 'startup' | 'restart' | 'user';
 
 @Component({
     selector: 'tip-dialog',
@@ -24,13 +26,13 @@ import { SessionStateService } from '../../../shared/services/session-state.serv
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TipDialogComponent implements AfterViewInit {
-  @Output() readonly onClose = new EventEmitter<{ isStartupTip: boolean }>();
+  @Output() readonly onClose = new EventEmitter<TipDialogKind>();
 
   @ViewChild('dialog') dialog!: jqxWindowComponent;
   @ViewChild('tips') tips!: ElementRef<HTMLSpanElement>;
   @ViewChild('showAtStartupCheckbox') showAtStartupCheckbox!: jqxCheckBoxComponent;
 
-  private isStartupTip: boolean = false;
+  private kind: TipDialogKind = 'user';
   private tipCount: number = 0;
   tipIndex: number = 0;
   constructor(
@@ -39,17 +41,17 @@ export class TipDialogComponent implements AfterViewInit {
   ) {}
 
   bumpTip(increment: 1 | -1): void {
-    this.showTip(this.tipIndex + increment);
+    this.setTip(this.tipIndex + increment);
   }
 
   /** Tell our parent that we're done. */
   handleDialogClose(): void {
     this.bumpTip(1); // Next time user gets next tip.
-    this.onClose.emit({ isStartupTip: this.isStartupTip });
+    this.onClose.emit(this.kind);
   }
 
-  /** Shows tip with given index, which is wrappped into the valid range. */
-  private showTip(index: number): void {
+  /** Sets current tip to one with given index, which is wrapped into the valid range. */
+  private setTip(index: number): void {
     while (index >= this.tipCount) {
       index -= this.tipCount;
     }
@@ -66,9 +68,9 @@ export class TipDialogComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     this.tipCount = this.tips.nativeElement.childElementCount;
     this.eventBrokerService.tipRequest.subscribe(eventInfo => {
-      this.isStartupTip = eventInfo.data === 'startup';
-      if (this.isStartupTip && !this.showAtStartupCheckbox.checked()) {
-        this.handleDialogClose(); // Simulate tip dialog that didn't happen.
+      this.kind = eventInfo.data;
+      if (!this.showAtStartupCheckbox.checked()) {
+        this.onClose.emit(this.kind); // Simulate tip dialog that didn't happen.
       } else {
         this.dialog.open();
       }
@@ -79,7 +81,7 @@ export class TipDialogComponent implements AfterViewInit {
       state => this.rehydrate(state),
       true /* essential */,
     );
-    this.showTip(this.tipIndex);
+    this.setTip(this.tipIndex);
   }
 
   private dehydrate(): State {
@@ -91,7 +93,7 @@ export class TipDialogComponent implements AfterViewInit {
 
   private rehydrate(state: State): void {
     this.showAtStartupCheckbox.checked(state.showOnStartup);
-    this.showTip(state.tipIndex);
+    this.setTip(state.tipIndex);
   }
 }
 

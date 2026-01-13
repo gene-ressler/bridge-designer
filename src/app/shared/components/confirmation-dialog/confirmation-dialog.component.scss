@@ -22,6 +22,11 @@
   justify-content: flex-end;
 }
 
+.left-button {
+  flex-grow: 1;
+  margin-left: 0 !important;
+}
+
 .buttons div {
   margin-left: 8px;
 }

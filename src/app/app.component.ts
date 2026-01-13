@@ -17,11 +17,11 @@ import { MemberTableComponent } from './features/drafting/member-table/member-ta
 import { MenusComponent } from './features/controls/menus/menus.component';
 import { RulerComponent } from './features/drafting/ruler/ruler.component';
 import { SampleSelectionDialogComponent } from './features/sample-bridge/sample-selection-dialog/sample-selection-dialog.component';
-import { SessionStateService } from './shared/services/session-state.service';
+import { SessionStateService } from './features/session-state/session-state.service';
 import { SetupWizardComponent } from './features/setup/setup-wizard/setup-wizard.component';
 import { SlendernessFailDialogComponent } from './features/testing/slenderness-fail-dialog/slenderness-fail-dialog.component';
 import { TemplateSelectionDialogComponent } from './features/template/template-selection-dialog/template-selection-dialog.component';
-import { TipDialogComponent } from './features/tips/tip-dialog/tip-dialog.component';
+import { TipDialogComponent, TipDialogKind } from './features/tips/tip-dialog/tip-dialog.component';
 import { ToolbarAComponent } from './features/controls/toolbar-a/toolbar-a.component';
 import { ToolbarBComponent } from './features/controls/toolbar-b/toolbar-b.component';
 import { UnstableBridgeDialogComponent } from './features/testing/unstable-bridge-dialog/unstable-bridge-dialog.component';
@@ -31,6 +31,7 @@ import { DrawingsService } from './features/drawings/drawings.service';
 import { Printing3dService } from './features/printing-3d/printing-3d.service';
 import { Print3dDialogComponent } from './features/printing-3d/print-3d-dialog/print-3d-dialog.component';
 import { MissingFeatureDisablerDialogComponent } from './features/browser/missing-feature-disabler-dialog/missing-feature-disabler-dialog.componet';
+import { AllowFreshStartDialogComponent } from './features/session-state/allow-fresh-start-dialog/allow-fresh-start-dialog.component';
 
 // ¯\_(ツ)_/¯
 
@@ -61,12 +62,14 @@ import { MissingFeatureDisablerDialogComponent } from './features/browser/missin
     ToolbarBComponent,
     UnstableBridgeDialogComponent,
     WelcomeDialogComponent,
+    AllowFreshStartDialogComponent,
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
 export class AppComponent implements AfterViewInit {
+  @ViewChild('allowFreshStartDialog') allowFreshStartDialog!: AllowFreshStartDialogComponent;
   @ViewChild('bottomRuler') bottomRuler!: RulerComponent;
   @ViewChild('draftingAreaCover') draftingAreaCover!: ElementRef<HTMLDivElement>;
   @ViewChild('leftRuler') leftRuler!: RulerComponent;
@@ -87,7 +90,7 @@ export class AppComponent implements AfterViewInit {
   }
 
   @HostListener('window:beforeunload')
-  handleBeforUnload(): void {
+  handleBeforeUnload(): void {
     this.sessionStateService.saveState();
   }
 
@@ -110,6 +113,10 @@ export class AppComponent implements AfterViewInit {
       this.sessionStateService.notifyRestoreComplete();
       // Quietly disable stuff for missing browser features. The user was informed earlier (more or less).
       this.missingFeatureDisablerDialog.disableFeatures();
+      if (!this.sessionStateService.isCurrentStateReloaded) {
+        // The dialog resets the app via redirect to ?reset or chains to a tip.
+        this.allowFreshStartDialog.open();
+      }
     } else {
       this.eventBrokerService.uiModeRequest.next({ origin: EventOrigin.APP, data: 'initial' });
       // The dialog chains to a tip request.
@@ -119,8 +126,8 @@ export class AppComponent implements AfterViewInit {
   }
 
   /** Takes the welcome step of the startup tip+welcome sequence. */
-  handleTipDialogClose({ isStartupTip }: { isStartupTip: boolean }) {
-    if (isStartupTip) {
+  handleTipDialogClose(kind: TipDialogKind) {
+    if (kind === 'startup') {
       this.eventBrokerService.welcomeRequest.next({ origin: EventOrigin.APP });
     }
   }

@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 import { UndoManagerService } from '../../drafting/shared/undo-manager.service';
 import { EventBrokerService } from '../../../shared/services/event-broker.service';
 import { AnalysisService } from '../../../shared/services/analysis.service';
-import { SessionStateService } from '../../../shared/services/session-state.service';
+import { SessionStateService } from '../../session-state/session-state.service';
 
 /**
  * Container for logic that determines if the last bridge analysis is still valid for the current bridge.

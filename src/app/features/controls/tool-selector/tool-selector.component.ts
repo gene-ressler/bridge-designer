@@ -6,7 +6,7 @@ import { jqxToggleButtonComponent, jqxToggleButtonModule } from 'jqwidgets-ng/jq
 import { jqxWindowComponent, jqxWindowModule } from 'jqwidgets-ng/jqxwindow';
 import { UiMode, UiStateService } from '../management/ui-state.service';
 import { EventBrokerService, EventOrigin } from '../../../shared/services/event-broker.service';
-import { SessionStateService } from '../../../shared/services/session-state.service';
+import { SessionStateService } from '../../session-state/session-state.service';
 @Component({
   selector: 'tool-selector',
   imports: [jqxToggleButtonModule, jqxWindowModule],

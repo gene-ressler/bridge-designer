@@ -4,7 +4,7 @@
 import { TestBed } from '@angular/core/testing';
 import { UndoManagerSessionStateService } from './undo-manager-session-state.service';
 import { UndoManagerService } from './undo-manager.service';
-import { SessionStateService } from '../../../shared/services/session-state.service';
+import { SessionStateService } from '../../session-state/session-state.service';
 import { BridgeService } from '../../../shared/services/bridge.service';
 import { SelectedElementsService } from './selected-elements-service';
 import { InventoryService } from '../../../shared/services/inventory.service';

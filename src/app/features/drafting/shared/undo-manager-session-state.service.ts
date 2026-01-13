@@ -3,7 +3,7 @@
 
 import { Injectable } from '@angular/core';
 import { UndoManagerService } from './undo-manager.service';
-import { SessionStateService } from '../../../shared/services/session-state.service';
+import { SessionStateService } from '../../session-state/session-state.service';
 import { EditCommand, EditCommandPlaceholder } from '../../../shared/classes/editing';
 import { BridgeService } from '../../../shared/services/bridge.service';
 import { AddJointCommand } from '../../controls/edit-command/add-joint.command';

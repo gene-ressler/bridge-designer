@@ -6,7 +6,7 @@ import { jqxDropDownListComponent, jqxDropDownListModule } from 'jqwidgets-ng/jq
 import { EventBrokerService, EventOrigin } from '../../services/event-broker.service';
 import { InventoryService, StockId } from '../../services/inventory.service';
 import { WidgetHelper } from '../../classes/widget-helper';
-import { SessionStateService } from '../../services/session-state.service';
+import { SessionStateService } from '../../../features/session-state/session-state.service';
 import { UiStateService } from '../../../features/controls/management/ui-state.service';
 
 @Component({

@@ -14,7 +14,7 @@ import { EventBrokerService, EventOrigin } from '../../../shared/services/event-
 import { jqxSliderComponent, jqxSliderModule } from 'jqwidgets-ng/jqxslider';
 import { jqxCheckBoxComponent, jqxCheckBoxModule } from 'jqwidgets-ng/jqxcheckbox';
 import { jqxExpanderModule } from 'jqwidgets-ng/jqxexpander';
-import { SessionStateService } from '../../../shared/services/session-state.service';
+import { SessionStateService } from '../../session-state/session-state.service';
 import { DEFAULT_FLY_THRU_SETTINGS, FlyThruSettings } from '../rendering/fly-thru-settings.service';
 import { UiStateService } from '../../controls/management/ui-state.service';
 import { WidgetHelper } from '../../../shared/classes/widget-helper';

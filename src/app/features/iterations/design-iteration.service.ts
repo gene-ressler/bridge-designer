@@ -9,7 +9,7 @@ import { BridgeService } from '../../shared/services/bridge.service';
 import { DraftingPanelState, PersistenceService, SaveSet } from '../../shared/services/persistence.service';
 import { BridgeCostService } from '../../shared/services/bridge-cost.service';
 import { BridgeModel } from '../../shared/classes/bridge.model';
-import { SessionStateService } from '../../shared/services/session-state.service';
+import { SessionStateService } from '../session-state/session-state.service';
 
 /** A POTO representation of iterations for jqxTreegrid and jqxListbox. */
 export class DesignIteration {
