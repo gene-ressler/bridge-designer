@@ -32,6 +32,8 @@ import { Printing3dService } from './features/printing-3d/printing-3d.service';
 import { Print3dDialogComponent } from './features/printing-3d/print-3d-dialog/print-3d-dialog.component';
 import { MissingFeatureDisablerDialogComponent } from './features/browser/missing-feature-disabler-dialog/missing-feature-disabler-dialog.componet';
 import { AllowFreshStartDialogComponent } from './features/session-state/allow-fresh-start-dialog/allow-fresh-start-dialog.component';
+import { BridgeService } from './shared/services/bridge.service';
+import { DesignConditionsService } from './shared/services/design-conditions.service';
 
 // ¯\_(ツ)_/¯
 
@@ -77,6 +79,7 @@ export class AppComponent implements AfterViewInit {
   @ViewChild('missingFeatureDisablerDialog') missingFeatureDisablerDialog!: MissingFeatureDisablerDialogComponent;
 
   constructor(
+    private readonly bridgeService: BridgeService,
     private readonly eventBrokerService: EventBrokerService,
     private readonly sessionStateService: SessionStateService,
     _drawingsService: DrawingsService, // Instantiate only.
@@ -91,7 +94,10 @@ export class AppComponent implements AfterViewInit {
 
   @HostListener('window:beforeunload')
   handleBeforeUnload(): void {
-    this.sessionStateService.saveState();
+    // Don't save state until the user has begun work on a bridge.
+    if (this.bridgeService.designConditions !== DesignConditionsService.PLACEHOLDER_CONDITIONS) {
+      this.sessionStateService.saveState();
+    }
   }
 
   ngAfterViewInit(): void {
