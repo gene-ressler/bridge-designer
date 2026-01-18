@@ -145,7 +145,7 @@ class SourceInterpolator implements Interpolator {
     vec2.sub(rotationOut, frontOut, rear);
   }
 
-  /** Returns the interpolated displaced joint location for the current parameter. Exaggeration is incorporated. */
+  /** Returns all interpolated displaced joint locations for the current parameter. Exaggeration is incorporated. */
   public getAllDisplacedJointLocations(out: Float32Array): Float32Array {
     const joints = this.service.bridgeService.bridge.joints;
     for (let i = 0, i2 = 0; i < joints.length; ++i, i2 += 2) {

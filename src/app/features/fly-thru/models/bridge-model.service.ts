@@ -164,10 +164,11 @@ export class BridgeModelService {
    * Blue is tension. Neutral gray is zero force. Bright color means failure is close.
    */
   public buildMemberInstanceColors(colorsOut: Float32Array | undefined): Float32Array {
+    const neutral = 0.8;
     const members = this.bridgeService.bridge.members;
     colorsOut ||= new Float32Array(members.length * 6);
     if (this.flyThruSettingsService.settings.noMemberColors) {
-      return colorsOut.fill(0.5);
+      return colorsOut.fill(neutral);
     }
     const failed = this.simulationStateService.interpolator.failedMemberKinds;
     const forceStrengthRatios = this.simulationStateService.interpolator.memberForceStrengthRatios;
@@ -178,14 +179,16 @@ export class BridgeModelService {
       const ratio = forceStrengthRatios[i];
       if (ratio < 0) {
         // compression: interpolate between neutral gray and pure red
-        const clampedRatio = 0.5 * Math.min(1, -ratio);
-        colorsOut[ofs + 0] = colorsOut[ofs + 3] = 0.5 + clampedRatio;
-        colorsOut[ofs + 1] = colorsOut[ofs + 4] = colorsOut[ofs + 2] = colorsOut[ofs + 5] = 0.5 - clampedRatio;
+        const clampedRatio = Math.min(1, -ratio);
+        const t = neutral * (1 - clampedRatio);
+        colorsOut[ofs + 0] = colorsOut[ofs + 3] = t + clampedRatio;
+        colorsOut[ofs + 1] = colorsOut[ofs + 4] = colorsOut[ofs + 2] = colorsOut[ofs + 5] = t;
       } else {
         // tension; interpolate between neutral gray and pure blue
-        const clampedRatio = 0.5 * Math.min(1, ratio);
-        colorsOut[ofs + 2] = colorsOut[ofs + 5] = 0.5 + clampedRatio;
-        colorsOut[ofs] = colorsOut[ofs + 3] = colorsOut[ofs + 1] = colorsOut[ofs + 4] = 0.5 - clampedRatio;
+        const clampedRatio = Math.min(1, ratio);
+        const t = neutral * (1 - clampedRatio);
+        colorsOut[ofs + 2] = colorsOut[ofs + 5] = t + clampedRatio;
+        colorsOut[ofs] = colorsOut[ofs + 3] = colorsOut[ofs + 1] = colorsOut[ofs + 4] = t;
       }
       ofs += 6;
     }
