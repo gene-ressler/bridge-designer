@@ -84,6 +84,15 @@ export type Wire = {
   instanceLimit?: number;
 };
 
+const GL_INT_TYPES: number[] = [
+  WebGL2RenderingContext.BYTE,
+  WebGL2RenderingContext.UNSIGNED_BYTE,
+  WebGL2RenderingContext.SHORT,
+  WebGL2RenderingContext.UNSIGNED_SHORT,
+  WebGL2RenderingContext.INT,
+  WebGL2RenderingContext.UNSIGNED_INT
+];
+
 /** Container for the WebGL details of rendering meshes: one-time preparation and per-frame drawing. */
 @Injectable({ providedIn: 'root' })
 export class MeshRenderingService {
@@ -492,7 +501,7 @@ export class MeshRenderingService {
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(gl.ARRAY_BUFFER, data, usage);
     gl.enableVertexAttribArray(location);
-    if (this.glService.isIntType(type)) {
+    if (GL_INT_TYPES.includes(type)) {
       gl.vertexAttribIPointer(location, size, type, 0, 0);
     } else {
       gl.vertexAttribPointer(location, size, type, false, 0, 0);
