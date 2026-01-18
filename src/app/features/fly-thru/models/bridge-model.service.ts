@@ -164,7 +164,7 @@ export class BridgeModelService {
    * Blue is tension. Neutral gray is zero force. Bright color means failure is close.
    */
   public buildMemberInstanceColors(colorsOut: Float32Array | undefined): Float32Array {
-    const neutral = 0.8;
+    const neutral = 0.7;
     const members = this.bridgeService.bridge.members;
     colorsOut ||= new Float32Array(members.length * 6);
     if (this.flyThruSettingsService.settings.noMemberColors) {
