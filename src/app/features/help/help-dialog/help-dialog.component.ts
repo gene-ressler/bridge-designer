@@ -15,17 +15,12 @@ import { WidgetHelper } from '../../../shared/classes/widget-helper';
 import { HelpSearchComponent } from '../help-search/help-search.component';
 import { HelpTopicListComponent } from '../help-topic-list/help-topic-list.component';
 import { CurrentTopicService } from '../current-topic.service';
+import { HelpTab } from './types';
 
 const enum Tools {
   BACK_TOPIC,
   FORWARD_TOPIC,
   PRINT,
-}
-
-export const enum HelpTab {
-  CONTENTS,
-  TOPICS,
-  SEARCH,
 }
 
 @Component({

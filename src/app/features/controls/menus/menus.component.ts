@@ -6,7 +6,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@a
 import { jqxMenuComponent, jqxMenuModule } from 'jqwidgets-ng/jqxmenu';
 import { EventBrokerService } from '../../../shared/services/event-broker.service';
 import { ModifierMask, UiStateService } from '../management/ui-state.service';
-import { HelpTab } from '../../help/help-dialog/help-dialog.component';
+import { HelpTab } from '../../help/help-dialog/types';
 
 /** Component for handling all menu selections and global hot keys by sending brokered events. */
 @Component({

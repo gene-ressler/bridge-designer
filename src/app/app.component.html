@@ -31,7 +31,10 @@
     [position]="'bottom'"
   ></ruler>
 </div>
-<!-- Normally invisible dialogs. Size setting prevents dialog centering confusion. -->
+<!-- 
+  -- Normally invisible dialogs. Size setting prevents dialog centering confusion. 
+  -- Deferred loading of large components speeds initial display.
+  -->
 <div style="height: 0; width: 0; overflow: hidden">
   <div>
     <about-dialog />
@@ -49,7 +52,9 @@
     <design-saver-loader />
   </div>
   <div>
-    <help-dialog />
+    @defer {
+      <help-dialog />
+    }
   </div>
   <div>
     <load-test-report-dialog />
@@ -64,7 +69,9 @@
     <missing-feature-disabler-dialog #missingFeatureDisablerDialog></missing-feature-disabler-dialog>
   </div>
   <div>
-    <print-3d-parameters-dialog />
+    @defer {
+      <print-3d-parameters-dialog />
+    }
   </div>
   <div>
     <sample-selection-dialog />
