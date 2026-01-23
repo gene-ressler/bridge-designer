@@ -42,7 +42,7 @@ export class ToolSelectorComponent implements AfterViewInit {
   handleClose(_event: any): void {
     // Hack to mitigate event containing no info on programmatic vs. user-based closes.
     if (this.isUserClose) {
-      this.eventBrokerService.toolsToggle.next({origin: EventOrigin.TOOL_SELECTOR, data: false});
+      this.eventBrokerService.toolsToggle.next({ origin: EventOrigin.TOOL_SELECTOR, data: false });
     }
   }
 
@@ -69,6 +69,7 @@ export class ToolSelectorComponent implements AfterViewInit {
     this.uiStateService.registerSelectButtons(
       [this.jointsButton, this.membersButton, this.selectButton, this.eraseButton],
       this.eventBrokerService.editModeSelection,
+      true, // Skip state capture.
     );
     this.eventBrokerService.toolsToggle.subscribe(eventInfo => {
       this.toolsToggleValue = eventInfo.data;

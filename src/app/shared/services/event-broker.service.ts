@@ -128,6 +128,7 @@ export class EventBrokerService {
   public readonly unstableBridgeDialogOpenRequest = new Subject<EventInfo>();
   public readonly welcomeRequest = new Subject<EventInfo>();
 
+  /** Returns an index mapping subject objects to subject names. */
   public get namesBySubject(): Map<Subject<any>, string> {
     const map = new Map<Subject<any>, string>();
     for (const name in this) {
@@ -138,6 +139,7 @@ export class EventBrokerService {
     return map;
   }
 
+  /** Returns an index mapping subject names to subject objects. */
   public get subjectsByName(): Map<string, Subject<any>> {
     const map = new Map<string, Subject<any>>();
     for (const name in this) {

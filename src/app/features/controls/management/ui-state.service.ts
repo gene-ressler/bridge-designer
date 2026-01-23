@@ -30,9 +30,8 @@ type DisableOverride = { isDisabled: boolean; disabledModes: UiMode[] };
 /**
  * Container for logic that synchronizes multiple UI elements having the same purpose.
  *
- * This class doesn't track the state of toggle and select subjects. It only toggles
- * and selects the state of attached UI objects. When explicit state is needed, a separate
- * service should subscribe to the respective subject.
+ * This class tracks the state of toggle and select subjects to support session de- and
+ * rehydration followed by restoring widget states.
  *
  * An exception is UI elements with registered "disable overrides." An override, as the name
  * implies, causes its element to be disabled regardless of its normal enable/disable state
@@ -53,8 +52,13 @@ export class UiStateService {
   private readonly plainMenuItemInfosById: { [id: string]: [Subject<EventInfo>, any] } = {};
   private readonly widgetDisablersBySubject = new Map<Subject<any>, ((disable: boolean) => void)[]>();
   private readonly keyInfosByKey: { [key: string]: [boolean, Subject<EventInfo>, any] } = {};
-  private readonly disableOverridesBySubject = new Map<Subject<any>, DisableOverride>();
   private uiMode: UiMode = 'unknown';
+  /** De- and rehydration state for disable overrides. */
+  private readonly disableOverridesBySubject = new Map<Subject<any>, DisableOverride>();
+  /** De- and rehydration state for select and toggle subject-driven widgets. */
+  private readonly selectAndToggleValuesBySubject = new Map<Subject<EventInfo>, number | boolean>();
+  private readonly registeredSelectAndToggleCaptureSubjects = new Set<Subject<any>>();
+  /** Subjects designated unusable due to environment limitations, never to be re-enabled. */
   private readonly globallyDisabledSubjects = new Set<Subject<any>>();
 
   constructor(
@@ -72,12 +76,20 @@ export class UiStateService {
       event.preventDefault();
       info[1].next({ origin: EventOrigin.TOOLBAR, data: info[2] });
     });
-    eventBrokerService.uiModeRequest.subscribe(eventInfo => {
-      this.uiMode = eventInfo.data;
+    eventBrokerService.uiModeRequest.subscribe(info => {
+      this.uiMode = info.data;
       for (const [subject, override] of this.disableOverridesBySubject) {
         this.disableByOverride(subject, override);
       }
       eventBrokerService.uiModeChange.next({ origin: EventOrigin.SERVICE, data: this.uiMode });
+    });
+    // Set controls to restored values.
+    eventBrokerService.sessionStateRestoreCompletion.subscribe(() => {
+      for (const [subject, value] of this.selectAndToggleValuesBySubject.entries()) {
+        if (value !== undefined) {
+          subject.next({ origin: EventOrigin.SERVICE, data: value });
+        }
+      }
     });
     // By-UI mode disablement setup. Must be complete before session state registration.
     const initial: UiMode[] = ['initial'];
@@ -137,6 +149,7 @@ export class UiStateService {
   }
 
   public registerSelectMenuItems(menu: jqxMenuComponent, itemIds: string[], subject: Subject<EventInfo>): void {
+    this.registerForStateCapture(subject);
     this.addWidgetDisabler(subject, disable => itemIds.forEach(id => menu.disable(id, disable)));
     itemIds.forEach((id, index) => (this.selectMenuItemInfosById[id] = [index, subject]));
     const menuItems = itemIds.map(UiStateService.queryMenuMark);
@@ -152,6 +165,7 @@ export class UiStateService {
     indices: number[],
     subject: Subject<EventInfo>,
   ): void {
+    this.registerForStateCapture(subject);
     this.addWidgetDisabler(subject, disable =>
       buttonItems.forEach(item => item.tool.jqxToggleButton({ disabled: disable })),
     );
@@ -172,7 +186,18 @@ export class UiStateService {
     });
   }
 
-  public registerSelectButtons(buttons: jqxToggleButtonComponent[], subject: Subject<EventInfo>): void {
+  /**
+   * Register select buttons for UI state tracking. Optionally skip registration for state capture,
+   * normally because the caller is handling de- and rehydration.
+   */
+  public registerSelectButtons(
+    buttons: jqxToggleButtonComponent[],
+    subject: Subject<EventInfo>,
+    skipStateCapture?: boolean,
+  ): void {
+    if (!skipStateCapture) {
+      this.registerForStateCapture(subject);
+    }
     this.addWidgetDisabler(subject, disable => buttons.forEach(button => button.disabled(disable)));
     buttons.forEach((button, buttonIndex) =>
       button.elementRef.nativeElement.addEventListener('mousedown', () => {
@@ -187,6 +212,7 @@ export class UiStateService {
   }
 
   public registerToggleMenuItem(menu: jqxMenuComponent, itemId: string, subject: Subject<EventInfo>): void {
+    this.registerForStateCapture(subject);
     this.addWidgetDisabler(subject, disable => menu.disable(itemId, disable));
     const menuItem = UiStateService.queryMenuMark(itemId);
     this.toggleMenuItemInfosById[itemId] = [menuItem, subject];
@@ -198,6 +224,7 @@ export class UiStateService {
   }
 
   public registerToggleToolbarButton(buttonItem: jqwidgets.ToolBarToolItem, subject: Subject<EventInfo>): void {
+    this.registerForStateCapture(subject);
     this.addWidgetDisabler(subject, disable => buttonItem.tool.jqxToggleButton({ disabled: disable }));
     buttonItem.tool.on('click', () => {
       subject.next({ origin: EventOrigin.TOOLBAR, data: buttonItem.tool.jqxToggleButton('toggled') });
@@ -214,6 +241,7 @@ export class UiStateService {
     origin: EventOrigin,
     subject: Subject<EventInfo>,
   ): void {
+    this.registerForStateCapture(subject);
     this.addWidgetDisabler(subject, disable => button.disabled(disable));
     button.elementRef.nativeElement.addEventListener('click', () => {
       subject.next({ origin, data: button.toggled() });
@@ -320,24 +348,44 @@ export class UiStateService {
     return document.querySelector(`li#${id} > span.menu-mark`) as HTMLSpanElement;
   }
 
+  private registerForStateCapture(subject: Subject<EventInfo>): void {
+    if (this.registeredSelectAndToggleCaptureSubjects.has(subject)) {
+      return;
+    }
+    subject.subscribe(info => {
+      this.selectAndToggleValuesBySubject.set(subject, info.data);
+    });
+    this.registeredSelectAndToggleCaptureSubjects.add(subject);
+  }
+
   private dehydrate(): State {
     const namesBySubject = this.eventBrokerService.namesBySubject;
-    const state: State = {};
+    const state: State = { disablers: {}, values: {} };
     this.disableOverridesBySubject.forEach((override, subject) => {
-      state[namesBySubject.get(subject)!] = override.isDisabled;
+      state.disablers[namesBySubject.get(subject)!] = override.isDisabled;
+    });
+    this.selectAndToggleValuesBySubject.forEach((value, subject) => {
+      state.values[namesBySubject.get(subject)!] = value;
     });
     return state;
   }
 
   private rehydrate(state: State): void {
     const subjectsByName = this.eventBrokerService.subjectsByName;
-    for (const subjectName in state) {
+    for (const subjectName in state.disablers) {
       const subject = subjectsByName.get(subjectName)!;
       const override = this.disableOverridesBySubject.get(subject)!;
-      override.isDisabled = state[subjectName];
+      override.isDisabled = state.disablers[subjectName];
+    }
+    for (const subjectName in state.values) {
+      const subject = subjectsByName.get(subjectName)!;
+      this.selectAndToggleValuesBySubject.set(subject, state.values[subjectName]);
     }
   }
 }
 
 /** Map from subject name to "is disabled" state of override. */
-type State = { [key: string]: boolean };
+type State = {
+  disablers: { [key: string]: boolean };
+  values: { [key: string]: number | boolean };
+};

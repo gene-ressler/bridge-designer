@@ -68,8 +68,8 @@ export class DesignMemberRenderingService {
       }
       this.lineWidths[i] = { outer: outerWidth, inner: innerWidth };
     }
-    eventBrokerService.memberNumbersToggle.subscribe(_info => {
-      this.showMemberNumbers = !this.showMemberNumbers;
+    eventBrokerService.memberNumbersToggle.subscribe(info => {
+      this.showMemberNumbers = info.data;
       eventBrokerService.draftingPanelInvalidation.next({ origin: EventOrigin.SERVICE, data: 'graphic' });
     });
   }
