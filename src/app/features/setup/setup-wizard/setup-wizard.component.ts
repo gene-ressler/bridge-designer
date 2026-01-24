@@ -390,6 +390,7 @@ export class SetupWizardComponent implements AfterViewInit, SetupWizardCardView 
     }
     this.templateList.displayMember('name');
     this.templateList.source(templateList);
+    // Preset same-named template even if site conditions changed. Smart or surprising? 
     const rootSketchName = this.rootBridgeService.instance.sketch.name;
     const rootSketchIndex = templateList.findIndex(sketch => sketch.name === rootSketchName);
     this.templateList.selectedIndex(rootSketchIndex < 0 ? 0 : rootSketchIndex);
