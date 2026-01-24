@@ -6,6 +6,7 @@ import { jqxMenuModule, jqxMenuComponent } from 'jqwidgets-ng/jqxmenu';
 import { EventBrokerService } from '../../../shared/services/event-broker.service';
 import { UiStateService } from '../../controls/management/ui-state.service';
 
+/** Drafting panel right-click context menu. */
 @Component({
     selector: 'context-menu',
     imports: [jqxMenuModule],
@@ -40,22 +41,6 @@ export class ContextMenuComponent implements AfterViewInit {
       }
     }
     this.menu.open(x, y);
-  }
-
-  public attachToHost(host: HTMLElement, bounds: HTMLElement = host) {
-    host.addEventListener('contextmenu', (event: MouseEvent) => {
-      let x = event.clientX;
-      let y = event.clientY;
-      const wrapperRect = bounds.getBoundingClientRect();
-      if (wrapperRect.right < x + this.menuWidth) {
-        x = wrapperRect.right - this.menuWidth;
-      }
-      if (wrapperRect.bottom < y + this.menuHeight) {
-        y = wrapperRect.bottom - this.menuHeight;
-      }
-      this.menu.open(x, y);
-      event.preventDefault();
-    });
   }
 
   ngAfterViewInit(): void {

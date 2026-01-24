@@ -22,6 +22,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { ToastKind } from '../../toast/toast/toast-error';
 
+/** A dialog containing a detailed report of bridge costs. */
 @Component({
   selector: 'cost-report-dialog',
   imports: [CommonModule, jqxButtonModule, jqxWindowModule],

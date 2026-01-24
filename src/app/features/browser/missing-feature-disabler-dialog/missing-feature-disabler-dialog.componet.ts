@@ -8,8 +8,8 @@ import { EventBrokerService, EventOrigin } from '../../../shared/services/event-
 import { BROWSER_FEATURES } from '../browser-checks';
 
 /** 
- * A component for disabling features due to missing dialog capabilities, 
- * also a dialog for informing the user about that.
+ * A component for disabling features due to missing device capabilities
+ * and a dialog for informing the user.
  * 
  * Unlike most dialogs, this one is used directly by the app, not via the event broker.
  */

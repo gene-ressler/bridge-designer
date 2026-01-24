@@ -5,6 +5,7 @@ import { Component } from '@angular/core';
 import { BridgeCostService } from '../../../shared/services/bridge-cost.service';
 import { DOLLARS_FORMATTER } from '../../../shared/classes/utility';
 
+/** A cost indicator toolbar widget. */
 @Component({
     selector: 'cost-indicator',
     templateUrl: './cost-indicator.component.html',

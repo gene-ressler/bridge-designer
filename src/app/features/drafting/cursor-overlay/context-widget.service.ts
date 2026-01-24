@@ -9,6 +9,7 @@ import { ContextMenuComponent } from '../context-menu/context-menu.component';
 import { EventBrokerService, EventOrigin } from '../../../shared/services/event-broker.service';
 import { Utility } from '../../../shared/classes/utility';
 
+/** Manager for right-click context menu and dialog of the drawing panel. */
 @Injectable({ providedIn: 'root' })
 export class ContextWidgetService {
   constructor(
@@ -31,6 +32,7 @@ export class ContextWidgetService {
 
   private handleContextMenuClick(event: MouseEvent, contextMenu: ContextMenuComponent, bounds: HTMLElement) {
     const hotElement = this.hotElementService.hotElement;
+    // Member edit dialog if hovering near selected member, else menu.
     if (hotElement instanceof Member && this.selectedElementService.isMemberSelected(hotElement)) {
       this.eventBrokerService.memberEditRequest.next({
         origin: EventOrigin.SERVICE,

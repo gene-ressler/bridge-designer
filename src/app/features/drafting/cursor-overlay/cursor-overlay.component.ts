@@ -37,6 +37,7 @@ export const enum CursorMode {
   ERASE,
 }
 
+/** Transparent canvas overlay for the drawing panel, which displays cursors and handles clicks. */
 @Component({
   selector: 'cursor-overlay',
   templateUrl: './cursor-overlay.component.html',

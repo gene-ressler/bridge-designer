@@ -5,7 +5,7 @@
   #dialog
   [isModal]="true"
   [autoOpen]="false"
-  [width]="960"
+  [width]="1160"
   [height]="500"
   (onOpen)="handleDialogOpen()"
 >
@@ -82,8 +82,10 @@
             <td></td>
             <td colspan="4">Excavation cost</td>
             <td>
-              ({{ toCount(siteCosts.excavationVolume) }} cubic meters) × (
-              {{ toDollars(siteCosts.excavationCostRate) }} per cubic meter)
+              ({{ toCount(siteCosts.excavationVolume) }} cubic meters) × ({{
+                toDollars(siteCosts.excavationCostRate)
+              }}
+              per cubic meter)
             </td>
             <td class="shrink-to-fit">=</td>
             <td class="numeric">{{ toDollars(siteCosts.excavationCost) }}</td>

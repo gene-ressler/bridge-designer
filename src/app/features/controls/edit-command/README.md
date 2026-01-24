@@ -11,7 +11,7 @@ by organizing the command buffer as two stacks. It adds a command to the "done" 
 completes and to the "undone" stack after "undo" completes. An undo or redo pops a command from the done or undone stack
 respectively and - after execution is complete - pushes it on the opposite stack.
 
-The undo stack is ultimately truncated at a large number of commands (e.g. 100), since state persistence allows
+The undo stack is ultimately truncated at a large number of commands (e.g. 1000), since state persistence allows
 unlimited growth across multiple sessions.
 
 ## Commands share structure with bridges
