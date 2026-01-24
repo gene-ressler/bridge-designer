@@ -92,9 +92,10 @@ export class UiStateService {
       }
     });
     // By-UI mode disablement setup. Must be complete before session state registration.
-    const initial: UiMode[] = ['initial'];
-    const initialAndAnimation: UiMode[] = ['initial', 'animation'];
-    const initialAndDrafting: UiMode[] = ['initial', 'drafting'];
+    // Options specify app modes causing override of normal state to disabled state.
+    const initial: UiMode[] = ['initial']; // Enabled only when a design is in progress.
+    const initialAndAnimation: UiMode[] = ['initial', 'animation']; // Enabled for drafting.
+    const initialAndDrafting: UiMode[] = ['initial', 'drafting']; // Enabled for animation.
     this.addDisableOverrides(eventBrokerService.analysisReportRequest, initial, true);
     this.addDisableOverrides(eventBrokerService.animationControlsToggle, initialAndDrafting);
     this.addDisableOverrides(eventBrokerService.costReportRequest, initial);

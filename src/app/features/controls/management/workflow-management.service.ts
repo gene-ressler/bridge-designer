@@ -18,6 +18,7 @@ import { BridgeAutoFixService } from '../../testing/bridge-auto-fix.service';
 import { CursorMode } from '../../drafting/cursor-overlay/cursor-overlay.component';
 import { InventorySelectionService } from '../../../shared/services/inventory-selection.service';
 import { BridgeModel } from '../../../shared/classes/bridge.model';
+import { BridgeSketchModel } from '../../../shared/classes/bridge-sketch.model';
 
 /**
  * Container for the state of the user's design workflow and associated logic.
@@ -153,10 +154,14 @@ export class WorkflowManagementService {
     // Load bridge completion.
     eventBrokerService.loadBridgeCompletion.subscribe(info => {
       const bridge: BridgeModel = info.data;
+      // Disable what needs undoable edits.
       uiStateService.disable(eventBrokerService.undoRequest);
       uiStateService.disable(eventBrokerService.redoRequest);
+      // Disable what needs an analysis
       uiStateService.disable(eventBrokerService.analysisReportRequest);
       uiStateService.disable(eventBrokerService.memberDetailsReportRequest);
+      // Conditionally what needs a template if no template is loaded.
+      uiStateService.disable(eventBrokerService.templateToggle, bridgeService.sketch === BridgeSketchModel.ABSENT);
       eventBrokerService.uiModeRequest.next({ origin: EventOrigin.SERVICE, data: 'drafting' });
       // Auto-select joint edit mode if the bridge has no user-specified joints yet.
       if (bridge.joints.length === bridge.designConditions.prescribedJoints.length) {
@@ -200,6 +205,7 @@ export class WorkflowManagementService {
       });
       uiStateService.disable(eventBrokerService.undoRequest, undoManagerService.done.length === 0);
       uiStateService.disable(eventBrokerService.redoRequest, undoManagerService.undone.length === 0);
+      uiStateService.disable(eventBrokerService.templateToggle, bridgeService.sketch === BridgeSketchModel.ABSENT);
     });
 
     /** En/disables member size increment. */

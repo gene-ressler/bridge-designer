@@ -19,6 +19,7 @@ import { CartoonOptionMask, CartoonRenderingService } from '../../../shared/serv
 import { CartoonSiteRenderingService } from '../../../shared/services/cartoon-site-rendering.service';
 import { CartoonSketchRenderingService } from '../../../shared/services/cartoon-sketch-rendering.service';
 import { BridgeSketchModel } from '../../../shared/classes/bridge-sketch.model';
+import { UiStateService } from '../../controls/management/ui-state.service';
 
 @Component({
   selector: 'template-selection-dialog',
@@ -51,6 +52,7 @@ export class TemplateSelectionDialogComponent implements AfterViewInit {
     private readonly cartoonRenderingService: CartoonRenderingService,
     private readonly eventBrokerService: EventBrokerService,
     private readonly rootBridgeService: RootBridgeService,
+    private readonly uiStateService: UiStateService,
     private readonly viewportTransform: ViewportTransform2D,
   ) {
     cartoonRenderingService.options = CartoonOptionMask.STANDARD_OPTIONS;
@@ -73,6 +75,8 @@ export class TemplateSelectionDialogComponent implements AfterViewInit {
       origin: EventOrigin.TEMPLATE_DIALOG,
       data: this.bridgeService.sketch,
     });
+    // Enable the template toggle control and turn it on.
+    this.uiStateService.disable(this.eventBrokerService.templateToggle, false);
     this.eventBrokerService.templateToggle.next({ origin: EventOrigin.TEMPLATE_DIALOG, data: true });
   }
 
