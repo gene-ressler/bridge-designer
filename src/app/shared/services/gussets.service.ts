@@ -77,7 +77,7 @@ export class GussetsService {
 
   /**
    * Builds one gusset per joint in the current bridge.
-   * 
+   *
    * @param minMemberSizeMm optional forced minimum member size (e.g. for 3d printing)
    */
   public createGussets(minMemberSizeMm: number = 0): Gusset[] {
@@ -129,6 +129,14 @@ export class GussetsService {
             this.convexHullService.add(intersection.x - geometry.upx * 2, intersection.y - geometry.upy * 2);
             this.convexHullService.add(intersection.x + altGeometry.upx * 2, intersection.y + altGeometry.upy * 2);
           }
+        }
+        // Add a diamond around the pin ensuring at least minMemberSizeMm of thickness (for 3d prints).
+        if (minMemberSizeMm > 0) {
+          const r = minMemberSizeMm * 0.001;
+          this.convexHullService.add(0, r);
+          this.convexHullService.add(0, -r);
+          this.convexHullService.add(r, 0);
+          this.convexHullService.add(-r, 0);
         }
       }
       // Create a hull around all points to determine gusset vertices. Delete member geometries no longer needed.
