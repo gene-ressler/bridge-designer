@@ -130,7 +130,7 @@ export class TerrainModelService {
   }
 
   /**
-   * Returns an appropirate x-coordinate for the left side of the left abutment, i.e. the rightmost
+   * Returns an appropriate x-coordinate for the left side of the left abutment, i.e. the rightmost
    * grid x-coordinate on the left river bank where the roadway is at terrain level.
    */
   public get leftAbutmentEndX(): [number, number] {
@@ -389,8 +389,8 @@ export class TerrainModelService {
     const metersPerGrid = TerrainModelService.METERS_PER_GRID;
     const x = (j - halfGridCount) * metersPerGrid;
     const z = (i - halfGridCount) * metersPerGrid;
-    // Mark the roadway excluding the area between abutments invisible. Treats an extra grid under the abutment
-    // as visible so triangles spanning abutment to water aren't elided.
+    // Mark the roadway excluding the area between abutments invisible. Treats a full grid size under
+    // the abutment as visible so triangles spanning abutment to water aren't elided.
     const bridgeHalfWidth = 0.5 * conditions.spanLength + metersPerGrid;
     let isVisible = Math.abs(z) > SiteConstants.DECK_HALF_WIDTH || Math.abs(x) < bridgeHalfWidth;
     // Distance to river center line.
