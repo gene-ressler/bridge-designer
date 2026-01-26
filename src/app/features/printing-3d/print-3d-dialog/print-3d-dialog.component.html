@@ -140,8 +140,8 @@
       </div>
     </div>
     <div class="error-block">
-      @if (isDialogDisabled) {
-        Sorry. The bridge is too complex. Exported files aren't valid. See Help.
+      @if (error) {
+        Sorry. The bridge is too complex to export. See Help. ({{ error }})
       } @else {
         &nbsp;
       }
@@ -162,7 +162,7 @@
       <jqxButton
         style="margin-bottom: 4px; margin-top: 8px"
         (onClick)="handleOkButtonClick()"
-        [disabled]="isDialogDisabled"
+        [disabled]="error !== ''"
         [width]="'120px'"
         >Ok</jqxButton
       >

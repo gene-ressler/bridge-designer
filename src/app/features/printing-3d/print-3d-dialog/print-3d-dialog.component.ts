@@ -14,7 +14,7 @@ import { FormsModule } from '@angular/forms';
 import { jqxNumberInputComponent, jqxNumberInputModule } from 'jqwidgets-ng/jqxnumberinput';
 import { jqxWindowComponent, jqxWindowModule } from 'jqwidgets-ng/jqxwindow';
 import { EventBrokerService, EventOrigin } from '../../../shared/services/event-broker.service';
-import { Print3dModelInfo, Printing3dService } from '../printing-3d.service';
+import { ManifoldError, Print3dModelInfo, Printing3dService } from '../printing-3d.service';
 import { jqxSliderComponent } from 'jqwidgets-ng/jqxslider';
 import { SaveMarkService } from '../../save-load/save-mark.service';
 import { DEFAULT_SAVE_FILE_NAME } from '../../save-load/save-load.service';
@@ -35,7 +35,7 @@ export class Print3dDialogComponent implements AfterViewInit {
   wiggleMm: string = '0.2'; // Reasonable join slop for Prusa Original
   modelMmPerWorldM: number = 5.6; // 250mm / 44M rounded to 0.2
   baseFileName: string = DEFAULT_SAVE_FILE_NAME;
-  isDialogDisabled: boolean = false;
+  error: string = '';
 
   @ViewChild('dialog') dialog!: jqxWindowComponent;
   @ViewChild('minFeatureSizeInput') minFeatureSizeInput!: jqxNumberInputComponent;
@@ -86,15 +86,18 @@ export class Print3dDialogComponent implements AfterViewInit {
   /** Sets up dialog fields for current bridge and its edit state. */
   async handleDialogOpen(): Promise<void> {
     // Assume the dialog is enabled. Manifold failures set it to true.
-    this.isDialogDisabled = false;
+    this.error = '';
     // Initialize the default export file name base from the save file name.
     const initBaseFileName = this.saveMarkService.savedFileName || DEFAULT_SAVE_FILE_NAME;
     this.baseFileName = initBaseFileName.replace(/\.bdc$/, '');
     try {
       this.unscaledModelInfo = await this.printing3dService.getUnscaledModelInfo();
       this.modelInfo = this.unscaledModelInfo.applyScale(this.modelMmPerWorldM);
-    } catch (err) {
-      this.isDialogDisabled = true;
+    } catch (err: any) {
+      if (err instanceof ManifoldError) {
+        this.error = err.summary;
+        this.scaleSlider.disabled(true);
+      }
     }
     this.changeDetectorRef.detectChanges();
   }
@@ -117,9 +120,10 @@ export class Print3dDialogComponent implements AfterViewInit {
         this.baseFileName,
       );
       this.dialog.close();
-    } catch (err) {
-      this.isDialogDisabled = true;
-      this.changeDetectorRef.detectChanges();
+    } catch (err: any) {
+      if (err instanceof ManifoldError) {
+        this.error = err.summary;
+      }
     }
   }
 
@@ -129,7 +133,7 @@ export class Print3dDialogComponent implements AfterViewInit {
       return;
     }
     // Re-enable because a bigger scale might succeed.
-    this.isDialogDisabled = false;
+    this.error = '';
     this.modelInfo = this.unscaledModelInfo.applyScale(this.modelMmPerWorldM);
     this.changeDetectorRef.detectChanges();
   }

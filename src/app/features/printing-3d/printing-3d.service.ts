@@ -2,7 +2,7 @@
    SPDX-License-Identifier: GPL-3.0-or-later */
 
 import { Injectable } from '@angular/core';
-import { Manifold, Mesh, Vec3 } from 'manifold-3d';
+import { ErrorStatus, Manifold, Mesh, Vec3 } from 'manifold-3d';
 import { cleanup } from 'manifold-3d/lib/garbage-collector.js';
 import { Mat2x3, Print3dModelService } from './print-3d-model.service';
 
@@ -83,13 +83,13 @@ export class Printing3dService {
     const gmy = this.print3dModelService.getGeometry(modelMmPerWorldM, 0.1, 0);
     // Compute only objects that could possibly establish the max sizes.
     const xform: Mat2x3 = [modelMmPerWorldM, 0, 0, modelMmPerWorldM, 0, 0];
-    const truss = throwIfEmpty(this.print3dModelService.buildTruss(gmy, xform));
+    const truss = throwIfEmpty(this.print3dModelService.buildTruss(gmy, xform), 'unit truss');
     const info = new Print3dModelInfo();
     info.mergeManifold(truss, 'truss');
-    const leftAbutment = throwIfEmpty(this.print3dModelService.buildAbutment(gmy, 0));
+    const leftAbutment = throwIfEmpty(this.print3dModelService.buildAbutment(gmy, 0), 'unit abutment');
     info.mergeManifold(leftAbutment, 'abutment');
     if (this.print3dModelService.isPier) {
-      const pier = throwIfEmpty(this.print3dModelService.buildPier(gmy, 0));
+      const pier = throwIfEmpty(this.print3dModelService.buildPier(gmy, 0), 'unit pier');
       info.mergeManifold(pier, 'pier');
     }
     cleanup(); // Free manifold memory.
@@ -113,7 +113,7 @@ export class Printing3dService {
     const trussesContext = new ObjFileContext();
 
     const xform: Mat2x3 = [modelMmPerWorldM, 0, 0, modelMmPerWorldM, 0, 0];
-    const frontTruss = throwIfEmpty(this.print3dModelService.buildTruss(gmy, xform));
+    const frontTruss = throwIfEmpty(this.print3dModelService.buildTruss(gmy, xform), 'front truss');
 
     this.saveMeshAndFree(frontTruss, 'FrontTruss', trussesText, trussesContext);
 
@@ -127,7 +127,7 @@ export class Printing3dService {
         ? [modelMmPerWorldM, 0, 0, -modelMmPerWorldM, 0, 2 * trussBoundingBox.min[1] - minFeatureSize]
         : [modelMmPerWorldM, 0, 0, -modelMmPerWorldM, tBbDx + minFeatureSize, trussBoundingBox.min[1]];
 
-    const rearTruss = throwIfEmpty(this.print3dModelService.buildTruss(gmy, rearTrussXform));
+    const rearTruss = throwIfEmpty(this.print3dModelService.buildTruss(gmy, rearTrussXform), 'rear truss');
 
     this.saveMeshAndFree(rearTruss, 'RearTruss', trussesText, trussesContext);
     this.downloadObjFileText(trussesText, baseFileName, 'trusses');
@@ -151,6 +151,7 @@ export class Printing3dService {
       this.print3dModelService.isLeftAnchorage
         ? this.print3dModelService.buildAbutmentWithAnchorage(gmy, placementX)
         : this.print3dModelService.buildAbutment(gmy, placementX),
+      'left abutment',
     );
     advancePlacementX(leftAbutment);
     this.saveMeshAndFree(leftAbutment, 'LeftAbutment', abutmentsText, abutmentsContext);
@@ -159,6 +160,7 @@ export class Printing3dService {
       this.print3dModelService.isRightAnchorage
         ? this.print3dModelService.buildAbutmentWithAnchorage(gmy, placementX)
         : this.print3dModelService.buildAbutment(gmy, placementX),
+      'right abutment',
     );
     advancePlacementX(rightAbutment);
     this.saveMeshAndFree(rightAbutment, 'RightAbutment', abutmentsText, abutmentsContext);
@@ -166,7 +168,7 @@ export class Printing3dService {
     // ---- Pier ----
 
     if (this.print3dModelService.isPier) {
-      const pier = throwIfEmpty(this.print3dModelService.buildPier(gmy, placementX));
+      const pier = throwIfEmpty(this.print3dModelService.buildPier(gmy, placementX), 'pier');
       advancePlacementX(pier);
       this.saveMeshAndFree(pier, 'Pier', abutmentsText, abutmentsContext);
     }
@@ -183,6 +185,7 @@ export class Printing3dService {
       const joint = iteration.value;
       const crossMember = throwIfEmpty(
         this.print3dModelService.buildCrossMember(gmy, iteration.value, placementX, placementY),
+        `cross-member ${joint.number}`,
       );
       advancePlacementX(crossMember);
       this.saveMeshAndFree(crossMember, `CrossMember_${joint.number}`, crossMembersText, crossMembersContext);
@@ -195,7 +198,10 @@ export class Printing3dService {
     const middleJointIndex = this.print3dModelService.deckPanelCount >>> 1;
     for (let iteration = panelIter.next(); !iteration.done; iteration = panelIter.next()) {
       const joint = iteration.value;
-      const panel = throwIfEmpty(this.print3dModelService.buildDeckPanel(gmy, joint, placementX, placementY));
+      const panel = throwIfEmpty(
+        this.print3dModelService.buildDeckPanel(gmy, joint, placementX, placementY),
+        `deck panel ${joint.number}`,
+      );
       // Place in two rows.
       if (joint.index === middleJointIndex) {
         placementX = 0;
@@ -327,9 +333,23 @@ function getTriangleNormal(coords: Float32Array, ia: number, ib: number, ic: num
   return [nx / len, ny / len, nz / len];
 }
 
-function throwIfEmpty(manifold: Manifold): Manifold {
+export class ManifoldError extends Error {
+  constructor(
+    public readonly part: string,
+    errorStatus: ErrorStatus,
+  ) {
+    super(errorStatus);
+    this.name = 'ManifoldError';
+  }
+
+  public get summary(): string {
+    return `${this.part}: ${this.message}`;
+  }
+}
+
+function throwIfEmpty(manifold: Manifold, part: string): Manifold {
   if (manifold.isEmpty()) {
-    throw new Error(manifold.status());
+    throw new ManifoldError(part, manifold.status());
   }
   return manifold;
 }
