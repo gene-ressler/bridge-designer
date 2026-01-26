@@ -132,7 +132,7 @@ export class Print3dDialogComponent implements AfterViewInit {
     if (this.unscaledModelInfo === undefined) {
       return;
     }
-    // Re-enable because a bigger scale might succeed.
+    // Re-enable after export (not unit) manifold fail because a bigger scale might succeed.
     this.error = '';
     this.modelInfo = this.unscaledModelInfo.applyScale(this.modelMmPerWorldM);
     this.changeDetectorRef.detectChanges();

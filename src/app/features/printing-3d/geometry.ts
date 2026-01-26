@@ -20,7 +20,6 @@ export class Print3dGeometry {
 
   // Polygons.
   public readonly abutment: Vec2[];
-  public readonly abutmentCutout: Vec2[]; // Anchorages, too.
   public readonly abutmentShelfZ: number;
   public readonly abutmentWidth: number;
   public readonly abutmentWithAnchorage: Vec2[];
@@ -38,7 +37,6 @@ export class Print3dGeometry {
   public readonly endDeckPanelXOffset: number;
   public readonly gussets: Gusset[];
   public readonly pier: Vec2[];
-  public readonly pierCutout: Vec2[];
   public readonly pierHeight: number;
   public readonly pierTaperX: number;
   public readonly pierTopZ: number;
@@ -91,13 +89,11 @@ export class Print3dGeometry {
     const bv = 0.05; // bevel
     const dah = 4; // display abutment height (below step)
     const cbh = 0.5; // Cross beam height including flange
-    const cot = 1.1; // Cutout (abutment and pier) minimum thickness
     const pfh = 0.2 / modelMmPerWorldM; // Pin foot height (layer thickness)
 
     const pht = Math.sqrt(3) * phs; // pillow height
     const shw = Math.max(phs, dbhw + fw); // step half width
     const phw = Math.max(phs, dphw); // pier half width
-    const cft = 2.0 / modelMmPerWorldM; // cutout foot thickness
 
     const conditions = bridgeService.designConditions;
     const archHeight = conditions.isArch ? conditions.underClearance : 0;
@@ -208,8 +204,7 @@ export class Print3dGeometry {
     const p: Vec2 = [x1, z2];
     const q: Vec2 = [x4, z2];
 
-    // Anchorage extension
-
+    // Anchorage extension.
     const gb: Vec2 = [x19, z2];
     const gc: Vec2 = [x18, z2];
     const gd: Vec2 = [x18, z8];
@@ -224,30 +219,11 @@ export class Print3dGeometry {
     const w: Vec2 = [x2, y0];
 
     // Abutment.
-
     this.abutment = [p, q, k, l, m, n];
     this.abutmentWithAnchorage = [p, q, k, ge, gb, gc, gd, m, n];
     this.abutmentXOffset = -x0;
     this.abutmentWithAnchorageXOffset = -x18;
     this.anchorageX = x17;
-
-    // Abutment cutout.
-
-    let acx0 = -bridgeService.bridgeHalfWidth + cot;
-    const acx1 = 0;
-    let acx2 = bridgeService.bridgeHalfWidth - cot;
-    const acy0 = z0 + cft; 
-    const acy1 = z2 - cot;
-    // Don't let the arch angle be shallower than 45 degrees.
-    if (acy1 - acy0 < acx1 - acx0) {
-      const ht = Math.max(0, acy1 - acy0);
-      acx0 = acx1 - ht;
-      acx2 = acx1 + ht;
-    }
-    const aca: Vec2 = [acx0, acy0];
-    const acb: Vec2 = [acx2, acy0];
-    const acc: Vec2 = [acx1, acy1];
-    this.abutmentCutout = [aca, acb, acc];
     this.abutmentWidth = x1 - x0;
     this.abutmentWithAnchorageWidth = x1 - x18;
 
@@ -271,23 +247,6 @@ export class Print3dGeometry {
     this.pier = [r, s, t, u, v, w];
     this.pierTaperX = 2;
     this.pierXOffset = -this.pierTaperX * x2;
-
-    // Pier cutout
-    let pcx0 = -bridgeService.bridgeHalfWidth + cot;
-    const pcx1 = 0;
-    let pcx2 = bridgeService.bridgeHalfWidth - cot;
-    const pcy1 = this.pierTopZ - cot;
-    const pcy0 = z0 +  cft;
-    // Don't let the arch angle be shallower than 45 degrees.
-    if (pcy1 - pcy0 < pcx1 - pcx0) {
-      const ht = Math.max(0, pcy1 - pcy0);
-      pcx0 = pcx1 - ht;
-      pcx2 = pcx1 + ht;
-    }
-    const pca: Vec2 = [pcx0, pcy0];
-    const pcb: Vec2 = [pcx2, pcy0];
-    const pcc: Vec2 = [pcx1, pcy1];
-    this.pierCutout = [pca, pcb, pcc];
     this.pierWidth = x1 - x0;
 
     // Cross-member

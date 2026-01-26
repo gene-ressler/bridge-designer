@@ -127,15 +127,10 @@ export class Print3dModelService {
   public buildAbutment(gmy: Print3dGeometry, x: number): Manifold {
     const rawTab = this.extrudeCentered(gmy.tab, 2 * gmy.tabThickness);
     const tab = rawTab.translate(gmy.abutmentXOffset, 0, gmy.abutmentShelfZ);
-    const cutout = this.manifoldClass
-      .extrude(gmy.abutmentCutout, gmy.abutmentWidth + 2 * FUDGE)
-      .rotate(90, 0, 90)
-      .translate(-FUDGE, 0, 0);
     const depth = gmy.bridgeWidth;
     return this.extrudeCentered(gmy.abutment, depth)
       .translate(gmy.abutmentXOffset, 0, 0)
       .rotate(90, 0, 0) // Rotate y axis to z.
-      .subtract(cutout)
       .add(tab)
       .scale(gmy.modelMmPerWorldM)
       .translate(x, 0, 0);
@@ -146,15 +141,10 @@ export class Print3dModelService {
     const rawTab = this.extrudeCentered(gmy.tab, 2 * gmy.tabThickness);
     const abutmentTab = rawTab.translate(gmy.abutmentWithAnchorageXOffset, 0, gmy.abutmentShelfZ);
     const anchorageTab = rawTab.translate(gmy.anchorageX + gmy.abutmentWithAnchorageXOffset, 0, gmy.abutmentShelfZ);
-    const cutout = this.manifoldClass
-      .extrude(gmy.abutmentCutout, gmy.abutmentWithAnchorageWidth + 2 * FUDGE)
-      .rotate(90, 0, 90)
-      .translate(-FUDGE, 0, 0);
     const depth = gmy.bridgeWidth;
     return this.extrudeCentered(gmy.abutmentWithAnchorage, depth)
       .translate(gmy.abutmentWithAnchorageXOffset, 0, 0)
       .rotate(90, 0, 0) // Rotate y axis to z.
-      .subtract(cutout)
       .add(abutmentTab)
       .add(anchorageTab)
       .scale(gmy.modelMmPerWorldM)
@@ -163,15 +153,10 @@ export class Print3dModelService {
 
   public buildPier(gmy: Print3dGeometry, x: number): Manifold {
     const tab = this.extrudeCentered(gmy.tab, 2 * gmy.tabThickness).translate(gmy.pierXOffset, 0, gmy.pierTopZ);
-    const cutout = this.manifoldClass
-      .extrude(gmy.pierCutout, gmy.pierWidth + 2 * FUDGE)
-      .rotate(90, 0, 90)
-      .translate(-FUDGE, 0, 0);
     return this.manifoldClass
       .extrude(gmy.pier, gmy.pierHeight, undefined, undefined, [gmy.pierTaperX, 1.2])
       .rotate(180, 0, 0) // Flip taper.
       .translate(gmy.pierXOffset, 0, gmy.pierTopZ)
-      .subtract(cutout)
       .add(tab)
       .scale(gmy.modelMmPerWorldM)
       .translate(x, 0, 0);
