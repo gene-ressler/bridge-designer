@@ -73,58 +73,59 @@ export class CursorOverlayComponent implements AfterViewInit {
     private readonly selectModeService: SelectModeService,
   ) {}
 
-  get canvas(): HTMLCanvasElement {
+  private get canvas(): HTMLCanvasElement {
     return this.cursorLayer.nativeElement;
   }
 
-  get ctx(): CanvasRenderingContext2D {
+  private get ctx(): CanvasRenderingContext2D {
     return Graphics.getContext(this.cursorLayer);
   }
 
   /** Sets up and initializes selection state and cursors for placing joints. */
-  public setJointsMode(): void {
-    this.eventBrokerService.selectNoneRequest.next({ origin: EventOrigin.CURSOR_OVERLAY });
+  private setJointsMode(): void {
     this.hotElementService.clearRenderedHotElement(this.ctx);
     this.modalInputEventDelegator.handlerSet = this.jointsModeService.initialize(this.ctx, this.addJointRequest);
     this.hotElementService.defaultCursor = StandardCursor.CROSSHAIR;
   }
 
   /** Sets up and initializes selection state and cursors for placing members. */
-  public setMembersMode(): void {
-    this.eventBrokerService.selectNoneRequest.next({ origin: EventOrigin.CURSOR_OVERLAY });
+  private setMembersMode(): void {
     this.jointCursorService.clear(this.ctx);
     this.modalInputEventDelegator.handlerSet = this.membersModeService.initialize(this.ctx, this.addMemberRequest);
     this.hotElementService.defaultCursor = { cursor: 'img/pencil.svg', orgX: 0, orgY: 31 };
   }
 
   /** Sets up and initializes selection state and cursors for selecting joints and members. */
-  public setSelectMode(): void {
+  private setSelectMode(): void {
     this.jointCursorService.clear(this.ctx);
     this.modalInputEventDelegator.handlerSet = this.selectModeService.initialize(this.ctx, this.moveJointRequest);
     this.hotElementService.defaultCursor = StandardCursor.ARROW;
   }
 
   /** Sets up and initializes selection state and cursors for erasing joints and members. */
-  public setEraseMode(): void {
-    this.eventBrokerService.selectNoneRequest.next({ origin: EventOrigin.CURSOR_OVERLAY });
+  private setEraseMode(): void {
     this.jointCursorService.clear(this.ctx);
     this.modalInputEventDelegator.handlerSet = this.eraseModeService.initialize(this.ctx, this.deleteRequest);
     this.hotElementService.defaultCursor = { cursor: 'img/pencilud.svg', orgX: 2, orgY: 33 };
   }
 
-  /** Translates UI selector element (menu and toolbar buttons) index to respective mode. */
+  /** Sets edit mode based on UI selector element (menu and toolbar buttons). */
   private setCursorModeByControlSelectedIndex(i: number | undefined) {
+    // Manage selection clearing here so setters don't undo selection rehydration.
     switch (i) {
       case CursorMode.JOINTS:
+        this.eventBrokerService.selectNoneRequest.next({ origin: EventOrigin.CURSOR_OVERLAY });
         this.setJointsMode();
         break;
       case CursorMode.MEMBERS:
+        this.eventBrokerService.selectNoneRequest.next({ origin: EventOrigin.CURSOR_OVERLAY });
         this.setMembersMode();
         break;
       case CursorMode.SELECT:
         this.setSelectMode();
         break;
       case CursorMode.ERASE:
+        this.eventBrokerService.selectNoneRequest.next({ origin: EventOrigin.CURSOR_OVERLAY });
         this.setEraseMode();
         break;
     }

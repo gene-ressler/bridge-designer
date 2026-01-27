@@ -26,6 +26,13 @@ export class ElementSelectorService {
   ) {
     eventBrokerService.selectAllRequest.subscribe(_eventInfo => this.selectAllMembers(_eventInfo.data));
     eventBrokerService.selectNoneRequest.subscribe(eventInfo => this.clear(eventInfo.origin));
+    // If there was a rehydrated selection, update the UI.
+    eventBrokerService.sessionStateRestoreCompletion.subscribe(() => {
+      const selectedElements = this.selectedElementsService.selectedElements;
+      if (selectedElements.selectedMembers.size + selectedElements.selectedJoints.size > 0) {
+        this.sendSelectedElementsChange(EventOrigin.SERVICE);
+      }
+    });
   }
 
   private readonly worldCursor = Rectangle2D.createEmpty();
@@ -66,7 +73,7 @@ export class ElementSelectorService {
 
   public clear(origin: EventOrigin): void {
     const selectedElements = this.selectedElementsService.selectedElements;
-    if (selectedElements.selectedMembers.size === 0 && selectedElements.selectedJoints.size === 0) {
+    if (selectedElements.selectedMembers.size + selectedElements.selectedJoints.size === 0) {
       return;
     }
     selectedElements.selectedMembers.clear();
@@ -95,7 +102,6 @@ export class ElementSelectorService {
     indexes.forEach(index => selectedMembers.add(index));
     this.sendSelectedElementsChange(origin);
   }
-
 
   /** Returns a representation of the current selection and clears it. */
   public stashSelection(origin: EventOrigin): SelectionStash {

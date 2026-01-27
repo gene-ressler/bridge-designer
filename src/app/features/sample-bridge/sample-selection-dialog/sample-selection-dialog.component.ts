@@ -14,7 +14,7 @@ import { DesignSiteRenderingService } from '../../../shared/services/design-site
 import { EventBrokerService, EventOrigin } from '../../../shared/services/event-broker.service';
 import { Graphics } from '../../../shared/classes/graphics';
 import { SampleService, SAMPLE_BRIDGES } from '../sample.service';
-import { SelectedElementsService } from '../../drafting/shared/selected-elements-service';
+import { SelectedElementsService, SelectedElementsServiceSessionStateKey } from '../../drafting/shared/selected-elements-service';
 import { ViewportTransform2D } from '../../../shared/services/viewport-transform.service';
 import { DesignSketchRenderingService } from '../../../shared/services/design-sketch-rendering.service';
 
@@ -32,6 +32,7 @@ import { DesignSketchRenderingService } from '../../../shared/services/design-sk
     DesignSiteRenderingService,
     DesignSketchRenderingService,
     SelectedElementsService,
+    { provide: SelectedElementsServiceSessionStateKey, useValue: { key: undefined } },
     ViewportTransform2D,
   ],
   templateUrl: './sample-selection-dialog.component.html',

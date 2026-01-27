@@ -41,12 +41,12 @@ export class BridgeService {
 
   constructor(
     private readonly persistenceService: PersistenceService,
-    bridgeServiceSessionStateKey: BridgeServiceSessionStateKey,
+    sessionStateKey: BridgeServiceSessionStateKey,
     private readonly bridgeSketchService: BridgeSketchService,
     sessionStateService: SessionStateService,
   ) {
     sessionStateService.register(
-      bridgeServiceSessionStateKey.key,
+      sessionStateKey.key,
       () => this.dehydrate(),
       state => this.rehydrate(state),
     );

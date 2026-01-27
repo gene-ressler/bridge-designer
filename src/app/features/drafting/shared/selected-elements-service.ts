@@ -5,6 +5,7 @@ import { Injectable } from '@angular/core';
 import { BridgeModel } from '../../../shared/classes/bridge.model';
 import { Joint } from '../../../shared/classes/joint.model';
 import { Member } from '../../../shared/classes/member.model';
+import { SessionStateService } from '../../session-state/session-state.service';
 
 export type SelectedSet = Set<number>;
 
@@ -13,9 +14,15 @@ export type SelectedElements = {
   selectedMembers: SelectedSet;
 };
 
-/** 
- * Container for the drafting panel's element selection and hot element. 
- * 
+/** Container for session key providable in non-root instances of the service. */
+@Injectable({ providedIn: 'root' })
+export class SelectedElementsServiceSessionStateKey {
+  public readonly key: string | undefined = 'selected-elements.service';
+}
+
+/**
+ * Container for the drafting panel's element selection and hot element.
+ *
  * Selection should not be mutated directly. Use ElementSelectorService.
  */
 @Injectable({ providedIn: 'root' })
@@ -24,6 +31,14 @@ export class SelectedElementsService {
     selectedJoints: new Set<number>(),
     selectedMembers: new Set<number>(),
   };
+
+  constructor(sessionStateKey: SelectedElementsServiceSessionStateKey, sessionStateService: SessionStateService) {
+    sessionStateService.register(
+      sessionStateKey.key,
+      () => this.dehydrate(),
+      state => this.rehydrate(state),
+    );
+  }
 
   public getSelectedJoint(bridge: BridgeModel): Joint | undefined {
     if (this.selectedElements.selectedJoints.size === 0) {
@@ -35,10 +50,10 @@ export class SelectedElementsService {
     return undefined; // never reached
   }
 
-  public get isSelectionEmpty() : boolean {
+  public get isSelectionEmpty(): boolean {
     return this.selectedElements.selectedJoints.size === 0 && this.selectedElements.selectedMembers.size === 0;
   }
-  
+
   public isJointSelected(joint: Joint): boolean {
     return this.selectedElements.selectedJoints.has(joint.index);
   }
@@ -58,4 +73,23 @@ export class SelectedElementsService {
       this.selectedElements.selectedMembers.add(index);
     }
   }
+
+  dehydrate(): State {
+    const elements = this.selectedElements;
+    return {
+      selectedJoints: Array.from(elements.selectedJoints),
+      selectedMembers: Array.from(elements.selectedMembers),
+    };
+  }
+
+  rehydrate(state: State): void {
+    const elements = this.selectedElements;
+    state.selectedJoints.forEach(index => elements.selectedJoints.add(index));
+    state.selectedMembers.forEach(index => elements.selectedMembers.add(index));
+  }
 }
+
+type State = {
+  selectedJoints: number[];
+  selectedMembers: number[];
+};

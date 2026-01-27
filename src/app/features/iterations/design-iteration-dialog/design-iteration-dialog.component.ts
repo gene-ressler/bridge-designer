@@ -16,7 +16,10 @@ import { DesignMemberRenderingService } from '../../../shared/services/design-me
 import { DesignRenderingService } from '../../../shared/services/design-rendering.service';
 import { DesignSiteRenderingService } from '../../../shared/services/design-site-rendering.service';
 import { ViewportTransform2D } from '../../../shared/services/viewport-transform.service';
-import { SelectedElementsService } from '../../drafting/shared/selected-elements-service';
+import {
+  SelectedElementsService,
+  SelectedElementsServiceSessionStateKey,
+} from '../../drafting/shared/selected-elements-service';
 import { DesignIterationService } from '../design-iteration.service';
 import { AnalysisService } from '../../../shared/services/analysis.service';
 import { Graphics } from '../../../shared/classes/graphics';
@@ -37,6 +40,7 @@ import { DesignSketchRenderingService } from '../../../shared/services/design-sk
     DesignSiteRenderingService,
     DesignSketchRenderingService,
     SelectedElementsService,
+    { provide: SelectedElementsServiceSessionStateKey, useValue: { key: undefined } },
     ViewportTransform2D,
   ],
   templateUrl: './design-iteration-dialog.component.html',
