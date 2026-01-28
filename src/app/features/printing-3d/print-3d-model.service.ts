@@ -247,7 +247,7 @@ export class Print3dModelService {
   private isPillowJoint(joint: Joint): boolean {
     const conditions = this.bridgeService.designConditions;
     return (
-      conditions.abutmentJointIndices.findIndex(abutmentJointIndex => joint.index === abutmentJointIndex) >= 0 ||
+      conditions.supportedJointIndices.findIndex(abutmentJointIndex => joint.index === abutmentJointIndex) >= 0 ||
       joint.index === conditions.leftAnchorageJointIndex ||
       joint.index === conditions.rightAnchorageJointIndex
     );

@@ -39,6 +39,8 @@ export const enum EventOrigin {
 
 export type EventInfo = { origin: EventOrigin; data?: any };
 export type TypedEventInfo<T> = { origin: EventOrigin; data: T };
+export type ToggleData = boolean;
+export type SelectData = number;
 
 /**
  * Event subject container. Suffixes connote following conventions.
