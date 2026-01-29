@@ -61,6 +61,12 @@ export type SiteCostsModel = {
   totalFixedCost: number;
 };
 
+/** Abutment costs used for non-standard (key code) conditions only. */
+const ABUTMENT_COSTS = [7000, 7000, 7500, 7500, 8000, 8000, 8500];
+const ARCH_ABUTMENT_COSTS = [200, 11300, 20800, 30300, 39000, 49700];
+const EXCAVATION_VOLUMES = [106500, 90000, 71500, 54100, 38100, 19400, 0];
+const PIER_COSTS = [0, 2800, 5600, 8400, 10200, 12500, 14800];
+
 export class DesignConditions {
   public static readonly MAX_JOINT_COUNT = 50;
   public static readonly MAX_MEMBER_COUNT = 120;
@@ -233,7 +239,8 @@ export class DesignConditions {
     }
 
     // Slenderness limit.
-    this.allowableSlenderness = isLeftCable || isRightCable ? Number.POSITIVE_INFINITY : DesignConditions.MAX_SLENDERNESS;
+    this.allowableSlenderness =
+      isLeftCable || isRightCable ? Number.POSITIVE_INFINITY : DesignConditions.MAX_SLENDERNESS;
 
     // Cost calculations.
     this.excavationVolume = DesignConditions.getExcavationVolume(this.deckElevation);
@@ -247,7 +254,7 @@ export class DesignConditions {
       this.totalFixedCost = 170000;
       // Non-standard case.
       if (this.isPier) {
-        this.abutmentCost = DesignConditions.getKeyCodeAbutmentCost(this.deckElevation);
+        this.abutmentCost = DesignConditions.getAbutmentCostForDeckElevation(this.deckElevation);
         this.pierCost =
           this.totalFixedCost -
           this.panelCount * this.deckCostRate -
@@ -286,7 +293,7 @@ export class DesignConditions {
         this.panelCount * this.deckCostRate +
         this.anchorageCount * DesignConditions.ANCHORAGE_COST;
     }
-    this.abutmentCost *= 0.5; // Steve's calcs are for both abutments. UI presents unit cost.
+    this.abutmentCost *= 0.5; // Steve's calcs were for both abutments. UI presents unit cost.
 
     // Abutment and pier supported joints.
     this.supportedJointIndices = isArch
@@ -317,25 +324,25 @@ export class DesignConditions {
     };
   }
 
-  /** Use DesignConditionsService.PLACEHOLDER_CONDITIONS. */
+  /** Internal only. Use DesignConditionsService.PLACEHOLDER_CONDITIONS. */
   static get placeholderConditions(): DesignConditions {
     return new DesignConditions('00X', 1110824000);
   }
 
-  private static getKeyCodeAbutmentCost(deckElevation: number): number {
-    return [7000, 7000, 7500, 7500, 8000, 8000, 8500][Math.floor(deckElevation / 4)];
+  private static getAbutmentCostForDeckElevation(deckElevation: number): number {
+    return ABUTMENT_COSTS[Math.floor(deckElevation / 4)];
   }
 
   private static getExcavationVolume(deckElevation: number): number {
-    return [106500, 90000, 71500, 54100, 38100, 19400, 0][Math.floor(deckElevation / 4)];
+    return EXCAVATION_VOLUMES[Math.floor(deckElevation / 4)];
   }
 
-  private static getArchAbutmentCost(underClearance: number) {
-    return [200, 11300, 20800, 30300, 39000, 49700][Math.floor(underClearance / 4) - 1];
+  private static getArchAbutmentCost(underClearance: number): number {
+    return ARCH_ABUTMENT_COSTS[Math.floor(underClearance / 4) - 1];
   }
 
   private static getPierHeightCost(pierHeight: number) {
-    return [0, 2800, 5600, 8400, 10200, 12500, 14800][Math.floor(pierHeight / 4)];
+    return PIER_COSTS[Math.floor(pierHeight / 4)];
   }
 
   public get deckThickness(): number {
@@ -374,7 +381,7 @@ export class DesignConditions {
   public get tagGeometryOnly(): string {
     return this.tag.substring(0, 2);
   }
-  
+
   /*
    * Character 1 - Load case scenario (1=Case A, 2=Case B, 3=Case C, 4=Case D); entry of any character other than 1, 2, 3, or 4 is illegal.
    * Characters 2,3 - Span length, expressed as the number of 4-meter panels; any integer from 1 to 20 is allowed
@@ -1034,7 +1041,10 @@ export class DesignConditionsService {
     }, new Map<string, DesignConditions>());
 
   public getConditionsForSetupKey(key: string): DesignConditions {
-    return Utility.assertNotUndefined(DesignConditionsService.STANDARD_CONDITIONS_FROM_SETUP_KEY.get(key), 'design conditions for key');
+    return Utility.assertNotUndefined(
+      DesignConditionsService.STANDARD_CONDITIONS_FROM_SETUP_KEY.get(key),
+      'design conditions for key',
+    );
   }
 
   private static readonly STANDARD_CONDITIONS_FROM_CODE: Map<number, DesignConditions> =
