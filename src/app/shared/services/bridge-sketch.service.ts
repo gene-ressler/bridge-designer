@@ -105,7 +105,7 @@ export class BridgeSketchService {
   }
 
   private populateWarrenDeckTruss(sketch: BridgeSketchModel): BridgeSketchModel {
-    // Warrent deck is inverted Warren thru.
+    // Warren deck is inverted Warren thru.
     return this.populateWarrenTrussGeometry(sketch, -DesignConditions.PANEL_SIZE_WORLD);
   }
 
