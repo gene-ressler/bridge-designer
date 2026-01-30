@@ -397,15 +397,22 @@ export class UiStateService {
     return state;
   }
 
+  /**
+   * Rehydrates state. Where state and broker keys don't match, 
+   * state is not restored without exception.
+   */
   private rehydrate(state: State): void {
     const subjectsByName = this.eventBrokerService.subjectsByName;
     for (const subjectName in state.disablers) {
-      const subject = subjectsByName.get(subjectName)!;
-      const override = this.disableOverridesBySubject.get(subject)!;
+      const subject = subjectsByName.get(subjectName);
+      if (!subject) continue;
+      const override = this.disableOverridesBySubject.get(subject);
+      if (!override) continue;
       override.isDisabled = state.disablers[subjectName];
     }
     for (const subjectName in state.values) {
-      const subject = subjectsByName.get(subjectName)!;
+      const subject = subjectsByName.get(subjectName);
+      if (!subject) continue;
       this.selectAndToggleValuesBySubject.set(subject, state.values[subjectName]);
     }
   }
