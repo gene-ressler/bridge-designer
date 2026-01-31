@@ -82,10 +82,10 @@ export class MenusComponent implements AfterViewInit {
     this.uiStateService.registerToggleMenuItem(this.mainMenu, 'titleBlock', this.eventBrokerService.titleBlockToggle);
     this.uiStateService.registerToggleMenuItem(this.mainMenu, 'tools', this.eventBrokerService.toolsToggle);
 
-    this.uiStateService.registerKey('Delete', 0, this.eventBrokerService.deleteSelectionRequest);
-    this.uiStateService.registerKey('a', ModifierMask.CTRL, this.eventBrokerService.selectAllRequest);
-    this.uiStateService.registerKey('y', ModifierMask.CTRL, this.eventBrokerService.redoRequest);
-    this.uiStateService.registerKey('z', ModifierMask.CTRL, this.eventBrokerService.undoRequest);
-    this.uiStateService.registerKey('s', ModifierMask.CTRL, this.eventBrokerService.saveBridgeFileRequest);
+    this.uiStateService.registerKey('Delete', 0, this.eventBrokerService.deleteSelectionRequest, undefined);
+    this.uiStateService.registerKey('a', ModifierMask.CTRL, this.eventBrokerService.selectAllRequest, undefined);
+    this.uiStateService.registerKey('y', ModifierMask.CTRL, this.eventBrokerService.redoRequest, 1);
+    this.uiStateService.registerKey('z', ModifierMask.CTRL, this.eventBrokerService.undoRequest, 1);
+    this.uiStateService.registerKey('s', ModifierMask.CTRL, this.eventBrokerService.saveBridgeFileRequest, false);
   }
 }

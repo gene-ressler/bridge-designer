@@ -35,15 +35,28 @@ type DisableOverride = { isDisabled: boolean; disabledModes: UiMode[] };
 
 /**
  * Container for logic that synchronizes multiple UI elements having the same purpose.
+ * 
+ * Three kinds of elements are supported:
+ *   - Selects: Selector of integers in [0..n).
+ *     - UI collections of buttons with radio behavior, moving check menu item sets.
+ *   - Toggles: Toggle between boolean false and true.
+ *     - UI stateful buttons, checked menu items.
+ *   - Buttons: Simple actuator with bound per instance data of arbitrary type.
+ *     - UI buttons, menu items, overlays, hot keys.
+ * 
+ * Each element is associated with a `Subject`. Users subscribe for change notifications.
+ * Subjects are dis- and re-enabled to affect all associated elements. Sending events on
+ * select or toggle subject affects all associated elements.  
  *
- * This class tracks the state of toggle and select subjects to support session de- and
- * rehydration followed by restoring widget states.
+ * This class tracks the state of toggle and select subjects partially to support session de-
+ * and rehydration followed by restoring widget states. Users must subscribe to respective
+ * subjects to obtain current control state.
  *
- * An exception is UI elements with registered "disable overrides." An override, as the name
- * implies, causes its element to be disabled regardless of its normal enable/disable state
- * based on UI states specified at registration time. When the UI leaves the disabled state,
- * the element's enable/disable state is restored. This service necessarily tracks the
- * normal states for this purpose.
+ * "Disable override" state is also maintained here. An override, as the name implies, causes
+ * its element to be disabled regardless of its normal enable/disable state based on UI states
+ * specified at registration time. When the UI leaves the disabled state, the element's 
+ * enable/disable state is restored. This service necessarily tracks the normal states for
+ * this purpose.
  *
  * A global disablement feature is also supported to accommodate browsers lacking capabilities
  * that selected features require. Topics placed on the global list are immediately disabled
@@ -297,7 +310,7 @@ export class UiStateService {
     button.elementRef.nativeElement.addEventListener('click', () => subject.next({ origin, data }));
   }
 
-  public registerKey(key: string, modifierMask: number, subject: Subject<EventInfo<any>>, data?: any): void {
+  public registerKey<T>(key: string, modifierMask: number, subject: Subject<EventInfo<T>>, data: T): void {
     const lookupKey = `${key}|${modifierMask}`;
     const info: [boolean, Subject<EventInfo<any>>, any] = [false, subject, data];
     this.keyInfosByKey[lookupKey] = info;

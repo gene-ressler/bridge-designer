@@ -56,7 +56,9 @@ export class ViewService {
     private readonly simulationStateService: SimulationStateService,
     private readonly terrainService: TerrainModelService,
   ) {
-    eventBrokerService.animationControlsToggle.subscribe(info => (this.showControls = info.data));
+    eventBrokerService.animationControlsToggle.subscribe(info => {
+      this.showControls = info.data;
+    });
   }
 
   public provideUiHandlers(overlayUi: OverlayUi): void {
