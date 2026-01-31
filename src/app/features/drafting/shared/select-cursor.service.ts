@@ -13,6 +13,7 @@ export class SelectCursorService {
   private _isAnchored: boolean = false;
 
   public start(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+    ctx.canvas.focus();
     this.cursor.x0 = x;
     this.cursor.y0 = y;
     this.cursor.width = this.cursor.height = 0;
