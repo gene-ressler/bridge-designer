@@ -11,6 +11,7 @@ import { OverlayUi } from './overlay.service';
 import { OverlayIcon } from './animation-controls-overlay.service';
 import { EventBrokerService, EventOrigin } from '../../../shared/services/event-broker.service';
 import { UNIT_LIGHT_DIRECTION } from './constants';
+import { SiteConstants } from '../../../shared/classes/site-constants';
 
 /** Container for the fly-thru and driver view transforms and associated update logic. */
 @Injectable({ providedIn: 'root' })
@@ -114,9 +115,19 @@ export class ViewService {
   /** Apply a heuristic to set a reasonable view of the current bridge. */
   public resetView(): void {
     const extent = this.bridgeService.getWorldExtent();
+    // Don't let the view cut off the top of the truck.
+    const truckHeight = 3.3;
+    if (extent.y1 < truckHeight) {
+      extent.height += truckHeight - extent.y1;
+    }
 
     const xCenter = extent.x0 + 0.5 * extent.width;
-    const zEye = 1.2 * Math.max(extent.width, 1.75 * extent.height);
+
+    // The vertical view angle is 45 degrees. So z setback to include vertical extent is h * 1/(2 tan 22.5deg).
+    // Use window aspect as proxy for viewport because this needs to work before canvas is visible.
+    const aspect = (window.innerHeight - 107) / window.innerWidth;
+    // 1.5 is the factor above and bit more for padding.
+    const zEye = 1.5 * Math.max(aspect * extent.width, extent.height) + SiteConstants.DECK_HALF_WIDTH;
 
     // Always put eye at height of a person on the road.
     // Swivel eye right a bit to account for slant of river.
@@ -124,7 +135,8 @@ export class ViewService {
 
     // Direct gaze at middle of vertical extent.
     vec3.set(this.center, xCenter, extent.y0 + 0.5 * extent.height, 0);
-    this.eye[0] -= this.eye[2] * 0.1;
+    // Follow river's path with eye.
+    this.eye[0] += this.eye[2] * 0.1;
     this.yEyeVelocity = 0;
 
     // The angles are actually the independent values, so compute them here.
