@@ -1,11 +1,11 @@
 {
   "name": "bridge-designer",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "prebuild": "npm --no-git-tag-version version patch",
-    "build": "ng build",
+    "build": "ng build --configuration production --base-href /bridge-designer/docs/app/ --deploy-url /bridge-designer/docs/app/",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
