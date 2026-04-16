@@ -300,10 +300,14 @@ layout(std140)uniform SkyboxTransforms{
 mat4 viewRotationProjection;}transforms;
 layout(location=0)in vec3 inPosition;
 out vec3 texCoord;
+const float SUN_AZIMUTH=118.0*0.01745329251;
+const float S=sin(SUN_AZIMUTH);
+const float C=cos(SUN_AZIMUTH);
+const mat3 SUN_ROTATION=mat3(C,0,-S,0,1,0,S,0,C);
 void main(){
 vec4 homogenousPosition=transforms.viewRotationProjection*vec4(inPosition,1);
 gl_Position=homogenousPosition.xyww;
-texCoord=vec3(-inPosition.x,inPosition.y,-inPosition.z);}`;
+texCoord=SUN_ROTATION*inPosition;}`;
 
 export const SKY_FRAGMENT_SHADER = 
 `#version 300 es
