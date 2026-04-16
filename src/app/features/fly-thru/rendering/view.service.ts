@@ -219,6 +219,7 @@ export class ViewService {
       vec3.lerp(this.eye, this.eyeOrbitStart, this.eyeOrbit, this.tBlend);
       return;
     }
+    // Convert eye angles to vectors that are input for computing the lookAt matrix.
     this.phiEye = Utility.clamp(this.phiEye + this.phiEyeRate * elapsedSecs, -MAX_TILT, MAX_TILT);
     const dy = Math.sin(this.phiEye);
     const cosPhiEye = Math.cos(this.phiEye);
@@ -285,7 +286,18 @@ export class ViewService {
     )
   }
 
-  /** Whether eye point boundaries are being enforced. True only for debugging. */
+  /** Inverts the eye angle to vector transformation and puts the eye at rest. */
+  private setEyeAnglesFromVectors(): void {
+    this.yEyeVelocity = this.xzEyeVelocity = this.thetaEyeRate = this.phiEyeRate = 0;
+    const dx = this.center[0] - this.eye[0];
+    const dy = this.center[1] - this.eye[1];
+    const dz = this.center[2] - this.eye[2];
+    const lengthDxDz = Math.hypot(dx, dz);
+    this.thetaEye = Math.atan2(dx, -dz);
+    this.phiEye = Math.atan2(dy, lengthDxDz);
+  }
+
+  /** Returns whether eye point boundaries are being enforced. True only for debugging. */
   private get isIgnoringBoundaries(): boolean {
     return this.keyboardService.debugState.isIgnoringViewBoundaries;
   }
@@ -294,12 +306,7 @@ export class ViewService {
   private resetView(): void {
     this.mode = ViewMode.WALKING;
     this.setFullBridgeView(this.eye, this.center);
-    this.yEyeVelocity = this.xzEyeVelocity = 0;
-    // The angles are actually the independent values, so compute them here.
-    this.thetaEye = Math.atan2(this.center[0] - this.eye[0], this.eye[2] - this.center[2]);
-    this.thetaEyeRate = 0;
-    this.phiEye = Math.atan2(this.center[1] - this.eye[1], this.eye[2] - this.center[2]);
-    this.phiEyeRate = 0;
+    this.setEyeAnglesFromVectors();
   }
 
   /** Sets eye and center points heuristically to a pleasant view of the whole bridge. */
@@ -332,9 +339,9 @@ export class ViewService {
   private cancelOrbits(): void {
     this.isOrbitAllowed = false;
     clearTimeout(this.orbitTimeout);
-    // Orbit lets the eye on the orbit. Let user navigate from a known good place.
+    // Let the user begin walking from the final orbit point.
     if (this.mode === ViewMode.ORBITING) {
-      this.resetView();
+      this.setEyeAnglesFromVectors();
     }
     this.mode = ViewMode.WALKING;
   }
