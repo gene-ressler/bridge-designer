@@ -1610,7 +1610,7 @@ float normalDotLight=dot(unitNormal,light.unitDirection);
 vec3 unitReflection=normalize(2.0f*normalDotLight*unitNormal-light.unitDirection);
 vec3 unitEye=normalize(-vertex);
 float shadow=light.shadowWeight < 1.0f ? mix(light.shadowWeight,1.0f,textureProj(depthMap,depthMapLookup)): 1.0f;
-float specularIntensity=pow(shadow*max(dot(unitReflection,unitEye),0.0f),SHININESS);
+float specularIntensity=pow(floor(shadow)*max(dot(unitReflection,unitEye),0.0f),SHININESS);
 float diffuseIntensity=mix(light.ambientIntensity,1.0f,shadow*max(0.0f,normalDotLight));
 vec3 color=light.color*(specularIntensity+diffuseIntensity*COLOR);
 fragmentColor=vec4(light.brightness*color,1.0f);}`,i9=`#version 300 es
@@ -1659,7 +1659,7 @@ float normalDotLight=dot(unitNormal,light.unitDirection);
 vec3 unitReflection=normalize(2.0f*normalDotLight*unitNormal-light.unitDirection);
 vec3 unitEye=normalize(-vertex);
 float shadow=light.shadowWeight < 1.0f ? mix(light.shadowWeight,1.0f,textureProj(depthMap,depthMapLookup)): 1.0f;
-float specularIntensity=pow(shadow*max(dot(unitReflection,unitEye),0.0f),materialSpec.spec.w);
+float specularIntensity=pow(floor(shadow)*max(dot(unitReflection,unitEye),0.0f),materialSpec.spec.w);
 float diffuseIntensity=mix(light.ambientIntensity,1.0f,shadow*max(0.0f,normalDotLight));
 vec3 color=light.color*(specularIntensity+diffuseIntensity*materialSpec.spec.xyz);
 fragmentColor=vec4(light.brightness*color,light.globalAlpha);}`,n9=`#version 300 es
@@ -1745,7 +1745,7 @@ float normalDotLight=dot(unitNormal,light.unitDirection);
 vec3 unitReflection=normalize(2.0f*normalDotLight*unitNormal-light.unitDirection);
 vec3 unitEye=normalize(-vertex);
 float shadow=light.shadowWeight < 1.0f ? mix(light.shadowWeight,1.0f,textureProj(depthMap,depthMapLookup)): 1.0f;
-float specularIntensity=pow(shadow*max(dot(unitReflection,unitEye),0.0f),MEMBER_SHININESS);
+float specularIntensity=pow(floor(shadow)*max(dot(unitReflection,unitEye),0.0f),MEMBER_SHININESS);
 float diffuseIntensity=mix(light.ambientIntensity,1.0f,shadow*max(0.0f,normalDotLight));
 vec3 color=light.color*(specularIntensity+diffuseIntensity*materialColor);
 fragmentColor=vec4(light.brightness*color,1.0f);}`,h9=`#version 300 es
@@ -1815,7 +1815,7 @@ float normalDotLight=dot(unitNormal,light.unitDirection);
 vec3 unitReflection=normalize(2.0f*normalDotLight*unitNormal-light.unitDirection);
 vec3 unitEye=normalize(-vertex);
 float shadow=light.shadowWeight < 1.0f ? mix(light.shadowWeight,1.0f,textureProj(depthMap,depthMapLookup)): 1.0f;
-float specularIntensity=pow(shadow*max(dot(unitReflection,unitEye),0.0f),40.0f);
+float specularIntensity=pow(floor(shadow)*max(dot(unitReflection,unitEye),0.0f),40.0f);
 float diffuseIntensity=mix(light.ambientIntensity,1.0f,shadow*max(0.0f,normalDotLight));
 vec3 color=light.color*(specularIntensity+diffuseIntensity*texColor);
 fragmentColor=vec4(light.brightness*color,1.0f);}`,p9=`#version 300 es
@@ -1824,10 +1824,14 @@ layout(std140)uniform SkyboxTransforms{
 mat4 viewRotationProjection;}transforms;
 layout(location=0)in vec3 inPosition;
 out vec3 texCoord;
+const float SUN_AZIMUTH=118.0*0.01745329251;
+const float S=sin(SUN_AZIMUTH);
+const float C=cos(SUN_AZIMUTH);
+const mat3 SUN_ROTATION=mat3(C,0,-S,0,1,0,S,0,C);
 void main(){
 vec4 homogenousPosition=transforms.viewRotationProjection*vec4(inPosition,1);
 gl_Position=homogenousPosition.xyww;
-texCoord=vec3(-inPosition.x,inPosition.y,-inPosition.z);}`,m9=`#version 300 es
+texCoord=SUN_ROTATION*inPosition;}`,m9=`#version 300 es
 precision mediump float;
 uniform samplerCube skybox;
 in vec3 texCoord;
