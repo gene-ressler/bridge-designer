@@ -25,7 +25,7 @@ sub slurp {
 
 sub main {
   usage('Expected odd number of args') if @ARGV % 2 != 1;
-  my $textfile = shift @ARGV or usage("Missing text filename"); 
+  my $textfile = shift @ARGV; 
   my $text = slurp $textfile;
   while (@ARGV) {
     my $tag = shift @ARGV;
