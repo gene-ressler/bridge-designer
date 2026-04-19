@@ -29,9 +29,9 @@ sub main {
   my $text = slurp $textfile;
   while (@ARGV) {
     my $tag = shift @ARGV;
-    my $replacefile = shift @ARGV;
-    my $replacement = slurp $replacefile;
-    $text =~ s/$tag/$tag$replacement/; 
+    my $injectfile = shift @ARGV;
+    my $injection = slurp $injectfile;
+    $text =~ s/$tag/$tag$injection/; 
   }
   open(my $outf, '>', $textfile) or usage("Could not open '$textfile' for output: $!");
   print $outf $text;
