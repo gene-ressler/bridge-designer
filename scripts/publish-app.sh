@@ -42,5 +42,5 @@ read -sn1 key
 if [[ "$key" != 'n' ]]; then
   git add --all
   git commit -m 'Publish app.'
-  # git push origin main
+  git push origin main
 fi
