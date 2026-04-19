@@ -1,7 +1,7 @@
+#!/bin/bash
+
 # Copyright (c) 2025-2026 Gene Ressler
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-#!/bin/bash
 
 # Add copyright and license notices to source files.
 # Ignores those already added.
