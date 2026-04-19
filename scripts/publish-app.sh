@@ -11,6 +11,8 @@ if [[ -n "$(git status --porcelain)" || "$branch" != "main" ]]; then
   exit 1
 fi
 
+script_dir="$(dirname "$0")"
+
 # Get git project root dir.
 project_dir=$(git rev-parse --show-toplevel)
 
@@ -20,8 +22,13 @@ rm -rf "$site_source/app"
 cp -R "$project_dir/dist/bridge-designer/browser" "$site_source"
 mv "$site_source/browser" "$site_source/app"
 
+index_html="$site_source/app/index.html"
+
 # Edit the base URL of the root page to match the sites location.
-sed -i 's@base href="/"@base href="/bridge-designer/app/"@' "$site_source/app/index.html"
+sed -i 's@base href="/"@base href="/bridge-designer/app/"@' "$index_html"
+
+# Inject Google analytics tag manager blurbs.
+"$(dirname "$0")/inject.sh" "$index_html" '<head>' "$script_dir/gtm-head.html" '<body>' "$script_dir/gtm-body.html"
 
 if [[ -z "$(git status --porcelain)" ]]; then
   echo 'No changes to commit. Continue with push anyway? (Y/n)'
@@ -35,5 +42,5 @@ read -sn1 key
 if [[ "$key" != 'n' ]]; then
   git add --all
   git commit -m 'Publish app.'
-  git push origin main
+  # git push origin main
 fi
