@@ -105,8 +105,12 @@ features were not worth the cost of re-inventing the wheel:
 ## Build notes
 
 - `ng build` # builds production app
-- `npm run build` # advances version and builds
-- `firebase deploy` # sends build to external dev server
+- `npm run build` # advances minor version and builds
 - `cd src/app/features/fly-thru/shaders && python3 build.py` # builds shaders
 - `cd src/app/features/fly-thru/models && python3 build.py` # builds models from .obj files
+- `scripts/publish-app.sh` on clean worktree pushes /dist to ASCE
 - `scripts/publish-pages.sh` on clean worktree pushes /docs to github
+- To refresh module installation after changes to `.package.json`:
+  -`rm -rf /node_modules` # Clobber old installation
+  - Delete `.package-lock.json` # Let package manager start from scratch.
+  - `npm install` # Install everything.

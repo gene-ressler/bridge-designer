@@ -10,8 +10,6 @@ else
   ng build
 fi
 
-echo 'Deploying to firebase...'
-firebase deploy
 echo 'Deploying to Github pages...'
 ./publish-pages.sh
 echo 'Deploying to ASCE app server...'

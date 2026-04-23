@@ -85,10 +85,15 @@ td:not(:first-child) {
 
 .dimensions th,
 .dimensions td {
-  width: 120px;
+  width: 160px;
 }
 
-.downloads th,
-.downloads td {
+.exports th:first-child,
+.exports td:first-child {
+  width: 340px;
+}
+
+.exports th:not(:first-child),
+.exports td:not(:first-child) {
   width: 230px;
 }

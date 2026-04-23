@@ -1,5 +1,8 @@
 #!/usr/bin/env perl
 
+# Copyright (c) 2025-2026 Gene Ressler
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 use strict;
 use warnings;
 
