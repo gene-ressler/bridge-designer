@@ -1776,19 +1776,22 @@ layout(std140)uniform Transforms{
 mat4 modelView;
 mat4 modelViewProjection;
 mat4 depthMapLookup;}transforms;
+layout(std140)uniform Time{
+float clock;}time;
 layout(location=0)in vec2 inPosition;
 out vec3 vertex;
 out vec3 normal;
 out vec4 depthMapLookup;
 out vec2 texCoord;
 const float TEX_SCALE=0.2;
+const vec2 WATER_VELOCITY=vec2(1.0f/32.0f,3.0f/32.0f);
 void main(){
 vec4 inPositionHomogeneous=vec4(inPosition.x,0.0f,inPosition.y,1.0f);
 gl_Position=transforms.modelViewProjection*inPositionHomogeneous;
 vertex=vec3(transforms.modelView*inPositionHomogeneous);
 normal=mat3(transforms.modelView)*vec3(0.0f,1.0f,0.0f);
 depthMapLookup=transforms.depthMapLookup*inPositionHomogeneous;
-texCoord=TEX_SCALE*inPosition;}`,fA=`#version 300 es
+texCoord=TEX_SCALE*inPosition+WATER_VELOCITY*time.clock;}`,fA=`#version 300 es
 precision mediump float;
 precision mediump sampler2DShadow;
 layout(std140)uniform LightConfig{
@@ -1798,8 +1801,6 @@ vec3 color;
 float ambientIntensity;
 float shadowWeight;
 float globalAlpha;}light;
-layout(std140)uniform Time{
-float clock;}time;
 uniform sampler2D water;
 uniform sampler2DShadow depthMap;
 in vec3 vertex;
@@ -1807,9 +1808,8 @@ in vec3 normal;
 in vec4 depthMapLookup;
 in vec2 texCoord;
 out vec4 fragmentColor;
-const vec2 WATER_VELOCITY=vec2(1.0f/32.0f,3.0f/32.0f);
 void main(){
-vec3 texColor=texture(water,fract(texCoord)+WATER_VELOCITY*time.clock).rgb;
+vec3 texColor=texture(water,texCoord).rgb;
 vec3 unitNormal=normalize(normal);
 float normalDotLight=dot(unitNormal,light.unitDirection);
 vec3 unitReflection=normalize(2.0f*normalDotLight*unitNormal-light.unitDirection);
