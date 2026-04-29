@@ -150,7 +150,8 @@ function getFeatures(document: HTMLDocument): BrowserFeatures {
     querySelectorAll: !!document.querySelectorAll,
     screenSize: `${screen.width}x${screen.height}`,
     supportedBrowser: SUPPORTED_BROWSERS.includes(browser),
-    supportedScreenSize: screen.width >= 1200 && screen.height >= 800,
+    // Low end Chromebooks are 1366 x 768.
+    supportedScreenSize: screen.width >= 1200 && screen.height >= 768,
     viewportUnits: (() => {
       const element = create('dummy');
       try {

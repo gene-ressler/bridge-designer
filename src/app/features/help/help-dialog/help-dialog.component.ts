@@ -23,6 +23,9 @@ const enum Tools {
   PRINT,
 }
 
+/** Dialog height to use before dynamic resizing. */
+const DEFAULT_HEIGHT = 650;
+
 @Component({
   selector: 'help-dialog',
   imports: [
@@ -41,6 +44,8 @@ const enum Tools {
   styleUrl: './help-dialog.component.scss',
 })
 export class HelpDialogComponent implements AfterViewInit {
+  dialogHeight: number = DEFAULT_HEIGHT;
+
   @Output('onLoad') onLoadEmitter = new EventEmitter<void>();
 
   @ViewChild('dialog') dialog!: jqxWindowComponent;
@@ -107,6 +112,10 @@ export class HelpDialogComponent implements AfterViewInit {
       if (this.dialog.isOpen()) {
         this.handleDialogOpen();
       } else {
+        // Initial resize to use a reasonable chunk of client height. Afterward, size is up to the user.
+        if (this.dialogHeight === DEFAULT_HEIGHT) {
+          this.dialogHeight = Math.min(window.innerHeight, 1000);
+        }
         this.dialog.open();
       }
     });
