@@ -5,27 +5,16 @@
  *
  * Node v24+ highly recommended.
  *
- * Simplest build and use:
+ * Simplest build:
  * - `cd src/tools`
  * - `npm install` # Get's dependencies, but assumes you have Node.
  * - `npm run build`  # Generates dist/main.cjs with node shebang.
- * - `alias bdc $(pwd)/dist/main.cjs`  # Alias `bdc`. Do this in .bashrc if desired.
- * - `bdc --help analyze --help` # gives most complete analyze help
- * - `bdc --help list --help` # gives most complete list help
- *
- * Example usage:
- *
- *   `bdc -p '{"k":"encryption_key"}' analyze -c -d -o csv MyBridge.bdc`
- *   `bdc --contest-params='{"k":"encryption_key"}' analyze --cost --conditions --format csv MyBridge.bdc`
- *
- * Output is 3 lines: status, conditions code and tag, cost:
- * passes
- * 1082008050 62A
- * 395085.38
+ * - `alias bdc $(pwd)/dist/main.cjs`  # Alias `bdc`. Do this in .profile if desired.
+ * - `bdc --help # prints usage
  */
 import 'reflect-metadata';
 import path from 'path';
-import { Args, Command, Options } from '@effect/cli';
+import { Args, Command, Options, Span } from '@effect/cli';
 import { NodeContext, NodeRuntime } from '@effect/platform-node';
 import { Console, Effect, Option } from 'effect';
 import { Injectable, ReflectiveInjector } from 'injection-js';
@@ -277,7 +266,7 @@ function main(): void {
     Options.withAlias('p'),
     Options.optional,
     Options.withDescription(
-      'JSON contest parameters as in contest URL search string. Optionally URI encoded and/or with prefix ?p= expected in the URL. Overrides file if present.',
+      'JSON contest parameters as in contest URL search string. Value MUST be single quoted! Optionally URI encoded and/or with prefix ?p= expected in the URL. Overrides file if present.',
     ),
   );
   const contestParamsFile = Options.fileText('contest-params-file').pipe(
@@ -286,15 +275,18 @@ function main(): void {
     Options.withDescription('File containing JSON contest parameters.'),
   );
   const bdc = Command.make('bdc', { contestParamsOption, contestParamsFile });
+  function decode(params: string): string {
+    return decodeURI(params.startsWith('?p=') ? params.substring(3) : params);
+  }
 
   // List subcommand.
   const filenames = Args.file({ name: 'filename', exists: 'yes' }).pipe(Args.repeated);
   const list = Command.make('list', { filenames }, ({ filenames }) => {
     return bdc.pipe(
-      Command.withDescription('List bridge file with no validation.'),
+      Command.withDescription('List bridge file contents with no validation or analysis.'),
       Effect.andThen(({ contestParamsOption, contestParamsFile }) => {
         const fallback = Option.orElse(() => Option.map(contestParamsFile, ([, content]) => content));
-        const contestParams = Option.getOrNull(Option.map(contestParamsOption, decodeURI).pipe(fallback));
+        const contestParams = Option.getOrNull(Option.map(contestParamsOption, decode).pipe(fallback));
         const subcommands: Subcommands = buildInjector(contestParams).resolveAndInstantiate(Subcommands);
         return Effect.forEach(filenames, filename => {
           return subcommands.listBridge(filename);
@@ -329,10 +321,13 @@ function main(): void {
     { filenames, withConditions, withTotalCost, withMembers, formatChoice, withFullPaths },
     ({ filenames, ...options }) => {
       return bdc.pipe(
-        Command.withDescription('Validate then analyze each bridge file.'),
+        Command.withDescription(
+          'Validate then analyze each bridge file. Print report to standard output. ' +
+            'Configure report fields and select output format with options.',
+        ),
         Effect.andThen(({ contestParamsOption, contestParamsFile }) => {
           const fallback = Option.orElse(() => Option.map(contestParamsFile, ([, content]) => content));
-          const contestParams = Option.getOrNull(contestParamsOption.pipe(fallback));
+          const contestParams = Option.getOrNull(Option.map(contestParamsOption, decode).pipe(fallback));
           const subcommands: Subcommands = buildInjector(contestParams).resolveAndInstantiate(Subcommands);
           if (options.withMembers && (options.formatChoice === 'csv' || options.formatChoice === 'tabs')) {
             console.warn(`Members skipped in format ${options.formatChoice}. Use raw or json.`);
@@ -345,9 +340,16 @@ function main(): void {
     },
   );
 
-  const command = bdc.pipe(Command.withSubcommands([list, analyze]));
+  const command = bdc.pipe(
+    Command.withDescription(
+      'Bridge design contest CLI. Lists and analyzes bridge file contents to support ' +
+        'contest operations. See COMMANDS below. Use command line above ending in a ' +
+        'COMMAND. Use `bdc COMMAND --help` for options.',
+    ),
+    Command.withSubcommands([list, analyze]),
+  );
   const cli = Command.run(command, {
-    name: 'Bridge Design Contest CLI',
+    name: 'bdc',
     version: 'v1.0.0',
   });
 
