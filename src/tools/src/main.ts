@@ -12,18 +12,19 @@
  * - `alias bdc $(pwd)/dist/main.cjs`  # Alias `bdc`. Do this in .bashrc if desired.
  * - `bdc --help analyze --help` # gives most complete analyze help
  * - `bdc --help list --help` # gives most complete list help
- * 
+ *
  * Example usage:
- * 
- *   `bdc -p '{"k":"encryption_key"}' analyze -c -d MyBridge.bdc`
- *   `bdc --contest-params='{"k":"encryption_key"}' analyze --cost --conditions MyBridge.bdc`
- * 
+ *
+ *   `bdc -p '{"k":"encryption_key"}' analyze -c -d -o csv MyBridge.bdc`
+ *   `bdc --contest-params='{"k":"encryption_key"}' analyze --cost --conditions --format csv MyBridge.bdc`
+ *
  * Output is 3 lines: status, conditions code and tag, cost:
  * passes
  * 1082008050 62A
  * 395085.38
  */
 import 'reflect-metadata';
+import path from 'path';
 import { Args, Command, Options } from '@effect/cli';
 import { NodeContext, NodeRuntime } from '@effect/platform-node';
 import { Console, Effect, Option } from 'effect';
@@ -44,22 +45,131 @@ import { Member } from '../../app/shared/classes/member.model';
 /** Table of string for analysis status values. */
 const ANALYSIS_STATUS_STRING_BY_STATUS = new Map<AnalysisStatus, string>([
   [AnalysisStatus.NONE, '<none>'],
-  [AnalysisStatus.FAILS_SLENDERNESS, 'fails slenderness'],
+  [AnalysisStatus.FAILS_SLENDERNESS, 'fail-slenderness'],
   [AnalysisStatus.UNSTABLE, 'unstable'],
-  [AnalysisStatus.FAILS_LOAD_TEST, 'fails load test'],
-  [AnalysisStatus.PASSES, 'passes'],
+  [AnalysisStatus.FAILS_LOAD_TEST, 'fail-load'],
+  [AnalysisStatus.PASSES, 'pass'],
 ]);
 
 /** Synopsis of the things the user wants to know about members. */
 type MemberSynopsis = {
   number: number;
-  maxTension: number;
-  maxCompression: number;
+
   tensionStrength: number;
-  compressionStrength: number;
-  compressionStatus: string;
+  maxTension: number;
   tensionStatus: string;
+
+  compressionStrength: number;
+  maxCompression: number;
+  compressionStatus: string;
 };
+
+/** Format-independent data for an analysis report on one file. */
+type AnalysisReport = {
+  fileName: string;
+  status: string;
+  conditionsTag?: string; // Tag and code are either both or neither present.
+  conditionsCode?: number;
+  cost?: number;
+  members?: MemberSynopsis[];
+};
+
+/** Options of the `analyze` subcommand. */
+type AnalyzeOptions = {
+  withConditions: boolean;
+  withTotalCost: boolean;
+  withMembers: boolean;
+  formatChoice: ReportFormat;
+  withFullPaths: boolean;
+};
+
+const REPORT_FORMATS = ['raw', 'csv', 'tabs', 'json'] as const;
+type ReportFormat = (typeof REPORT_FORMATS)[number];
+type ReportFormatters = Record<ReportFormat, (report: AnalysisReport) => string>;
+type HeaderFormatters = Record<ReportFormat, (options: AnalyzeOptions) => string>;
+
+const REPORT_FORMATTERS: ReportFormatters = {
+  /**
+   * Format is one datum per line for easy parsing.
+   * `[  ]` means optional depending on args. `{ }` means repeat 0 or more times.
+   * ```
+   * bridge
+   * FILE_NAME
+   * STATUS
+   * [CONDITIONS_TAG
+   * CONDITIONS_CODE]
+   * [COST]
+   * [MEMBER_COUNT
+   * member
+   * {NUMBER
+   * TENSION_STRENGTH
+   * MAX_TENSION
+   * TENSION_STATUS
+   * COMPRESSION_STRENGTH
+   * MAX_COMPRESSION
+   * COMPRESSION_STATUS}]
+   * ```
+   */
+  raw: (report: AnalysisReport): string => {
+    const chunks: string[] = [`bridge\n${report.fileName}\n${report.status}`];
+    if (report.conditionsTag !== undefined) {
+      chunks.push(`\n${report.conditionsTag}\n${report.conditionsCode}`);
+    }
+    if (report.cost !== undefined) {
+      chunks.push(`\n${report.cost.toFixed(2)}`);
+    }
+    if (report.members !== undefined) {
+      chunks.push(`\n${report.members.length.toString()}`);
+      for (const member of report.members) {
+        chunks.push('\nmember');
+        for (const key in member) {
+          chunks.push(`\n${member[key as keyof MemberSynopsis]}`);
+        }
+      }
+    }
+    return chunks.join('');
+  },
+  csv: (report: AnalysisReport): string => formatAsTable(report, ',', csvEscapeString),
+  tabs: (report: AnalysisReport): string => formatAsTable(report, '\t', tabEscapeString),
+  json: (report: AnalysisReport): string => JSON.stringify(report, undefined, 2),
+};
+
+const HEADER_FORMATTERS: HeaderFormatters = {
+  raw: (options: AnalyzeOptions): string => '',
+  csv: (options: AnalyzeOptions): string => formatHeaders(options, ','),
+  tabs: (options: AnalyzeOptions): string => formatHeaders(options, '\t'),
+  json: (options: AnalyzeOptions): string => '',
+};
+
+function tabEscapeString(s: string): string {
+  return s.replace('\t', '\\t').replace('\n', '\\n').replace('\r', '\\r');
+}
+
+function csvEscapeString(s: string): string {
+  return /["\n\r,]/.test(s) ? `"${s.replace('"', '""')}"` : s;
+}
+
+function formatAsTable(report: AnalysisReport, sep: string, escapeString: (s: string) => string): string {
+  const chunks: string[] = [escapeString(report.fileName), report.status];
+  if (report.conditionsTag !== undefined) {
+    chunks.push(report.conditionsTag, report.conditionsCode!.toString());
+  }
+  if (report.cost !== undefined) {
+    chunks.push(report.cost.toFixed(2));
+  }
+  return chunks.join(sep);
+}
+
+function formatHeaders(options: AnalyzeOptions, sep: string): string {
+  const chunks: string[] = ['file_name', 'status'];
+  if (options.withConditions) {
+    chunks.push('conditions_tag', 'conditions_code');
+  }
+  if (options.withTotalCost) {
+    chunks.push('cost');
+  }
+  return chunks.join(sep);
+}
 
 /** Builds a synopsis of a given member's analysis. */
 function buildMemberSynopsis(member: Member): MemberSynopsis {
@@ -97,13 +207,6 @@ function buildInjector(contestParamsOption: string | null): ReflectiveInjector {
   ]);
 }
 
-/** Options of the `analyze` subcommand. */
-type AnalyzeOptions = {
-  withConditions: boolean;
-  withTotalCost: boolean;
-  withMembers: boolean;
-};
-
 /** Container for BD injection dependencies and the subcommands they drive. */
 @Injectable()
 class Subcommands {
@@ -115,41 +218,42 @@ class Subcommands {
   ) {}
 
   /** Lists bridge file contents with minimal checking. */
-  listBridge(fileName: string, label: string): Effect.Effect<void> {
+  listBridge(fileName: string): Effect.Effect<void> {
     const fileContent = readFileSync(fileName, 'utf8');
     const saveSetText = this.persistenceService.maybeDecrypt(fileContent);
-    return Console.log(label + saveSetText);
+    return Console.log(`${fileName}: ${saveSetText}`);
   }
 
   /** Reads bridge file, builds a model, analyzes it, and emits a report to stdout. */
   analyzeBridge(
-    fileName: string,
-    label: string,
-    { withConditions, withTotalCost, withMembers }: AnalyzeOptions,
+    fullPath: string,
+    { withConditions, withTotalCost, withMembers, formatChoice, withFullPaths }: AnalyzeOptions,
   ): Effect.Effect<void> {
-    const saveSetText = readFileSync(fileName, 'utf8');
+    const saveSetText = readFileSync(fullPath, 'utf8');
     const saveSet = this.parseValidSaveSet(saveSetText);
+    const fileName = withFullPaths ? fullPath : path.basename(fullPath);
     if (!saveSet) {
-      return Console.log(label + 'invalid');
+      const report = { fileName, status: 'invalid' };
+      return Console.log(REPORT_FORMATTERS[formatChoice](report));
     }
     this.bridgeService.setBridge(saveSet.bridge, saveSet.draftingPanelState);
     this.analysisService.analyzeQuietly({ populateBridgeMembers: true });
-    const status = ANALYSIS_STATUS_STRING_BY_STATUS.get(this.analysisService.status);
-    let result = Console.log(label + status);
+    const status = ANALYSIS_STATUS_STRING_BY_STATUS.get(this.analysisService.status)!;
+    const report: AnalysisReport = { fileName, status };
     if (withConditions) {
       const conditions = this.bridgeService.bridge.designConditions;
-      result = Effect.andThen(result, Console.log(conditions.codeLong.toString(), conditions.tag));
+      report.conditionsTag = conditions.tag;
+      report.conditionsCode = conditions.codeLong;
     }
     if (withTotalCost) {
       const fixedCost = this.bridgeService.designConditions.siteCosts.totalFixedCost;
-      const bridgeCost = this.bridgeCostService.bridgeCostModel.totalCost;
-      result = Effect.andThen(result, Console.log((fixedCost + bridgeCost).toFixed(2)));
+      const projectCost = fixedCost + this.bridgeCostService.bridgeCostModel.totalCost;
+      report.cost = projectCost;
     }
     if (withMembers) {
-      const memberData = this.bridgeService.bridge.members.map(buildMemberSynopsis);
-      result = Effect.andThen(result, Console.log(memberData));
+      report.members = this.bridgeService.bridge.members.map(buildMemberSynopsis);
     }
-    return result;
+    return Console.log(REPORT_FORMATTERS[formatChoice](report));
   }
 
   /** Parses the given save set and validates it, throwing if bad. */
@@ -173,7 +277,7 @@ function main(): void {
     Options.withAlias('p'),
     Options.optional,
     Options.withDescription(
-      'JSON contest parameters as in contest URL search string. Optionally URI encoded. Overrides file if present.',
+      'JSON contest parameters as in contest URL search string. Optionally URI encoded and/or with prefix ?p= expected in the URL. Overrides file if present.',
     ),
   );
   const contestParamsFile = Options.fileText('contest-params-file').pipe(
@@ -190,11 +294,10 @@ function main(): void {
       Command.withDescription('List bridge file with no validation.'),
       Effect.andThen(({ contestParamsOption, contestParamsFile }) => {
         const fallback = Option.orElse(() => Option.map(contestParamsFile, ([, content]) => content));
-        const contestParams = Option.getOrNull(contestParamsOption.pipe(fallback));
+        const contestParams = Option.getOrNull(Option.map(contestParamsOption, decodeURI).pipe(fallback));
         const subcommands: Subcommands = buildInjector(contestParams).resolveAndInstantiate(Subcommands);
         return Effect.forEach(filenames, filename => {
-          const label = filenames.length === 1 ? '' : filename + ':\n';
-          return subcommands.listBridge(filename, label);
+          return subcommands.listBridge(filename);
         });
       }),
     );
@@ -203,7 +306,7 @@ function main(): void {
   // Analyze subcommand.
   const withConditions = Options.boolean('conditions').pipe(
     Options.withAlias('d'),
-    Options.withDescription('Include design conditions.'),
+    Options.withDescription('Include design conditions, both tag and code.'),
   );
   const withTotalCost = Options.boolean('cost').pipe(
     Options.withAlias('c'),
@@ -213,9 +316,17 @@ function main(): void {
     Options.withAlias('m'),
     Options.withDescription('Include member synopses.'),
   );
+  const formatChoice = Options.choice('format', REPORT_FORMATS).pipe(
+    Options.withAlias('o'),
+    Options.withDefault('csv'),
+  );
+  const withFullPaths = Options.boolean('full-paths').pipe(
+    Options.withAlias('a'),
+    Options.withDescription('Emit full paths of files.'),
+  );
   const analyze = Command.make(
     'analyze',
-    { filenames, withConditions, withTotalCost, withMembers },
+    { filenames, withConditions, withTotalCost, withMembers, formatChoice, withFullPaths },
     ({ filenames, ...options }) => {
       return bdc.pipe(
         Command.withDescription('Validate then analyze each bridge file.'),
@@ -223,10 +334,12 @@ function main(): void {
           const fallback = Option.orElse(() => Option.map(contestParamsFile, ([, content]) => content));
           const contestParams = Option.getOrNull(contestParamsOption.pipe(fallback));
           const subcommands: Subcommands = buildInjector(contestParams).resolveAndInstantiate(Subcommands);
-          return Effect.forEach(filenames, filename => {
-            const label = filenames.length === 1 ? '' : filename + ':\n';
-            return subcommands.analyzeBridge(filename, label, options);
-          });
+          if (options.withMembers && (options.formatChoice === 'csv' || options.formatChoice === 'tabs')) {
+            console.warn(`Members skipped in format ${options.formatChoice}. Use raw or json.`);
+          }
+          return Console.log(HEADER_FORMATTERS[options.formatChoice](options)).pipe(
+            Effect.flatMap(() => Effect.forEach(filenames, filename => subcommands.analyzeBridge(filename, options))),
+          );
         }),
       );
     },
