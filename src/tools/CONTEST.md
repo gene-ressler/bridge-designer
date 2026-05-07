@@ -1,4 +1,4 @@
-# Contest Support
+# ASCE Bridge Designer, Contest Features
 
 [TOC]
 
@@ -8,30 +8,29 @@ ASCE Bridge Designer includes support for design competitions. There are two mai
 
 - A command line tool that makes it relatively easy to analyze a collection of bridge files, generating a report
   suitable for determining winners.
-- A way to customize the Bridge Designer to prevent "cheating" in contests run periodically (for example, once a year or
-  semester). A previous contest-winning bridge won't load in a new contest's customized Bridge Designer. Even if redrawn
-  manually, the bridge is unlikely to win again.
+- A way to customize the Bridge Designer to prevent “cheating” in contests run periodically (for example, once a year or
+  semester). A previous contest-winning bridge file used in a new contest will not work. Even if redrawn manually, the
+  bridge is unlikely to win again.
 
 ## Future support? {#future-support}
 
-In a perfect world, there would be a back end web service for contests. The team has no resources for this. The command
-line tool is a workaround.
+In a perfect world, there would be back end support for contests. We have no resources for this. The command line tool
+is a workaround.
 
 As an alternative, we could offer a self-contained server that tech-savvy users could run themselves either locally -
-say within a classroom or school network - or - for adventurous souls with the tech resources and knowledge required -
-as an internet service.
+say within a classroom or school network - or - for adventurous souls with the knowledge required - as an internet
+service.
 
 We want to gauge the level of interest in such a server. If you’d use it, please write
 [bridgedesignerteam@gmail.com](mailto:bridgedesignerteam@gmail.com).
 
-We envision something like this. Using a dialog in the Bridge Designer itself, students would connect to the service to
-create an anonymous, passworded account for an arbitrarily-named team (no PII collected). They’d be able to upload
-designs to the team account with a button press. The server would automatically verify bridges are correct for the
-contest and pass the load test, accepting only valid submissions. It would tell them their current contest standing and
-periodically update scoreboards accessible via web browser. Contestants could be verified as members of a winning team
-by watching them log in to the winning account.
+We envision something like this. Using a dialog in the Bridge Designer itself, students would connect to the server to
+create an anonymous, passworded account for an arbitrarily-named team (no PII). They’d be able to save their designs to
+the team account in addition to locally. The server would automatically verify bridges are correct for the contest and
+pass the load test. It would tell them their current contest standing and periodically update scoreboards accessible via
+web browser.
 
-If we do this project, early adopters and testers will have direct input on server details.
+If we do this project, early adopters and testers will have direct input on details of how the server works.
 
 ## Command line interface (CLI) tool {#command-line-interface-cli-tool}
 
@@ -46,39 +45,12 @@ bdc analyze --cost --conditions *.bdc > report.csv
 This analyzes all the files with a `.bdc` extension and creates a report in CSV format in file `report.csv`, easily
 imported into a spreadsheet.
 
-### Installation
-
-There's a pre-compiled binary at `/dist/main.cjs`. Copy it to a directory that your `bash`-style shell can see and `cd`
-to that directory. Make it executable with something like `chmod 755 main.cjs` . Now add an alias
-
-```
-alias bdc=$(pwd)/main.cjs
-```
-
-Put the alias command in `.profile` to make it persistent.
-
-If you don't want to deal with a `bash`-style shell, you can still run the CLI under Windows Command or Powershell after
-Node.js is installed with `node main.cjs` replacing `bdc` in all the examples.
-
-### Usage with customized bridge files {#customized-bridge-files}
+### Customized bridge files {#customized-bridge-files}
 
 If the bridge files being analyzed are produced by a [customized Bridge Designer](#contest-customization) (see below),
- you’ll need to provide the same customization string as used in the URL. That's the string starting with `?p=` provided
-by
-[this spreadsheet](https://docs.google.com/spreadsheets/d/1YkOOZiGRG0oO5PKL2DB8yqdXIiRB24nUdmIWBAa1A2Y/edit?gid=0#gid=0).
+ you’ll need to provide the same customization string as used in the URL.
 
-```
-bdc --contest-params 'CUSTOMIZATION' analyze ...
-```
-
-Alternately, the customization can be saved in a file. Let's say it's called `contest-params.json`. Then the command is
-
-```
-bdc --contest-params-file contest-params.json analyze ...
-```
-
-The file content must be valid JSON, not the URI-encoded parameter string. It's available in the spreadsheet under the
-heading **Contest params.**
+`bdc --contest-params CUSTOMIZATION analyze ...`
 
 ### Report format {#report-format}
 
@@ -127,8 +99,8 @@ The following formats are supported with the option `--format NAME` .
   </tr>
 </table>
 
-The raw format is intended for easy parsing by other programs that read a line at a time. In the description below,
-newlines and lower case words are literal, `[]` means optional based on command line, `{}` means repeated.
+The raw format is meant for easy parsing by other programs that read a line at a time. In the description below,
+newlines and **boldface** are literal, `[]` means optional based on command line, `{}` means repeated.
 
 ```
 bridge
@@ -139,7 +111,7 @@ CONDITIONS_CODE]
 [COST]
 [MEMBER_COUNT
 member
-{MEMBER_NUMBER
+{NUMBER
  TENSION_STRENGTH
  MAX_TENSION
  TENSION_STATUS
@@ -148,32 +120,10 @@ member
  COMPRESSION_STATUS}]
 ```
 
-Here's an example where all options are selected,
-
-```text
-bridge
-MyBridge.bdc
-pass
-64A
-1082012051
-457347.29
-30
-member
-1
-9500
-403.3591831102967
-ok
-6990.9851102714565
-0
-ok
-member
-... remainder of 29 members elided
-```
-
 ### Report content {#report-content}
 
 The report includes the following information in any of four different formats (csv, tab-delimited text, JSON, or a
-"raw” format meant to be easily parsed by other tools):
+“raw” format meant to be easily parsed by other tools):
 
 <table>
   <tr>
@@ -227,17 +177,17 @@ The report includes the following information in any of four different formats (
     <br>
      Number
     <br>
-     Tension strength
-    <br>
      Max tension
-    <br>
-     Tension status
-    <br>
-     Compression strength
     <br>
      Max compression
     <br>
+     Tension strength
+    <br>
+     Compression strength
+    <br>
      Compression status
+    <br>
+     Tension status
    </td>
   </tr>
 </table>
@@ -245,56 +195,60 @@ The report includes the following information in any of four different formats (
 ## Contest customization {#contest-customization}
 
 This feature provides a way to customize the Bridge Designer for a specific contest by appending a special string to the
-end of the normal URL.
+end of the normal Bridge Designer URL.
 
 The goals of customization are:
 
-- **Inform the contestant.** Give a signal that they are using the Bridge Designer meant for their contest.
+- **Inform the contestant.** Give a signal that they are using the Bridge Designer just for their contest.
 - **Make contest results unique.** Make it difficult to successfully use the same design to compete well in two
   different contests.
 - **Prevent confusion.** Don’t allow bridge files saved from a customized Bridge Designer to be loaded into the
-  uncustomized one or one customized in a different way.
+  uncustomized Bridge Designer or one customized in a different way.
 
 For example, if the normal Bridge Designer URL is
 
-<code>[https://app.asce.org/bridge-designer/app/](https://app.asce.org/bridge-designer/app/)</code>
+```
+https://app.asce.org/bridge-designer/app/
+```
 
-then a customized URL might be...
+then a customized URL might look like this.
 
 <code>[https://app.asce.org/bridge-designer/app/?p=%7B%22c%22%3A100%2C%22k%22%3A%22g92%22%2C%22n%22%3A%22Mr.%20Maffei%27s%20Class%5CnCanon-McMillan%20Middle%20School%22%7D](https://app.asce.org/bridge-designer/app/?p=%7B%22c%22%3A100%2C%22k%22%3A%22g92%22%2C%22n%22%3A%22Mr.%20Maffei%27s%20Class%5CnCanon-McMillan%20Middle%20School%22%7D)
 </code>
 
 With this, Bridge Designer works a bit differently:
 
-- When it starts, a special "splash dialog” appears for a few seconds:
+- When it starts, a special “splash dialog” appears for a few seconds:
 
-  <img src="img/canonsplash.png" style="width:300px;">
+<p id="gdcalert1" ><span style="color: red; font-weight: bold">>>>>>  gd2md-html alert: inline image link here (to images/image1.png). Store image on your image server and adjust path/filename/extension if necessary. </span><br>(<a href="#">Back to top</a>)(<a href="#gdcalert2">Next alert</a>)<br><span style="color: red; font-weight: bold">>>>>> </span></p>
+
+![alt_text](images/image1.png 'image_tooltip')
 
 - When costs are calculated, each joint connection adds $100 rather than the default, $400.
-- When bridge files are saved, they’re "scrambled” using the key `g92`. No file can be loaded into the customized Bridge
-  Designer unless it was scrambled with the same `g92` key. (If you try, the bridge designer will just show an error
+- When bridge files are saved, they’re “scrambled” using the key `g92`. No file can be loaded into the customized Bridge
+  Designer unless it was scrambled with the same `g92` key. (If you try, the bridge designer will show an error
   message.)
 
-There are many customization options.
+These are just a few examples. There are many customization options.
 
 ### <span style="text-decoration:underline;">Preparing a customization</span> {#preparing-a-customization}
 
 The contest administrator prepares the contest URL and then publishes it in instructions to all contestants. For
-publishing, any medium with clickable links is fine: email, social media, shared document (for example Google Doc) or
-web page. Using printed paper or other non-clickable media won't work well. The customization string is too complicated
-for manual copying. **It’s important that every contestant realizes the special URL must be used**. The normal Bridge
-Designer URL with no customization won’t produce a valid contest entry.
+publishing, any clickable electronic medium is fine: email, social media, shared document (for example via Google Docs)
+or web page, for example. Using printed paper or other non-clickable form is not a good idea.The customization string is
+too complicated for manual copying. ** It’s important that every contestant realizes the special URL must be used**. The
+normal Bridge Designer URL with no customization won’t produce a valid contest entry.
 
 How to determine the extra URL string? The key tool is
 [this spreadsheet](https://docs.google.com/spreadsheets/d/1YkOOZiGRG0oO5PKL2DB8yqdXIiRB24nUdmIWBAa1A2Y/edit?gid=0#gid=0).
 The column titled **Contest** provides over 20 boxes. Each is a customizable feature. Letting a box empty means it is
-_not_ customized.
+*not *customized.
 
-After filling in all desired boxes, the extra URL string is in the bottom row of the sheet. Copy the leftmost cell and
+After filling in all desired boxes, the extra URL string is in the bottom row of the sheet. Copy from the sheet cell and
 paste it at the end of the Bridge Designer URL in your contest instructions.
 
-**_You’ll want to be sure to test the URL before publishing to ensure it works as intended! Publishing a bad URL would
-be very confusing for contestants._**
+**_You’ll want to be sure to test the URL to ensure it works as intended before sending the contest instructions!
+Publishing a bad URL would be extremely confusing._**
 
 ### The boxes {#the-boxes}
 
@@ -312,30 +266,34 @@ be easily beaten. Structural design knowledge is useful.
 #### Don’t be intimidated {#don’t-be-intimidated}
 
 Of the 20+ boxes available, you’ll need only a few, typically 4 or 5, to define a great contest. We’ll explain how
-later.
-
-A complete list of options follows.
+later. A complete list of options follows.
 
 #### User information {#user-information}
 
-- **Splash dialog.** _Any_ customization string, even one that changes nothing (that’s `?p=%7B%7D`) causes the contest
-  "splash dialog” to appear, welcoming the user to a contest whenever Bridge Designer is started. It disappears after a
-  few seconds, or the user can dismiss it with a button.
-- **contestName** - The contest name presented on the splash dialog. With no name given, the default is:
+- **Splash dialog.** _Any_ customization string, even one that changes no defaults (that’s `?p=%7B%7D`) causes the
+  contest “splash dialog” to appear, welcoming the user to a contest, whenever Bridge Designer is started. It disappears
+  after a few seconds, or the user can dismiss it with a button.
+- **contestName** - The contest name presented on the splash dialog. With no name given, the default text is:
+  <table style="border-collapse:collapse; border: solid gray 1px;">
+  <tr><td style="text-align:center;border: none;">Welcome and good luck with...</td></tr>
+  <tr><td style="text-align:center;border: none;">Your local</td></tr>
+  <tr><td style="text-align:center;border: none;">Bridge Design Contest</td></tr>
+  <tr><td style="text-align:center;;border: none;">This is a special ASCE Bridge Designer version just for contest use.</td></tr>
+  <table>
 
-  <img src="img/localsplash.png" style="width:300px;">
+If you enter a contest name, it replaces “Your local” in the dialog. Contest names with multiple lines can be written by
+using `\n` (backslash then lower case n) to denote a break between lines. For example, setting this value to
+`The Grade 10\nMLK High School `produces
 
-  If you enter a contest name, it replaces "Your local” in the dialog. Contest names with multiple lines can be
-  displayed using `\n` (backslash then lower case n) to denote a break between lines. For example, setting this value to
-  `The Grade 10\nMLK High School `produces
+  <table style="border-collapse:collapse; border: solid gray 1px;">
+  <tr><td style="text-align:center;border: none;">Welcome and good luck with...</td></tr>
+  <tr><td style="text-align:center;border: none;">The Grade 10</td></tr>
+  <tr><td style="text-align:center;border: none;">MLK High School</td></tr>
+  <tr><td style="text-align:center;border: none;">Bridge Design Contest</td></tr>
+  <tr><td style="text-align:center;;border: none;">This is a special ASCE Bridge Designer version just for contest use.</td></tr>
+  <table>
 
-  <img src="img/mlksplash.png" style="width:300px;">
-
-  _Pro tip:_ Even if you don’t set any other boxes, adding a contest name creates some excitement for young students.\
-  _Pro tip:_ Contest names usually read best with a leading "The" as here or trailing possessive " 's " as in "_Chapel
-  Hill Middle School's ..."_.
-
- 
+Pro tip:\_ Even if you don’t set any other boxes, adding a contest name creates some excitement for young students.  
 
 #### Contest-related values {#contest-related-values}
 
@@ -343,51 +301,47 @@ A complete list of options follows.
   bridge files not created by the customized Bridge Designer. Traditionally, it’s the contest year. But any value is
   fine.
 - **designConditionsCode** - _Not for general use._ This is for specifying design conditions not normally available at
-  all in the setup wizard. Traditionally, it’s used to create fresh challenges for top-level competition rounds. Write
+  all in the setup wizard. Traditionally, it’s used create fresh challenges for to-level competition rounds. Write
   [bridgedesignerteam@gmail.com](mailto:bridgedesignerteam@gmail.com) for details.
 - **designConditionsTag** - _For restricting the contest to a single set of design conditions._ A 3-character code
   determined by setting up the bridge designer with the design conditions you desire. Look at the Project ID in the
-  title block at the lower right of the drawing. It will look something like this:
-
-  > > Project ID: 00064A ‑ Your Project ID!
-
-  The code is the last three characters of the initial alphanumeric string. In this case, that’s **64A**. The code will
-  always be two digits and a letter A through D.  \
+  title block at the lower right of the drawing. It will look something like this: **Project ID: 00064A ‑ Your Project
+  ID!** The code is the last three characters of the initial alphanumeric string. In this case, that’s **64A**. The code
+  will always be two digits and a letter A through D.  \
   _Pro tip 1:_ Restricting design conditions simplifies the bridge design problem by reducing the work needed to find an
   optimal design. \
   _Pro tip 2:_ Conditions with low decks - closer to the river - often allow fewer efficient design options, and they’re
   quicker to draw. They’re useful for very young students and/or short contests: small numbers of hours.
-
-- **encryptionKey** - _Good practice to use, but not required_. Any string of characters used to "scramble” bridge file
+- **encryptionKey** - _Good practice to use, but not required_. Any string of characters used to “scramble” bridge file
   contents to make them unreadable and unique for your contest. If no key is given, the contents of the file are not
   scrambled.
 
 #### Load values {#load-values}
 
-_These values are good for changing bridge test pass/fail behavior._ Note that if you specified **designConditionsTag**,
+*These values are good for changing bridge test pass/fail behavior. *Note that if you specified **designConditionsTag**,
 only one of the two is relevant, determined by the truck load of the conditions you chose. If you _didn’t_ specify a
-tag, then when one of these is set to a non-default value, strongly consider changing the other as well.
+tag, then when one of these is set to a non-default value, strongly consider setting the other as well.
 
 - **heavyAxleLoads** - The weight in kilonewtons of the heavy truck traveling in a single lane. A pair such as
   `[137,137]` that gives the front and rear axle loads in that order.
 - **standardAxleLoads** - The weight in kilonewtons of standard trucks traveling in both left and right lanes. A pair
   such as `[71,181]` that gives the front and rear axle loads in that order.
 
-_Pro tip:_ Don’t change these more than about 20% with respect to defaults. Big changes are likely to result in
+_Pro tip:_ Don’t change these more than about 30% with respect to defaults. Big changes are likely to result in
 unrealistic behavior of the Bridge Designer. Don’t forget to TEST, TEST, TEST. \
 _Pro tip:_ While handy for contests, changing these is not realistic for real US highway engineering. The Bridge
 Designer Help explains that the default values are AASHTO standards.
 
 #### Cost values {#cost-values}
 
-Some of these will have no effect if **designConditionsTag** is set. For example, only one of
+Some of these will have no effect if **designConditionsTag **is set. For example, only one of
  **deckCostPerPanelHiStrength** and **deckCostPerPanelMedStrength** has any effect. The pier-related costs are relevant
 only if the selected conditions have a pier. Similarly for anchorage costs.
 
 - **anchorageCostPer** - Added to the cost for each anchorage joint, which is zero, one, or two. If
   **designConditionsTag** is set, has an effect only if those conditions include anchorages. \
   _Pro tip:_ Decreasing this makes design with anchorages more likely to be optimal and _vice versa_.
-- **standardAbutmentBaseCost** - The "base” cost of standard (not arch) abutments. The full cost of each abutment is
+- **standardAbutmentBaseCost** - The “base” cost of standard (not arch) abutments. The full cost of each abutment is
   this plus **standardAbutmentCostPerDeckPanel** times the number of deck panels in the span, or in the longest span if
   there is a pier. If **designConditionsTag** is set, has an effect only if those conditions use standard (not arch)
   abutments. \
@@ -411,7 +365,7 @@ only if the selected conditions have a pier. Similarly for anchorage costs.
 - **pierCostPerDeckPanel** - Cost added for each deck panel in the longest span supported by a pier. If
   **designConditionsTag** is set, has an effect only if those conditions use a pier. \
   _Pro tip:_ Decreasing this makes high-decks more competitive in bridges that have piers and _vice versa_.
-- **pierBaseCost** - The "base” cost of a pier. If **designConditionsTag** is set, has an effect only if those
+- **pierBaseCost** - The “base” cost of a pier. If **designConditionsTag** is set, has an effect only if those
   conditions use a pier. \
   _Pro tip:_ Decreasing this makes bridges with piers more competitive.
 - **lowAlloySteelCostPerKg** - Cost added for each kilogram of low alloy steel used in the bridge. For realism, this
@@ -421,7 +375,7 @@ only if the selected conditions have a pier. Similarly for anchorage costs.
 - **quenchedAndTemperedSteelCostPerKg** - Cost added for each kilogram of quenched and tempered steel used in the
   bridge. For realism, this should be higher than **lowAlloySteelCostPerKg** because this steel is strongest.
 - **excavationCostRate** - Cost added for each cubic meter of soil excavated to prepare the construction site. Bridges
-  with decks at ground level require none. Lower bridge spans require "cut” excavation to lower the roadway. The lower
+  with decks at ground level require none. Lower bridge spans require “cut” excavation to lower the roadway. The lower
   the deck, the greater the cut, hence the higher the excavation cost. If **designConditionsTag** this isn’t useful
   because all possible designs have the same quantity of excavation.
 
@@ -430,8 +384,7 @@ because it’s not a single value but a table based on arch height, too complex 
 
 #### An Example {#an-example}
 
-You're running a contest for your 4th grade class. It will last a couple of days. You decide to try the following box
-values.
+You decide to try the following box values.
 
 <table>
   <tr>
@@ -474,7 +427,7 @@ and then enter these four values into the respective boxes. The spreadsheet prod
 ?=%7B%22c%22%3A100%2C%22n%22%3A%22Grade%203%5CnThe%20Lehigh%20Township%20Elementary%20School%22%2C%22dt%22%3A%2264A%22%2C%22k%22%3A%22LehighRocks%22%2C%22p%22%3A100%7D
 ```
 
-It looks hairy, but no matter! You append this to the basic Bridge Designer URL:
+Yes it looks hairy, but no matter! You append this to the basic Bridge Designer URL:
 
 ```
 https://app.asce.org/bridge-designer/app/?p=%7B%22c%22%3A100%2C%22n%22%3A%22Grade%203%5CnThe%20Lehigh%20Township%20Elementary%20School%22%2C%22dt%22%3A%2264A%22%2C%22k%22%3A%22LehighRocks%22%2C%22p%22%3A100%7D
@@ -482,10 +435,12 @@ https://app.asce.org/bridge-designer/app/?p=%7B%22c%22%3A100%2C%22n%22%3A%22Grad
 
 It’s time to test it! You click the link. The Bridge Designer starts with a splash!
 
-<img src="img/lehighsplash.png" style="width:300px;">
+<p id="gdcalert2" ><span style="color: red; font-weight: bold">>>>>>  gd2md-html alert: inline image link here (to images/image2.png). Store image on your image server and adjust path/filename/extension if necessary. </span><br>(<a href="#">Back to top</a>)(<a href="#gdcalert3">Next alert</a>)<br><span style="color: red; font-weight: bold">>>>>> </span></p>
 
-You check that the parameters are working as intended by opening the browser’s console in the Bridge Designer tab. For
-the parameters above, you should see this:
+![alt_text](images/image2.png 'image_tooltip')
+
+You can get perfect verification that the parameters are working as intended by opening the browser’s console in the
+Bridge Designer tab. In this case, you should see something like this:
 
 ```text
 effective contest parameters {
@@ -530,84 +485,30 @@ effective contest parameters {
 }
 ```
 
-How to open the console is browser dependent. In Chrome and other Chromium-based browsers, select the kebab menu
-(&nbsp;**⠇**), then **More Tools**, and finally **Developer Tools**. Click the **Console** tab if not already clicked.
+How to open the console is browser dependent. In Chrome and other Chromium-based browsers, select the kebab menu (**
+⠇**), then **More Tools**, and finally **Developer Tools**. Click the **Console** tab if not already clicked.
 
-All is working okay, but during testing you realize that a single scenario design makes changing the pier cost per deck
-panel kind of lame. The student doesn’t have any choice involving the pier, and other effects are minimal.
-
-No worries, you set that box back to empty. Now the customization is
+During testing you realize that a single scenario design makes changing the pier cost per deck panel moot. The student
+doesn’t have any choice involving the pier. It makes most sense to use the default. Adjusting the spreadsheet, we get
+the shorted string
 
 ```
 ?p=%7B%22c%22%3A100%2C%22n%22%3A%22Grade%203%5CnThe%20Lehigh%20Township%20Elementary%20School%22%2C%22dt%22%3A%2264A%22%2C%22k%22%3A%22LehighRocks%22%7D
 ```
 
-You test again and all looks fine. You publish the full URL with contest instructions. All in all, it takes about 10
-minutes.
+You test again and all looks fine. You publish the URL with contest instructions.
 
-After the contest ends, you collect bridge files by downloading the Google Drive folder where the students put them. You
-unzip them in a folder on your computer and run the command line tool in a `bash`-style shell to create a report:
+After you’ve collected bridge files from all contestants, you put them all in a folder and run the command line tool in
+a `bash` shell to create a report:
 
 ```
 bdc --contest-params '?p=%7B%22c%22%3A100%2C%22n%22%3A%22Grade%203%5CnThe%20Lehigh%20Township%20Elementary%20School%22%2C%22dt%22%3A%2264A%22%2C%22k%22%3A%22LehighRocks%22%7D' analyze --cost *.bdc > scores.csv
 ```
 
-Note the single quotes around the parameter string! This tells bash to accept the string as-is.
+Note the single quotes around the parameter string! This tells bash to use the string as-is.
 
 You import `scores.txt` to a Google sheet, and sort the resulting table by cost to determine how the submissions ranked.
 
-## Tool implementation notes
-
-Normal users can ignore this section.
-
-The tool is a Node JS programs developed with version 24.x. It should run fine on any platform where Node does. However,
-it's been tested only with Linux.
-
-The CLI accepts lists of paths, expecting the shell to expand globs. A typical use case would be
-
-```
-bdc analyze *.bdc
 ```
 
-to analyze all bridge files in a directory. This will work only with `bash`-style glob expansion by the shell. Windows
-Command doesn't do such expansion, and Powershell requires extra code. We recommend checking out options like WSL, Git
-Bash, Cygwin, or Nushell that provide `bash`-style behavior within Windows.
-
-### Tool chain
-
-A non-Angular tool chain is required to support Angular services running in a Node CLI. All below was inferred by
-searching documentation as far as possible, then turning to possibly untrustworthy user reports and offered "solutions"
-to similar problems. It certainly may contain errors. The solutions adopted work, but may not be the best possible.
-
-#### Dependency injection
-
-The main problem was dependency injection. Modern Angular static injection depends on the Angular Typescript compiler's
-decoration processing, which isn't supported in Node. We could have used `new` to build a service hierarchy manually,
-but this would have been fragile.
-
-Package [`injection-js`](https://github.com/mgechev/injection-js) is an extraction of the old Angular reflective
-injection sub-system updated to support `inject()` and other constructs added since reflective injection was dropped.
-The author/maintainer is at Google. The package honors `Injectable()` notations and mostly "just works" after an
-injector including the required service graph is constructed. The normal Angular `useValue` provider feature allows
-replacing dependencies not needed at runtime (e.g. session save/restore) with minimal dummy objects, pruning the service
-graph.
-
-#### Effect CLI
-
-We decided to use [Effect CLI](https://www.npmjs.com/package/@effect/cli) to provide command line parsing and handling
-support. It's very nice, but has a significant learning curve to gain familiarity with the `Effect` API, a medium-thick
-abstraction layer over promises with minimal examples and often-thin documentation. Gemini is pretty good at filling the
-gaps.
-
-#### Clashes
-
-Unfortunately, Typescript compilation options of the DI and CLI packages clash: CJS vs MJS. The `tsx` and/or `ts-node`
-methods of on-the-fly compile-and-go Typescript execution preferred by `Effect` apparently do not work with the
-reflection "shim" needed by DI. Finally, all existing BD code uses Typescript-style imports with no filename suffixes,
-while Node expects `.js`.
-
-The simplest way to work around all of this appeared to be a Node-compatible bundler. Since `esbuild` is already native
-to Angular, we used it here. The last sticking point was that neither `esbuild` nor Node handle decorations
-(`@Injectable()`) natively. This is fixed up with an `esbuild` plug-in that runs source through the Typescript compiler.
-The package author laments that this slows down `esbuild`, but our little CLI still compiles in a second or so. It's a
-bit scary that even using `esbuild --minify`, the output is megabytes. Most is angular machinery.
+```

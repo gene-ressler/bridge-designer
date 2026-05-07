@@ -100,7 +100,7 @@ const REPORT_FORMATTERS: ReportFormatters = {
    * ```
    */
   raw: (report: AnalysisReport): string => {
-    const chunks: string[] = [`bridge\n${report.fileName}\n${report.status}`];
+    const chunks: string[] = [`bridge\n${rawEscapeString(report.fileName)}\n${report.status}`];
     if (report.conditionsTag !== undefined) {
       chunks.push(`\n${report.conditionsTag}\n${report.conditionsCode}`);
     }
@@ -111,7 +111,15 @@ const REPORT_FORMATTERS: ReportFormatters = {
       chunks.push(`\n${report.members.length.toString()}`);
       for (const member of report.members) {
         chunks.push('\nmember');
-        for (const key in member) {
+        for (const key of [
+          'number',
+          'tensionStrength',
+          'maxTension',
+          'tensionStatus',
+          'compressionStrength',
+          'maxCompression',
+          'compressionStatus',
+        ]) {
           chunks.push(`\n${member[key as keyof MemberSynopsis]}`);
         }
       }
@@ -129,6 +137,10 @@ const HEADER_FORMATTERS: HeaderFormatters = {
   tabs: (options: AnalyzeOptions): string => formatHeaders(options, '\t'),
   json: (options: AnalyzeOptions): string => '',
 };
+
+function rawEscapeString(s: string): string {
+  return s.replace('\n', '\\n').replace('\r', '\\r');
+}
 
 function tabEscapeString(s: string): string {
   return s.replace('\t', '\\t').replace('\n', '\\n').replace('\r', '\\r');
