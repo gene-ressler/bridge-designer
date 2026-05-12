@@ -15,7 +15,7 @@ Following are subject to change.
 - **Official release.** The supported, stable app release is hosted by the American Society of Civil Engineers
   [here](https://www.asce.org/career-growth/pre-college-outreach/bridge-designer). The project team is deeply grateful
   for this support.
-- **Official release.** A staging app release with more info than presented in this page is
+- **Staging release.** A staging app release with more info than presented in this page is
   [here](https://gene-ressler.github.io/bridge-designer/). This is meant for beta testers. We appreciate the Github
   support that allows this to work.
 - **CLI tools.** Compiled command line tools for contest support and development are at
