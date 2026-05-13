@@ -1,8 +1,6 @@
 # Contest Support
 
-[TOC]
-
-## Overview {#overview}
+## Overview
 
 ASCE Bridge Designer includes support for design competitions. There are two main kinds:
 
@@ -12,7 +10,7 @@ ASCE Bridge Designer includes support for design competitions. There are two mai
   semester). A previous contest-winning bridge won't load in a new contest's customized Bridge Designer. Even if redrawn
   manually, the bridge is unlikely to win again.
 
-## Future support? {#future-support}
+## Future support?
 
 In a perfect world, there would be a back end web service for contests. The team has no resources for this. The command
 line tool is a workaround.
@@ -33,7 +31,7 @@ by watching them log in to the winning account.
 
 If we do this project, early adopters and testers will have direct input on server details.
 
-## Command line interface (CLI) tool {#command-line-interface-cli-tool}
+## Command line interface (CLI) tool
 
 This tool assumes that a contest administrator collects bridge files from contestants and places them all in a single
 directory. A network-shared service such as Google Drive or Dropbox is useful. Once the CLI program is installed and set
@@ -60,7 +58,7 @@ Put the alias command in `.profile` to make it persistent.
 If you don't want to deal with a `bash`-style shell, you can still run the CLI under Windows Command or Powershell after
 Node.js is installed with `node main.cjs` replacing `bdc` in all the examples.
 
-### Usage with customized bridge files {#customized-bridge-files}
+### Usage with customized bridge files
 
 If the bridge files being analyzed are produced by a [customized Bridge Designer](#contest-customization) (see below),
  you’ll need to provide the same customization string as used in the URL. That's the string starting with `?p=` provided
@@ -80,7 +78,7 @@ bdc --contest-params-file contest-params.json analyze ...
 The file content must be valid JSON, not the URI-encoded parameter string. It's available in the spreadsheet under the
 heading **Contest params.**
 
-### Report format {#report-format}
+### Report format
 
 The following formats are supported with the option `--format NAME` .
 
@@ -170,7 +168,7 @@ member
 ... remainder of 29 members elided
 ```
 
-### Report content {#report-content}
+### Report content
 
 The report includes the following information in any of four different formats (csv, tab-delimited text, JSON, or a
 "raw” format meant to be easily parsed by other tools):
@@ -242,7 +240,7 @@ The report includes the following information in any of four different formats (
   </tr>
 </table>
 
-## Contest customization {#contest-customization}
+## Contest customization
 
 This feature provides a way to customize the Bridge Designer for a specific contest by appending a special string to the
 end of the normal URL.
@@ -277,7 +275,7 @@ With this, Bridge Designer works a bit differently:
 
 There are many customization options.
 
-### <span style="text-decoration:underline;">Preparing a customization</span> {#preparing-a-customization}
+### Preparing a customization
 
 The contest administrator prepares the contest URL and then publishes it in instructions to all contestants. For
 publishing, any medium with clickable links is fine: email, social media, shared document (for example Google Doc) or
@@ -296,7 +294,7 @@ paste it at the end of the Bridge Designer URL in your contest instructions.
 **_You’ll want to be sure to test the URL before publishing to ensure it works as intended! Publishing a bad URL would
 be very confusing for contestants._**
 
-### The boxes {#the-boxes}
+### The boxes
 
 Contest box values in the spreadsheet control various behaviors of Bridge Designer:
 
@@ -309,14 +307,14 @@ Changing bridge designer cost, material, and load parameters can be tricky. A kn
 year’s parameters (or defaults if last year didn’t use any) and best bridges. Adjust box values until those bridges can
 be easily beaten. Structural design knowledge is useful.
 
-#### Don’t be intimidated {#don’t-be-intimidated}
+#### Don’t be intimidated
 
 Of the 20+ boxes available, you’ll need only a few, typically 4 or 5, to define a great contest. We’ll explain how
 later.
 
 A complete list of options follows.
 
-#### User information {#user-information}
+#### User information
 
 - **Splash dialog.** _Any_ customization string, even one that changes nothing (that’s `?p=%7B%7D`) causes the contest
   "splash dialog” to appear, welcoming the user to a contest whenever Bridge Designer is started. It disappears after a
@@ -337,7 +335,7 @@ A complete list of options follows.
 
  
 
-#### Contest-related values {#contest-related-values}
+#### Contest-related values
 
 - **bridgeVersion** - _Not often needed._ A 4-digit positive integer with no leading zeros (e.g. 1234) used to reject
   bridge files not created by the customized Bridge Designer. Traditionally, it’s the contest year. But any value is
@@ -362,7 +360,7 @@ A complete list of options follows.
   contents to make them unreadable and unique for your contest. If no key is given, the contents of the file are not
   scrambled.
 
-#### Load values {#load-values}
+#### Load values
 
 _These values are good for changing bridge test pass/fail behavior._ Note that if you specified **designConditionsTag**,
 only one of the two is relevant, determined by the truck load of the conditions you chose. If you _didn’t_ specify a
@@ -378,7 +376,7 @@ unrealistic behavior of the Bridge Designer. Don’t forget to TEST, TEST, TEST.
 _Pro tip:_ While handy for contests, changing these is not realistic for real US highway engineering. The Bridge
 Designer Help explains that the default values are AASHTO standards.
 
-#### Cost values {#cost-values}
+#### Cost values
 
 Some of these will have no effect if **designConditionsTag** is set. For example, only one of
  **deckCostPerPanelHiStrength** and **deckCostPerPanelMedStrength** has any effect. The pier-related costs are relevant
@@ -428,7 +426,7 @@ only if the selected conditions have a pier. Similarly for anchorage costs.
 Side note: You might logically expect to see **archAbutmentBaseCost** included in this list, but it’s not here. That’s
 because it’s not a single value but a table based on arch height, too complex to offer as a customization option.
 
-#### An Example {#an-example}
+#### An Example
 
 You're running a contest for your 4th grade class. It will last a couple of days. You decide to try the following box
 values.
