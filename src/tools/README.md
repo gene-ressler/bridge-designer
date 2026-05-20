@@ -4,6 +4,7 @@
 
 ASCE Bridge Designer includes support for design competitions. There are two main kinds:
 
+- Legacy 6-digit local contest codes.
 - A command line tool that makes it relatively easy to analyze a collection of bridge files, generating a report
   suitable for determining winners.
 - A way to customize the Bridge Designer to prevent "cheating" in contests run periodically (for example, once a year or
@@ -12,7 +13,7 @@ ASCE Bridge Designer includes support for design competitions. There are two mai
 
 ## Future support?
 
-In a perfect world, there would be a back end web service for contests. The team has no resources for this. The command
+In a perfect world, there would be a back end web service for contests. Our team has no resources for this. The command
 line tool is a workaround.
 
 As an alternative, we could offer a self-contained server that tech-savvy users could run themselves either locally -
@@ -31,11 +32,23 @@ by watching them log in to the winning account.
 
 If we do this project, early adopters and testers will have direct input on server details.
 
+## Legacy 6-character codes
+
+This has long been a quick way to set up a contest where only one of the almost 400 design condition options is
+available. It is appropriate for contests lasting for hours up to a few days, since finding the optimum among 400 options 
+requires much effort (or excellent luck).
+
+See instructions in the
+[Bridge Designer's help](https://gene-ressler.github.io/bridge-designer/app/?help=hlp_local_contest). Search for "local
+contest".
+
+Use manual methods or the CLI tool below to compile contest results.
+
 ## Command line interface (CLI) tool
 
 This tool assumes that a contest administrator collects bridge files from contestants and places them all in a single
-directory. A network-shared service such as Google Drive or Dropbox is useful. Once the CLI program is installed and set
-up, the administrator need only type a single command, for example:
+directory. A shared folder service like Google Drive or Dropbox is helpful for this. Once the CLI program is installed, 
+the administrator need only type a single command, for example:
 
 ```
 bdc analyze --cost --conditions *.bdc > report.csv
@@ -333,8 +346,6 @@ A complete list of options follows.
   _Pro tip:_ Contest names usually read best with a leading "The" as here or trailing possessive " 's " as in "_Chapel
   Hill Middle School's ..."_.
 
- 
-
 #### Contest-related values
 
 - **bridgeVersion** - _Not often needed._ A 4-digit positive integer with no leading zeros (e.g. 1234) used to reject
@@ -347,7 +358,7 @@ A complete list of options follows.
   determined by setting up the bridge designer with the design conditions you desire. Look at the Project ID in the
   title block at the lower right of the drawing. It will look something like this:
 
-  > > Project ID: 00064A ‑ Your Project ID!
+  > Project ID: 00064A ‑ Your Project ID!
 
   The code is the last three characters of the initial alphanumeric string. In this case, that’s **64A**. The code will
   always be two digits and a letter A through D.  \
@@ -556,9 +567,9 @@ You import `scores.txt` to a Google sheet, and sort the resulting table by cost 
 
 ## Tool implementation notes
 
-Normal users can ignore this section.
+This section is developer information. Normal users can ignore it.
 
-The tool is a Node JS programs developed with version 24.x. It should run fine on any platform where Node does. However,
+The tool is a Node JS program developed with version 24.x. It should run fine on any platform where Node does. However,
 it's been tested only with Linux.
 
 The CLI accepts lists of paths, expecting the shell to expand globs. A typical use case would be
