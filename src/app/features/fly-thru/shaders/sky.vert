@@ -27,6 +27,7 @@ const mat3 SUN_ROTATION = mat3(
   0, 1, 0,  // column 1 
   S, 0, C   // column 2
 );
+
 void main() {
   vec4 homogenousPosition = transforms.viewRotationProjection * vec4(inPosition, 1);
   gl_Position = homogenousPosition.xyww; // Clamp z to 1 after perspective division.
