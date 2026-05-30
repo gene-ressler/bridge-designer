@@ -319,7 +319,6 @@ export class FailedMemberModelService {
     const widths = FailedMemberModelService.PARABOLA_WIDTHS;
     const heights = FailedMemberModelService.PARABOLA_HEIGHTS;
     const unitArcWidth = Math.min(buckledLength / unloadedLength, 1);
-    // Invariant a[lo] < x <= a[hi].
     const index = FailedMemberModelService.searchFloor(unitArcWidth, widths);
     // Handle case where floor is at top of width range.
     if (index === widths.length - 1) {
@@ -338,6 +337,7 @@ export class FailedMemberModelService {
    */
   // visible-for-testing
   static searchFloor(x: number, a: Float32Array): number {
+    // Invariant a[lo] < x <= a[hi].
     let lo = 0;
     let hi = a.length - 1;
     // Find two adjacent elements that must include the search value.
@@ -401,6 +401,7 @@ export function* parabolaPoints(
     yield setOutputs(-t);
     yield setOutputs(t);
   }
+  
   function setOutputs(t: number): vec2 {
     const x = (t + 1) * halfWidth;
     const y = (1 - t * t) * height;
