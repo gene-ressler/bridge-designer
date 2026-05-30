@@ -2,7 +2,7 @@
 
 ## Overview
 
-ASCE Bridge Designer includes support for design competitions. There are two main kinds:
+ASCE Bridge Designer includes support for design competitions:
 
 - Legacy 6-digit local contest codes.
 - A command line tool that makes it relatively easy to analyze a collection of bridge files, generating a report
