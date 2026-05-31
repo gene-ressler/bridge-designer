@@ -157,8 +157,9 @@ export class Print3dModelService {
 
   public buildPier(gmy: Print3dGeometry, x: number): Manifold {
     const tab = this.extrudeCentered(gmy.tab, 2 * gmy.tabThickness).translate(gmy.pierXOffset, 0, gmy.pierTopZ);
+    // Don't use different x and y tapers in the extrusion. The diagonal faces become non-planar.
     return this.manifoldClass
-      .extrude(gmy.pier, gmy.pierHeight, undefined, undefined, [gmy.pierTaperX, 1.2])
+      .extrude(gmy.pier, gmy.pierHeight, undefined, undefined, gmy.pierTaperX)
       .rotate(180, 0, 0) // Flip taper.
       .translate(gmy.pierXOffset, 0, gmy.pierTopZ)
       .add(tab)
