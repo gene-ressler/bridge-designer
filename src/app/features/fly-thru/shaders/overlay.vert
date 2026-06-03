@@ -13,7 +13,7 @@ precision mediump float;
 
 // Per instance
 layout(location = IN_POSITION_LOCATION) in vec4 inPosition; // (x, y, xScale, yScale)
-layout(location = IN_ALPHA_LOCATION) in float inAlpha; // (depthIndex, alpha)
+layout(location = IN_ALPHA_LOCATION) in float inAlpha;
 
 // Fixed
 layout(location = IN_TEX_COORD_LOCATION) in vec2 inTexCoord; 
