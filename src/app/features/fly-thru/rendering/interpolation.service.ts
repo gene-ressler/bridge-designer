@@ -31,7 +31,7 @@ export enum FailedMemberKind {
 export interface Interpolator {
   /** Data source for this interpolator. */
   readonly source: InterpolatorSource;
-  /** Interpolation parameter: roughly meters right from the left abutment. */
+  /** Interpolation parameter. Meaning is implementation-specific. */
   readonly parameter: number;
   /** Count of members failed during the last parameter advance. */
   readonly failedMemberCount: number;
@@ -72,7 +72,7 @@ type InterpolatorContext = {
   rightLoadCase: number;
 };
 
-/** Wrapper for an interpolation based on a, given source. */
+/** Wrapper for an interpolation based on a given source. */
 class SourceInterpolator implements Interpolator {
   // Result buffers.
   private readonly post: CenterlinePost = { elevation: 0, xNormal: 0, yNormal: 1 };
@@ -104,7 +104,7 @@ class SourceInterpolator implements Interpolator {
   }
 
   /**
-   * Finds the way point (truck front wheel contact) and load rotation (to place rear wheels on the road)
+   * Finds the way point, i.e. truck front wheel contact, and load rotation placing rear wheels on the road
    * for the current parameter. The rotation vector isn't normalized.
    */
   public getLoadPosition(frontOut: vec2, rotationOut: vec2): void {
@@ -174,8 +174,8 @@ class SourceInterpolator implements Interpolator {
       // Adjust for height of deck above interpolated point. This will be a tad too low when the
       // deck isn't horizontal, but exact calculation is too expensive for what it does. Extreme
       // tilts where the inaccuracy is noticeable are unrealistic anyway. This just makes it a
-      // bit more. nb: Offsetting normal to deck results in obvious jerkiness at joints between
-      // panels with different tilts.
+      // bit more. nb: Offsetting along deck normal rather than vertically results in obvious
+      // jerkiness at joints between panels with different tilts.
       out[1] += SiteConstants.DECK_TOP_HEIGHT;
     } else {
       out[0] = ctx.t;
