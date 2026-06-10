@@ -109,12 +109,12 @@ def mulVec(a, x):
     return (dot(a[0], x), dot(a[1], x), dot(a[2], x))
 
 
-def isLeftTurn(ax, ay, bx, by):
+def areVectorsLeftTurn(ax, ay, bx, by):
     return ax * by - ay * bx >= 0
 
 
 def areSegmentsLeftTurn(r, q, p):
-    return isLeftTurn(q[0] - r[0], q[1] - r[1], p[0] - q[0], p[1] - q[1])
+    return areVectorsLeftTurn(q[0] - r[0], q[1] - r[1], p[0] - q[0], p[1] - q[1])
 
 
 def isPointInTriangle(p, t0, t1, t2):
