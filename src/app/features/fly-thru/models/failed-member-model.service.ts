@@ -276,7 +276,7 @@ export class FailedMemberModelService {
    * ```
    * If `p3` doesn't actually complete a parallelogram, the transform will still produce one in this manner.
    *
-   * If `p0` == `p1`, there is no solution; the matrix will contain NaN. A workaround if `p0` != `p1` is to "rotate the"
+   * If `p0` == `p1`, there is no solution; the matrix will contain NaN. A workaround if `p0` != `p1` is to "rotate" the
    * input points two places: `p0` => `p2`, `p1`=> `p3`, , `p2` => `p0`, `p3` => `p1`. This will cause `t` == 0. Unfortunately,
    * we'd end up with w == 0 values in results and perspective division would fail. Consequently, when `t` is less than 0.001,
    * it's artificially forced there, leading to an approximate triangle.
