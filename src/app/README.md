@@ -69,7 +69,8 @@ The logic might be clearer if depicted as a flow chart, but here it is in all it
       IF user desires restart THEN
         Add "reset" to URL search parameters
         GOTO <startup> // via redirect
-      END IF    
+      END IF
+      Show Tips dialog (skip if disabled by user)
     END IF
   ELSE
     // missing-feature-disabler-dialog.component
@@ -77,6 +78,7 @@ The logic might be clearer if depicted as a flow chart, but here it is in all it
       Show dialog warning user about what's disabled.
     END IF
     Disable Bridge Designer features based on missing browser features, if any.
+    Show Tips dialog (skip if disabled by user)
   END IF
   // contest-welcome-dialog.component.ts
   IF contest parameters are set THEN
