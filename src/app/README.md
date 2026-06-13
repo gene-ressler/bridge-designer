@@ -70,6 +70,7 @@ The logic might be clearer if depicted as a flow chart, but here it is in all it
         Add "reset" to URL search parameters
         GOTO <startup> // via redirect
       END IF
+      // tip-dialog.component.ts
       Show Tips dialog (skip if disabled by user)
     END IF
   ELSE
@@ -78,6 +79,7 @@ The logic might be clearer if depicted as a flow chart, but here it is in all it
       Show dialog warning user about what's disabled.
     END IF
     Disable Bridge Designer features based on missing browser features, if any.
+    // tip-dialog.component.ts
     Show Tips dialog (skip if disabled by user)
   END IF
   // contest-welcome-dialog.component.ts
