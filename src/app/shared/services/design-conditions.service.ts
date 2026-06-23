@@ -291,7 +291,6 @@ export class DesignConditions {
         this.panelCount * this.deckCostRate +
         this.anchorageCount * contestParameters.anchorageCostPer;
     }
-    this.abutmentCost *= 0.5; // Steve's calcs were for both abutments. UI presents unit cost.
 
     // Abutment and pier supported joints.
     this.supportedJointIndices = isArch
@@ -300,6 +299,7 @@ export class DesignConditions {
         ? [0, this.panelCount, this.pierJointIndex]
         : [0, this.panelCount];
 
+    // Extract data to drive cost report.
     this.siteCosts = {
       siteCondition: this.tag,
       panelCount: this.panelCount,
@@ -310,7 +310,7 @@ export class DesignConditions {
       excavationCost: this.excavationVolume * contestParameters.excavationCostRate,
       abutmentType: this.isArch ? 'arch' : 'standard',
       abutmentCount: 2,
-      abutmentCostRate: this.abutmentCost * 0.5,
+      abutmentCostRate: 0.5 * this.abutmentCost,
       abutmentCost: this.abutmentCost,
       isPier: this.isPier,
       pierHeight: this.pierHeight,
