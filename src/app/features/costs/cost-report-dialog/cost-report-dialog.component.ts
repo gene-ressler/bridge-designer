@@ -20,7 +20,7 @@ import { BridgeService } from '../../../shared/services/bridge.service';
 import { SiteCostsModel } from '../../../shared/services/design-conditions.service';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { ToastKind } from '../../toast/toast/toast-error';
+import { WidgetHelper } from '../../../shared/classes/widget-helper';
 
 /** A dialog containing a detailed report of bridge costs. */
 @Component({
@@ -57,31 +57,31 @@ export class CostReportDialogComponent implements AfterViewInit {
   }
 
   async handleCopy(): Promise<void> {
-    try {
-      // Extract text from report template table.
-      const textContent: string[][] = [];
-      const table = this.costsTable.nativeElement;
-      const rows = table.rows;
-      for (let i = 0; i < rows.length; ++i) {
-        const rowContent: string[] = [];
-        const cells = rows[i].cells;
-        for (let j = 0; j < cells.length; ++j) {
-          const cell = cells[j];
-          const text = cell.textContent?.trim() || '';
-          rowContent.push(text.startsWith('=') ? `'${text}` : text);
-          const colSpan = cell.colSpan || 1;
-          for (let k = 1; k < colSpan; ++k) {
-            rowContent.push('');
+    WidgetHelper.copyToClipboard(
+      () => {
+        // Extract text from report template table.
+        const textContent: string[][] = [];
+        const table = this.costsTable.nativeElement;
+        const rows = table.rows;
+        for (let i = 0; i < rows.length; ++i) {
+          const rowContent: string[] = [];
+          const cells = rows[i].cells;
+          for (let j = 0; j < cells.length; ++j) {
+            const cell = cells[j];
+            const text = cell.textContent?.trim() || '';
+            rowContent.push(text.startsWith('=') ? `'${text}` : text);
+            const colSpan = cell.colSpan || 1;
+            for (let k = 1; k < colSpan; ++k) {
+              rowContent.push('');
+            }
           }
+          textContent.push(rowContent);
         }
-        textContent.push(rowContent);
-      }
-      const text = textContent.map(row => row.join('\t')).join('\n');
-      await navigator.clipboard.writeText(text);
-      this.toast('copySuccess');
-    } catch (err) {
-      this.toast('copyFailedError');
-    }
+        return textContent.map(row => row.join('\t')).join('\n');
+      },
+      this.eventBrokerService,
+      EventOrigin.COST_REPORT_DIALOG,
+    );
   }
 
   handleDialogOpen(): void {
@@ -99,10 +99,6 @@ export class CostReportDialogComponent implements AfterViewInit {
     const blob = doc.output('blob');
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank');
-  }
-
-  private toast(kind: ToastKind): void {
-    this.eventBrokerService.toastRequest.next({ origin: EventOrigin.COST_REPORT_DIALOG, data: kind });
   }
 
   ngAfterViewInit(): void {

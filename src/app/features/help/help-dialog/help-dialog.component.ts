@@ -7,7 +7,7 @@ import { jqxTabsModule, jqxTabsComponent } from 'jqwidgets-ng/jqxtabs';
 import { jqxTreeComponent, jqxTreeModule } from 'jqwidgets-ng/jqxtree';
 import { jqxWindowComponent, jqxWindowModule } from 'jqwidgets-ng/jqxwindow';
 import { jqxButtonModule } from 'jqwidgets-ng/jqxbuttons';
-import { EventBrokerService } from '../../../shared/services/event-broker.service';
+import { EventBrokerService, EventOrigin } from '../../../shared/services/event-broker.service';
 import { HelpTopicComponent } from '../help-topic/help-topic.component';
 import { HelpNavTreeComponent } from '../help-nav-tree/help-nav-tree.component';
 import { jqxToolBarComponent, jqxToolBarModule } from 'jqwidgets-ng/jqxtoolbar';
@@ -20,6 +20,7 @@ import { HelpTab } from './types';
 const enum Tools {
   BACK_TOPIC,
   FORWARD_TOPIC,
+  SHARE,
   PRINT,
 }
 
@@ -56,7 +57,7 @@ export class HelpDialogComponent implements AfterViewInit {
   @ViewChild('toolBar') toolBar!: jqxToolBarComponent;
   @ViewChild('topicList') topicList!: HelpTopicListComponent;
 
-  readonly tools: string = 'button button | button';
+  readonly tools: string = 'button button | button | button';
   private tabIndex: number | undefined;
 
   constructor(
@@ -73,6 +74,12 @@ export class HelpDialogComponent implements AfterViewInit {
       case Tools.FORWARD_TOPIC:
         WidgetHelper.initToolbarImgButton('Forward one topic', 'img/play.png', tool);
         tool.on('click', () => this.currentTopicService.goForward());
+        break;
+      case Tools.SHARE:
+        // Absolute positioning seems to be the only way here.
+        WidgetHelper.initToolbarImgButton('Copy topic URL to clipboard', 'img/share.png', tool);
+        tool.css({ position: 'absolute', right: '30px' });
+        tool.on('click', () => this.copyUrlToClipboard());
         break;
       case Tools.PRINT:
         WidgetHelper.initToolbarImgButton('Forward one topic', 'img/print.png', tool);
@@ -98,6 +105,15 @@ export class HelpDialogComponent implements AfterViewInit {
     const tools = this.toolBar.getTools();
     tools[Tools.BACK_TOPIC].tool.jqxButton({ disabled: !this.currentTopicService.hasBackTopics });
     tools[Tools.FORWARD_TOPIC].tool.jqxButton({ disabled: !this.currentTopicService.hasForwardTopics });
+  }
+
+
+  private copyUrlToClipboard(): void {
+    WidgetHelper.copyToClipboard(
+      () => `${document.URL}?help=${this.currentTopicService.currentTopicId}`,
+      this.eventBrokerService,
+      EventOrigin.SERVICE,
+    );
   }
 
   ngAfterViewInit(): void {

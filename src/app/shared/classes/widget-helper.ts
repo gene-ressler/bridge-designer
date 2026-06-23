@@ -4,6 +4,8 @@
 import { ViewContainerRef } from '@angular/core';
 import { jqxDropDownListComponent } from 'jqwidgets-ng/jqxdropdownlist';
 import { jqxSliderComponent } from 'jqwidgets-ng/jqxslider';
+import { EventBrokerService, EventOrigin } from '../services/event-broker.service';
+import { ToastKind } from '../../features/toast/toast/toast-error';
 
 export const enum StandardCursor {
   ARROW = 'default',
@@ -64,6 +66,19 @@ export class WidgetHelper {
     img.src = imgSrc;
     if (title) {
       img.title = title;
+    }
+  }
+
+  public static async copyToClipboard(textProvider: () => string, toaster: EventBrokerService, origin: EventOrigin) {
+    try {
+      const text = textProvider();
+      await navigator.clipboard.writeText(text);
+      toast('copySuccess');
+    } catch (err) {
+      toast('copyFailedError');
+    }
+    function toast(kind: ToastKind): void {
+      toaster.toastRequest.next({ origin, data: kind });
     }
   }
 

@@ -23,7 +23,7 @@ export class CurrentTopicService {
   /** Broadcast notification subject for current topic changes. */
   public readonly currentTopicIdChange = new Subject<TopicLocation>();
   /** Broadcast request to print the current topic. */
-  public readonly printCurrentTopicRequest = new Subject<void>();  
+  public readonly printCurrentTopicRequest = new Subject<void>();
   /** Settable callback for fetching current scroll top just before going to a new topic. */
   public scrollTopCallback: () => number = () => 0;
 

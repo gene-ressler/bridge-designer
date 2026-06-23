@@ -10,7 +10,7 @@ import { EventBrokerService, EventOrigin } from '../../../shared/services/event-
 import jsPDF from 'jspdf';
 import { autoTable, HookData } from 'jspdf-autotable';
 import { Member } from '../../../shared/classes/member.model';
-import { ToastKind } from '../../toast/toast/toast-error';
+import { WidgetHelper } from '../../../shared/classes/widget-helper';
 
 @Component({
   selector: 'load-test-report-dialog',
@@ -19,7 +19,7 @@ import { ToastKind } from '../../toast/toast/toast-error';
   styleUrl: './load-test-report-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LoadTestReportDialogComponent implements AfterViewInit {
+export class LoadTestReportDialogComponent implements AfterViewInit{
   @ViewChild('dialog') dialog!: jqxWindowComponent;
   private changeToken: string = '';
 
@@ -30,13 +30,11 @@ export class LoadTestReportDialogComponent implements AfterViewInit {
   ) {}
 
   async handleCopy(): Promise<void> {
-    try {
-      const text = getLoadTestReportText(this.bridgeService.bridge.members);
-      await navigator.clipboard.writeText(text);
-      this.toast('copySuccess');
-    } catch (err) {
-      this.toast('copyFailedError');
-    }
+    WidgetHelper.copyToClipboard(
+      () => getLoadTestReportText(this.bridgeService.bridge.members),
+      this.eventBrokerService,
+      EventOrigin.LOAD_TEST_REPORT_DIALOG,
+    );
   }
 
   handleDialogOpen(): void {
@@ -60,10 +58,6 @@ export class LoadTestReportDialogComponent implements AfterViewInit {
     const blob = doc.output('blob');
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank');
-  }
-
-  private toast(kind: ToastKind): void {
-    this.eventBrokerService.toastRequest.next({ origin: EventOrigin.LOAD_TEST_REPORT_DIALOG, data: kind });
   }
 
   ngAfterViewInit(): void {
