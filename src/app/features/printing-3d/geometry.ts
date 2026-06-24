@@ -245,7 +245,7 @@ export class Print3dGeometry {
 
     // Pier
     this.pier = [r, s, t, u, v, w];
-    this.pierTaperX = 2;
+    this.pierTaperX = 1.25;
     this.pierXOffset = -this.pierTaperX * x2;
     this.pierWidth = x1 - x0;
 
