@@ -188,14 +188,12 @@ export class MemberTableComponent implements AfterViewInit {
   private updateGridContent(): void {
     this.isLastAnalysisValid = this.analysisValidityService.isLastAnalysisValid;
     this.source.localdata = this.bridgeService.bridge.members;
-    // Preserve user-selected sort columns (and a bunch else we don't care about).
-    const state = this.grid.savestate();
+    // Preserve scroll position and user-selected sort columns through bound data update, which loses them.
+    const scrollPosition = this.grid.scrollposition();
+    const state = this.grid.getstate();
     this.grid.updatebounddata();
     this.grid.loadstate(state);
-    // jqxWidgets puts a key in local storage and never cleans it up.
-    // This is undocumented (reverse engineered) and therefore fragile. The exact
-    // key varies between dev and prod, but the prefix is the same.
-    Utility.clearLocalStorageByPrefix('jqxGrid');
+    this.grid.scrolloffset(scrollPosition.top!, scrollPosition.left!);
   }
 
   /** Adjust the grid row selection to match selected members (i.e. those selected graphically). */
