@@ -9,7 +9,7 @@ import { DRAWING_LINE_WIDTH_MM, DRAWING_MARGIN_MM } from './drawings.service';
 import { BridgeCostService } from '../../shared/services/bridge-cost.service';
 import { DOLLARS_FORMATTER, Utility } from '../../shared/classes/utility';
 import { SaveMarkService } from '../save-load/save-mark.service';
-import { AnalysisService, AnalysisStatus } from '../../shared/services/analysis.service';
+import { AnalysisService } from '../../shared/services/analysis.service';
 import { AnalysisValidityService } from '../controls/management/analysis-validity.service';
 
 const ANALYSIS_STATUS_DESCRIPTIONS: string[] = [
