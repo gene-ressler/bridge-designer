@@ -4,33 +4,12 @@
 
 ASCE Bridge Designer includes support for design competitions:
 
-- Legacy 6-digit local contest codes.
+- Legacy 6-digit local contest codes. A way to restrict students to specific site conditions.
 - A command line tool that makes it relatively easy to analyze a collection of bridge files, generating a report
   suitable for determining winners.
 - A way to customize the Bridge Designer to prevent "cheating" in contests run periodically (for example, once a year or
   semester). A previous contest-winning bridge won't load in a new contest's customized Bridge Designer. Even if redrawn
   manually, the bridge is unlikely to win again.
-
-## Future support?
-
-In a perfect world, there would be a back end web service for contests. Our team has no resources for this. The command
-line tool is a workaround.
-
-As an alternative, we could offer a self-contained server that tech-savvy users could run themselves either locally -
-say within a classroom or school network - or - for adventurous souls with the tech resources and knowledge required -
-as an internet service.
-
-We want to gauge the level of interest in such a server. If you’d use it, please write
-[bridgedesignerteam@gmail.com](mailto:bridgedesignerteam@gmail.com).
-
-We envision something like this. Using a dialog in the Bridge Designer itself, students would connect to the service to
-create an anonymous, passworded account for an arbitrarily-named team (no PII collected). They’d be able to upload
-designs to the team account with a button press. The server would automatically verify bridges are correct for the
-contest and pass the load test, accepting only valid submissions. It would tell them their current contest standing and
-periodically update scoreboards accessible via web browser. Contestants could be verified as members of a winning team
-by watching them log in to the winning account.
-
-If we do this project, early adopters and testers will have direct input on server details.
 
 ## Legacy 6-character codes
 
@@ -47,8 +26,10 @@ Use manual methods or the CLI tool below to compile contest results.
 ## Command line interface (CLI) tool
 
 This tool assumes that a contest administrator collects bridge files from contestants and places them all in a single
-directory. A shared folder service like Google Drive or Dropbox is helpful for this. Once the CLI program is installed, 
-the administrator need only type a single command, for example:
+directory. A shared folder service like Google Drive or Dropbox is helpful for this. File names must correspond to 
+the submitter.
+
+Once the CLI program is installed, the administrator need only type a single command, for example:
 
 ```
 bdc analyze --cost --conditions *.bdc > report.csv
@@ -59,17 +40,26 @@ imported into a spreadsheet.
 
 ### Installation
 
-There's a pre-compiled binary at `/dist/main.cjs`. Copy it to a directory that your `bash`-style shell can see and `cd`
-to that directory. Make it executable with something like `chmod 755 main.cjs` . Now add an alias
+There are some pre-requisits.
+- *Required:* Install NodeJS. See the [download page](https://nodejs.org/en/download).
+- *Recommended:* A "bash" style shell so that you can specify many files with an asterisk match.
+  If working in Windows, the Git Bash shell in [Git for Windows](https://gitforwindows.org/) may be simplest.
+
+A pre-compiled binary is at `/dist/main.cjs`. Copy it to a directory in the PATH of your `bash`-style shell. 
+and `cd` to that directory. Make it executable with something like `chmod 755 main.cjs` . Now add an alias
 
 ```
 alias bdc=$(pwd)/main.cjs
 ```
 
-Put the alias command in `.profile` to make it persistent.
+To make the alias persistent, you can do something like
+
+```
+echo "$(alias bdc)" >> ~/.bashrc
+```
 
 If you don't want to deal with a `bash`-style shell, you can still run the CLI under Windows Command or Powershell after
-Node.js is installed with `node main.cjs` replacing `bdc` in all the examples.
+Node.js is installed with `node main.cjs`.
 
 ### Usage with customized bridge files
 
@@ -252,6 +242,27 @@ The report includes the following information in any of four different formats (
    </td>
   </tr>
 </table>
+
+### Future support?
+
+In a perfect world, there would be a back end web service for contests. Our team has no resources for this. The command
+line tool is a workaround.
+
+As an alternative, we could offer a self-contained server that tech-savvy users could run themselves either locally -
+say within a classroom or school network - or - for adventurous souls with the tech resources and knowledge required -
+as an internet service.
+
+We want to gauge the level of interest in such a server. If you’d use it, please write
+[bridgedesignerteam@gmail.com](mailto:bridgedesignerteam@gmail.com).
+
+We envision something like this. Using a dialog in the Bridge Designer itself, students would connect to the service to
+create an anonymous, passworded account for an arbitrarily-named team (no PII collected). They’d be able to upload
+designs to the team account with a button press. The server would automatically verify bridges are correct for the
+contest and pass the load test, accepting only valid submissions. It would tell them their current contest standing and
+periodically update scoreboards accessible via web browser. Contestants could be verified as members of a winning team
+by watching them log in to the winning account.
+
+If we do this project, early adopters and testers will have direct input on server details.
 
 ## Contest customization
 
