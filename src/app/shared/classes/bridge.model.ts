@@ -62,7 +62,9 @@ export class BridgeModel {
   }
 
   public get taggedProjectId(): string {
-    return `000${this.designConditions.tag}-${this.projectId}`;
+    return /\S/.test(this.projectId)
+      ? `000${this.designConditions.tag}-${this.projectId}`
+      : `000${this.designConditions.tag}`;
   }
 
   public clear(): void {

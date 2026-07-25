@@ -4,15 +4,27 @@
 import { Injectable } from '@angular/core';
 import { BridgeService } from '../../shared/services/bridge.service';
 import jsPDF from 'jspdf';
-import autoTable, { RowInput } from 'jspdf-autotable';
+import autoTable, { RowInput, Styles } from 'jspdf-autotable';
 import { DRAWING_LINE_WIDTH_MM, DRAWING_MARGIN_MM } from './drawings.service';
 import { BridgeCostService } from '../../shared/services/bridge-cost.service';
 import { DOLLARS_FORMATTER, Utility } from '../../shared/classes/utility';
 import { SaveMarkService } from '../save-load/save-mark.service';
+import { AnalysisService, AnalysisStatus } from '../../shared/services/analysis.service';
+import { AnalysisValidityService } from '../controls/management/analysis-validity.service';
+
+const ANALYSIS_STATUS_DESCRIPTIONS: string[] = [
+  '<none>',
+  'member slenderness exceeds maximum',
+  'structure unstable',
+  'fails load test',
+  'passes all tests',
+];
 
 @Injectable({ providedIn: 'root' })
 export class TitleBlockPdfRenderingService {
   constructor(
+    private readonly analysisService: AnalysisService,
+    private readonly analysisValidityService: AnalysisValidityService,
     private readonly bridgeCostService: BridgeCostService,
     private readonly bridgeService: BridgeService,
     private readonly saveMarkService: SaveMarkService,
@@ -20,14 +32,20 @@ export class TitleBlockPdfRenderingService {
 
   /** Draws the title block and returns the y-coordinate of its top edge. */
   public draw(doc: jsPDF, sheetName: string = 'Main Truss Elevation (meters)', sheetNumber: number = 1): number {
+    const projectName = this.bridgeService.bridge.projectName;
+    const designedBy = this.bridgeService.bridge.designedBy;
+    const savedFileName = this.saveMarkService.savedFileName;
+    const status = this.analysisService.status;
     const body: RowInput[] = [
-      [
-        {
-          content: this.bridgeService.bridge.projectName,
-          colSpan: 4,
-          styles: { halign: 'center' },
-        },
-      ],
+      /\S/.test(projectName)
+        ? [
+            {
+              content: projectName,
+              colSpan: 4,
+              styles: { halign: 'center' } satisfies Partial<Styles>,
+            },
+          ]
+        : null,
       [
         {
           content: sheetName,
@@ -43,13 +61,15 @@ export class TitleBlockPdfRenderingService {
         `Date: ${Utility.getStandardDate()}`,
         `Iteration: ${this.bridgeService.bridge.iterationNumber}`,
       ],
-      [
-        'Designed by:',
-        {
-          content: this.bridgeService.bridge.designedBy,
-          colSpan: 3,
-        },
-      ],
+      /\S/.test(designedBy)
+        ? [
+            'Designed by:',
+            {
+              content: designedBy,
+              colSpan: 3,
+            },
+          ]
+        : null,
       [
         'Project ID:',
         {
@@ -57,16 +77,29 @@ export class TitleBlockPdfRenderingService {
           colSpan: 3,
         },
       ],
-    ];
-    if (this.saveMarkService.savedFileName !== undefined) {
-      body.push([
-        'File:',
+      savedFileName !== undefined
+        ? [
+            'File:',
+            {
+              content: savedFileName,
+              colSpan: 3,
+            },
+          ]
+        : null,
+
+      [
+        'Status:',
         {
-          content: this.saveMarkService.savedFileName,
+          content: this.analysisValidityService.isLastAnalysisValid
+            ? ANALYSIS_STATUS_DESCRIPTIONS[status]
+            : status == AnalysisStatus.NONE
+              ? 'no analysis performed'
+              : 'analysis is not current',
           colSpan: 3,
         },
-      ]);
-    }
+      ],
+    ].filter((item): item is NonNullable<typeof item> => item !== null); // remove nulls and adjust type
+
     const fontSize = 8;
     const horizontalPadding = 0.8;
     const verticalPadding = 0.5;
