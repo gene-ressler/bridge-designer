@@ -92,7 +92,7 @@ export class TitleBlockPdfRenderingService {
         {
           content: this.analysisValidityService.isLastAnalysisValid
             ? ANALYSIS_STATUS_DESCRIPTIONS[status]
-            : 'no valid analysis',
+            : 'no valid load test',
           colSpan: 3,
         },
       ],
