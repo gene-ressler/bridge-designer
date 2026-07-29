@@ -25,6 +25,9 @@ import { BridgeService } from '../../../shared/services/bridge.service';
 import { jqxCheckBoxModule } from 'jqwidgets-ng/jqxcheckbox';
 import { ElementSelectorService, SelectionStash } from '../../drafting/shared/element-selector.service';
 
+/** Height sufficient for dialog content without scrolling. */
+const IDEAL_HEIGHT = 790;
+
 @Component({
   selector: 'member-details-dialog',
   imports: [
@@ -42,6 +45,7 @@ import { ElementSelectorService, SelectionStash } from '../../drafting/shared/el
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MemberDetailsDialogComponent implements AfterViewInit {
+  dialogHeight: number = IDEAL_HEIGHT;
   material: string = '';
   materialCostPerMeter: string = '';
   materialCrossSection: string = '';
@@ -120,7 +124,6 @@ export class MemberDetailsDialogComponent implements AfterViewInit {
       origin: EventOrigin.MEMBER_DETAILS_DIALOG,
       data: { topic: 'hlp_member_details' },
     });
-
   }
 
   handleMemberSliderChange(event: any): void {
@@ -170,7 +173,14 @@ export class MemberDetailsDialogComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.eventBrokerService.memberDetailsReportRequest.subscribe(() => this.dialog.open());
+    this.eventBrokerService.memberDetailsReportRequest.subscribe(() => {
+      // Shrink to fit window height if necessary.
+      const clientHeight = window.innerHeight - 4;
+      if (clientHeight < this.dialogHeight) {
+        this.dialogHeight = clientHeight;
+      }
+      this.dialog.open();
+    });
   }
 }
 

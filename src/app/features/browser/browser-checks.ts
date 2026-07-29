@@ -32,9 +32,13 @@ export type BrowserFeatures = {
   webgl2: boolean;
 };
 
-// Don't move below BROWSER_FEATURES decl.
-/** Browsers we attempt to make trouble free in latest version. */
+// Don't move following below BROWSER_FEATURES decl.
+/** Browsers we attempt to make trouble free. */
 const SUPPORTED_BROWSERS: Browser[] = ['Chrome', 'Edge (chromium)', 'Firefox', 'Opera'];
+/** Minimum allowed screen horizontal size. If changing, update index.html and public/browserinfo/index.html. */
+const MIN_HORIZONTAL_PIXELS = 1280;
+/** Minimum allowed screen vertical size. If changing, update index.html and public/browserinfo/index.html. */
+const MIN_VERTICAL_PIXELS = 720;
 
 /** A report on whether needed features are present in the current browser. */
 export const BROWSER_FEATURES: BrowserFeatures = getFeatures(document);
@@ -84,7 +88,7 @@ export function areBrowserFeaturesMissing(): boolean {
     localStorage: 'local storage',
     mouse: 'detectable mouse',
     querySelectorAll: 'HTML querySelectorAll',
-    supportedScreenSize: `screen size 1200x800 or higher (found ${BROWSER_FEATURES.screenSize})`,
+    supportedScreenSize: `screen size ${MIN_HORIZONTAL_PIXELS}x${MIN_VERTICAL_PIXELS} or higher (found ${BROWSER_FEATURES.screenSize})`,
     supportedBrowser: `a supported browser (found ${BROWSER_FEATURES.browser}, which is not)`,
     viewportUnits: 'CSS viewport units',
     webgl2: 'WebGL2 for fly-thru test animation',
@@ -150,8 +154,7 @@ function getFeatures(document: HTMLDocument): BrowserFeatures {
     querySelectorAll: !!document.querySelectorAll,
     screenSize: `${screen.width}x${screen.height}`,
     supportedBrowser: SUPPORTED_BROWSERS.includes(browser),
-    // Low end Chromebooks are 1366 x 768.
-    supportedScreenSize: screen.width >= 1200 && screen.height >= 768,
+    supportedScreenSize: screen.width >= MIN_HORIZONTAL_PIXELS && screen.height >= MIN_VERTICAL_PIXELS,
     viewportUnits: (() => {
       const element = create('dummy');
       try {

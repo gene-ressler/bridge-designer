@@ -107,7 +107,6 @@ export class HelpDialogComponent implements AfterViewInit {
     tools[Tools.FORWARD_TOPIC].tool.jqxButton({ disabled: !this.currentTopicService.hasForwardTopics });
   }
 
-
   private copyUrlToClipboard(): void {
     WidgetHelper.copyToClipboard(
       () => `${document.URL}?help=${this.currentTopicService.currentTopicId}`,
