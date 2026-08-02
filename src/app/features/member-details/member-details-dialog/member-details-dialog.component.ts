@@ -98,9 +98,12 @@ export class MemberDetailsDialogComponent implements AfterViewInit {
 
   /** Works around heinous bug in jqxSlider: can't be declared in HTML if parent isn't visible. Create dynamically. */
   initDialogContent(): void {
-    this.memberSlider = WidgetHelper.setUpSlider(this.memberSliderContainer, this.sliderOptions, event =>
-      this.handleMemberSliderChange(event),
-    );
+    // Add the slider only once, since initDialogContent() is called repeatedly if the dialog resizes itself.
+    if (!this.memberSlider) {
+      this.memberSlider = WidgetHelper.setUpSlider(this.memberSliderContainer, this.sliderOptions, event =>
+        this.handleMemberSliderChange(event),
+      );
+    }
   }
 
   formatTooltip(index: number): string {
