@@ -10,6 +10,7 @@ import { SelectedElementsService } from '../shared/selected-elements-service';
 import { Utility } from '../../../shared/classes/utility';
 import { ElementSelectorService } from '../shared/element-selector.service';
 import { AnalysisValidityService } from '../../controls/management/analysis-validity.service';
+import { merge } from "rxjs";
 
 @Component({
   selector: 'member-table',
@@ -209,7 +210,11 @@ export class MemberTableComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.eventBrokerService.analysisCompletion.subscribe(() => this.updateGridContent());
+    merge(
+      this.eventBrokerService.analysisCompletion,
+      this.eventBrokerService.loadBridgeCompletion,
+      this.eventBrokerService.sessionStateRestoreCompletion
+    ).subscribe(() => this.updateGridContent());
     this.eventBrokerService.editCommandCompletion.subscribe(info => {
       if (
         info.data.effectsMask & EditEffect.MEMBERS ||
@@ -219,7 +224,6 @@ export class MemberTableComponent implements AfterViewInit {
         this.updateGridContent();
       }
     });
-    this.eventBrokerService.loadBridgeCompletion.subscribe(() => this.updateGridContent());
     this.eventBrokerService.selectedElementsChange.subscribe(info => {
       if (info.origin !== EventOrigin.MEMBER_TABLE) {
         this.updateGridSelection();

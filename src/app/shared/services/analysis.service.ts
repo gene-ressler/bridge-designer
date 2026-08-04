@@ -145,22 +145,13 @@ export class AnalysisService {
     return this.memberTensionStrength[i];
   }
 
-  /**
-   * Analyzes the bridge provided by BridgeService and notifies of completion.
-   *
-   * Optionally populates the bridge with UI info and degrades selected members for failure animation.
-   *
-   * @param bridge bridge to analyze
-   * @param failureStatus status of failed members: FAILED, NOT_FAILED, base member getLength, which implies FAILED.
-   */
+  /** Analyzes the bridge provided by BridgeService and notifies of completion. */
   public analyzeAndNotify(options?: { degradeMembersMask?: Uint8Array; populateBridgeMembers?: boolean }): void {
     this.analyzeQuietly(options || {});
-    if (options?.populateBridgeMembers) {
-      this.eventBrokerService.analysisCompletion.next({ origin: EventOrigin.SERVICE, data: this.status });
-    }
+    this.eventBrokerService.analysisCompletion.next({ origin: EventOrigin.SERVICE, data: this.status });
   }
 
-  /** Same as `analyze()`, but does not notify of completion. */
+  /** Analyzes the bridge provided by BrigeService without sending notifications. */
   public analyzeQuietly(options: { degradeMembersMask?: Uint8Array; populateBridgeMembers?: boolean }): void {
     const bridge = this.bridgeService.bridge;
     const conditions = this.bridgeService.designConditions;
