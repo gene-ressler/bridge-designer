@@ -26,7 +26,7 @@ The following are key, top-level design choices:
   reasonably priced, free for development sans tech support, reasonably performant, and not too many bugs. On the other
   hand, the payload is large: several megabytes after compression for features that BD uses. BD code is only about
   one-third of the complete app; the rest is this library. The APIs are inconsistent, sometimes missing obviously
-  desirable features. It's sometimes sloppy (e.g. letting random keys in local storage forever). Documentation is mostly
+  desirable features. It's sometimes sloppy (IDs with various case conventions for example). Documentation is mostly
   via too-simple examples rather than explanation. I.e. most API doc items look like "`getStuff()` - gets stuff".
   Reverse engineering and studying the mostly uncommented code are necessary. The jQWidgets team doesn't have a coherent
   issues workflow for basic license owners. I've chatted questions three times, been promised someone would get back to
