@@ -2,30 +2,26 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import math
+import sys
+import tkinter as tk
+from collections.abc import Callable
 
 type Vec = tuple[float, float]
 
+Y_HALF_SIZE = 192
+
 # First coordinate must be directly north of (0,0).
-RIVER_AXIS_NORTH: list[Vec] = [
-    (0, -14),
-    (-4, -50),
-    (22, -130),
-    (80, -190),
-]
+RIVER_AXIS_NORTH: list[Vec] = [(0, -14), (-4, -50), (22, -130), (80, -Y_HALF_SIZE)]
 
 # First coordinate must be directly south of (0,0).
-RIVER_AXIS_SOUTH: list[Vec] = [
-    (0, 16),
-    (15, 40),
-    (-20, 120),
-    (80, 180),
-]
+RIVER_AXIS_SOUTH: list[Vec] = [(0, 16), (15, 40), (-20, 120), (80, Y_HALF_SIZE)]
 
 RIVER_AXIS: list[Vec] = RIVER_AXIS_NORTH[::-1] + RIVER_AXIS_SOUTH
 MAJOR_PERIOD = 183.0
 MAJOR_MAGNITUDE = 18.0
 MINOR_PERIOD = 17.0
 MINOR_MAGNITUDE = 7.0
+
 
 def buildPerturbedAxis(axis: list[Vec], size: int) -> list[Vec]:
     """
@@ -38,7 +34,7 @@ def buildPerturbedAxis(axis: list[Vec], size: int) -> list[Vec]:
         dy = a[1] - b[1]
         totalLength += math.sqrt(dx * dx + dy * dy)
 
-    purturbedAxis = []
+    perturbedAxis = []
     ds = totalLength / (size - 1)
     iSeg = -1
     s = sSegStart = sSegEnd = segLength = 0.0
@@ -62,9 +58,9 @@ def buildPerturbedAxis(axis: list[Vec], size: int) -> list[Vec]:
         ) + MINOR_MAGNITUDE * math.sin(s / MINOR_PERIOD * 2 * math.pi)
         # Reduce offset near segment ends.
         ofs *= math.sin(tSeg * math.pi)
-        purturbedAxis.append(add(p, scale(vp, ofs)))
+        perturbedAxis.append(add(p, scale(vp, ofs)))
         s += ds
-    return purturbedAxis
+    return perturbedAxis
 
 
 def buildRiverAxis(halfSize: float) -> list[Vec]:
@@ -73,6 +69,14 @@ def buildRiverAxis(halfSize: float) -> list[Vec]:
     north.reverse()
     north.extend(south)
     return north
+
+
+def stretchToBoundary(pts: list[Vec], ip: int, iq: int, toY: float) -> None:
+    p = pts[ip]
+    q = pts[iq]
+    t = (toY - q[1]) / (p[1] - q[1])
+    pts[ip] = (q[0] + t * (p[0] - q[0]), toY)
+
 
 def fattenAxis(halfWidth: float) -> tuple[list[Vec], list[Vec]]:
     axis = RIVER_AXIS
@@ -86,39 +90,57 @@ def fattenAxis(halfWidth: float) -> tuple[list[Vec], list[Vec]]:
         leftPoints.append(add(b, ofs))
         rightPoints.append(add(b, neg(ofs)))
     ofs = normalize(perp(sub(axis[-1], axis[-2])), halfWidth)
-    leftPoints.append(add(axis[-1], ofs))    
+    leftPoints.append(add(axis[-1], ofs))
     rightPoints.append(add(axis[-1], neg(ofs)))
+    # Move endpoints linearly to y boundaries. Nicer than clipping.
+    stretchToBoundary(leftPoints, 0, 1, -Y_HALF_SIZE)
+    stretchToBoundary(leftPoints, -1, -2, Y_HALF_SIZE)
+    stretchToBoundary(rightPoints, 0, 1, -Y_HALF_SIZE)
+    stretchToBoundary(rightPoints, -1, -2, Y_HALF_SIZE)
     return (leftPoints, rightPoints)
+
 
 def sqr(x: float) -> float:
     return x * x
 
+
 def length(v: Vec) -> float:
     return math.sqrt(dot(v, v))
+
 
 def dot(a: Vec, b: Vec) -> float:
     return a[0] * b[0] + a[1] * b[1]
 
-def normalize(v: Vec, factor: float=1) -> float:
+
+def normalize(v: Vec, factor: float = 1) -> float:
     return scale(v, factor / length(v))
+
 
 def scale(a: Vec, s: float) -> Vec:
     return (a[0] * s, a[1] * s)
 
+
 def add(a: Vec, b: Vec) -> Vec:
     return (a[0] + b[0], a[1] + b[1])
+
 
 def sub(a: Vec, b: Vec) -> Vec:
     return (a[0] - b[0], a[1] - b[1])
 
+
 def neg(a: Vec) -> Vec:
     return (-a[0], -a[1])
+
 
 def perp(a: Vec) -> Vec:
     return (-a[1], a[0])
 
-def main():
-    axis = buildRiverAxis(32)
+
+AXIS_POINT_COUNT = 32
+
+
+def emitTypescript(pointCount: int = AXIS_POINT_COUNT) -> None:
+    axis = buildRiverAxis(pointCount)
     with open("river.ts", "w") as outFile:
         print("// This file is generated. Edit river.py.", file=outFile)
 
@@ -130,7 +152,7 @@ def main():
         print("]);", file=outFile)
 
         # Polygon
-        leftPoints, rightPoints = fattenAxis(32)
+        leftPoints, rightPoints = fattenAxis(pointCount)
         print("// prettier-ignore", file=outFile)
         print("export const RIVER_MESH_DATA = {", file=outFile)
         print("  positions: new Float32Array([", file=outFile)
@@ -150,4 +172,116 @@ def main():
         print("  ]),", file=outFile)
         print("};", file=outFile)
 
-main()
+
+def getBoundingBox(pts: list[Vec]) -> tuple[float, float, float, float]:
+    xMin = xMax = pts[0][0]
+    yMin = yMax = pts[0][1]
+    for p in pts:
+        px = p[0]
+        py = p[1]
+        if px < xMin:
+            xMin = px
+        if px > xMax:
+            xMax = px
+        if py < yMin:
+            yMin = py
+        if py > yMax:
+            yMax = py
+    return (xMin, xMax - xMin, yMin, yMax - yMin)
+
+
+def dist2(a: Vec, b: Vec) -> float:
+    return sqr(b[0] - a[0]) + sqr(b[1] - a[1])
+
+
+# Not currently used.
+def clipTriangle(
+    t: tuple[Vec, Vec, Vec], boundaryY: float, isInside: Callable[[float, float], bool]
+):
+    def intersect(a, b):
+        t = (boundaryY - a[1]) / (b[1] - a[1])
+        return (a[0] + t * (b[0] - a[0]), boundaryY)
+
+    # Tally inside points and find an inside and outside point if existent.
+    inside = -1
+    outside = -1
+    insideCount = 0
+    for i, p in enumerate(t):
+        if isInside(p[1], boundaryY):
+            inside = i
+            insideCount += 1
+        else:
+            outside = i
+    # Handle cases
+    if insideCount == 0:
+        return []
+    if insideCount == 3:
+        return [t]
+    if insideCount == 1:  # i is the only inside
+        i = inside
+        j = (i + 1) % 3
+        k = (j + 1) % 3
+        return [(t[i], intersect(t[i], t[j]), intersect(t[i], t[k]))]
+    else:
+        i = outside
+        j = (i + 1) % 3
+        k = (j + 1) % 3
+        jIsect = intersect(t[i], t[j])
+        kIsect = intersect(t[i], t[k])
+        if dist2(t[j], kIsect) < dist2(t[k], jIsect):
+            return [(t[j], kIsect, jIsect), (t[j], t[k], kIsect)]
+        else:
+            return [(t[k], kIsect, jIsect), (t[k], jIsect, t[j])]
+
+
+BOUNDARY_Y = 192
+
+
+def preview(pointCount=AXIS_POINT_COUNT):
+    winSize = 1000
+
+    root = tk.Tk()
+    root.title("River mesh preview")
+    canvas = tk.Canvas(root, width=winSize, height=winSize, bg="white")
+    canvas.pack()
+
+    leftPoints, rightPoints = fattenAxis(pointCount)
+    bb = getBoundingBox(leftPoints + rightPoints)
+    print(bb)
+    scale = winSize / max(bb[1], bb[3])
+    xOfs = -bb[0]
+    yOfs = -bb[2]
+
+    def vpX(x):
+        return scale * (x + xOfs)
+
+    def vpY(y):
+        return winSize - scale * (y + yOfs)
+
+    def vp(p):
+        return (vpX(p[0]), vpY(p[1]))
+
+    for y in [-BOUNDARY_Y, BOUNDARY_Y]:
+        yp = vpY(y)  # boundary
+        canvas.create_line((0, yp), (1000, yp), fill="red", arrow=tk.LAST)
+
+    # Build triangles suitable for clipping if needed.
+    triangles = []
+    for i in range(len(leftPoints) - 1):
+        se = leftPoints[i]
+        ne = leftPoints[i + 1]
+        sw = rightPoints[i]
+        nw = rightPoints[i + 1]
+        triangles.extend([(sw, ne, nw), (ne, sw, se)])
+
+    for triangle in triangles:
+        canvas.create_polygon(list(map(vp, triangle)), fill="", outline="black")
+
+    root.mainloop()
+
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "--preview":
+        preview()
+    else:
+        emitTypescript()
