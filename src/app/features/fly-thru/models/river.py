@@ -214,7 +214,7 @@ def dist2(a: Vec, b: Vec) -> float:
 
 # Not currently used.
 def clipTriangle(
-    t: tuple[Vec, Vec, Vec], boundaryY: float, isInside: Callable[[float, float], bool]
+    t: Triangle, boundaryY: float, isInside: Callable[[float, float], bool]
 ) -> list[Triangle]:
     def intersect(a, b):
         t = (boundaryY - a[1]) / (b[1] - a[1])
