@@ -31,7 +31,7 @@ export class FillPatternsService {
     }
     return earth;
   }
-  
+
   public createExcavation(ctx: CanvasRenderingContext2D): FillPattern {
     let excavation = this.excavation.get(ctx);
     if (!excavation) {
@@ -106,17 +106,19 @@ export class FillPatternsService {
   }
 
   private createSubgradeImpl(ctx: CanvasRenderingContext2D): FillPattern {
-    const patternCtx = FillPatternsService.getPatternContext(8);
+    const size = 16; // Better than 8x8 on hi res screens.
+    const patternCtx = FillPatternsService.getPatternContext(size);
     if (!patternCtx) {
-      return Colors.CONCRETE;
+      return Colors.EARTH;
     }
-    patternCtx.fillStyle = Colors.EARTH;
+    patternCtx.strokeStyle = Colors.EARTH;
     patternCtx.beginPath();
-    patternCtx.moveTo(4, 0);
-    patternCtx.lineTo(4, 8);
+    const x = size / 2;
+    patternCtx.moveTo(x, 0);
+    patternCtx.lineTo(x, size);
     patternCtx.stroke();
     const pattern = ctx.createPattern(patternCtx.canvas, 'repeat');
-    return pattern ?? Colors.CONCRETE;
+    return pattern ?? Colors.EARTH;
   }
 
   private static getPatternContext(size: number): CanvasRenderingContext2D | undefined {
