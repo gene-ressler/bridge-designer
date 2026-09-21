@@ -103,7 +103,7 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     const savedFillStyle = ctx.fillStyle;
     const savedStrokeStyle = ctx.strokeStyle;
     const savedLineWidth = ctx.lineWidth;
-    
+
     const siteInfo = this.bridgeService.siteInfo;
 
     // Set up return values for earth profile.
@@ -114,7 +114,7 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     ctx.fillStyle = this.fillPatternService.createEarth(ctx);
     ctx.fill(earthProfile);
 
-    // Now stroke the edge of the portion of the elevation terrain between abutments.
+    // Stroke the edge of the portion of the elevation terrain between abutments.
     ctx.strokeStyle = Colors.EARTH;
     ctx.beginPath();
     for (let i = siteInfo.rightAbutmentInterfaceTerrainIndex; i <= siteInfo.leftAbutmentInterfaceTerrainIndex; i++) {
@@ -128,8 +128,10 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
     }
     ctx.stroke();
 
-    // Now the polygon for the subgrade and thick line for wear surface of the access roads. Right bank first.
+    // Fill and stroke polygons for the subgrade.
+    // Right bank.
     const subgradeHeight = this.viewportTransform.worldToViewportDistance(0.3);
+    ctx.fillStyle = this.fillPatternService.createSubgrade(ctx);
     ctx.beginPath();
     for (const pt of rightAccess) {
       ctx.lineTo(pt.x, pt.y);
@@ -139,16 +141,7 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
       ctx.lineTo(pt.x, pt.y + subgradeHeight);
     }
     ctx.closePath();
-    ctx.fillStyle = this.fillPatternService.createSubgrade(ctx);
     ctx.fill();
-    ctx.stroke();
-
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = Colors.CONCRETE;
-    ctx.beginPath();
-    for (const pt of rightAccess) {
-      ctx.lineTo(pt.x, pt.y);
-    }
     ctx.stroke();
 
     // Left bank.
@@ -161,12 +154,17 @@ export class DesignSiteRenderingService implements SiteDetailRenderers {
       ctx.lineTo(pt.x, pt.y + subgradeHeight);
     }
     ctx.closePath();
-    ctx.fillStyle = this.fillPatternService.createSubgrade(ctx);
     ctx.fill();
     ctx.stroke();
 
+    // Thick lines for wear surface of the access road.
     ctx.lineWidth = 3;
     ctx.strokeStyle = Colors.CONCRETE;
+    ctx.beginPath();
+    for (const pt of rightAccess) {
+      ctx.lineTo(pt.x, pt.y);
+    }
+    ctx.stroke();
     ctx.beginPath();
     for (const pt of leftAccess) {
       ctx.lineTo(pt.x, pt.y);
