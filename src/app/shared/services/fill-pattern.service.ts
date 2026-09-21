@@ -106,14 +106,14 @@ export class FillPatternsService {
   }
 
   private createSubgradeImpl(ctx: CanvasRenderingContext2D): FillPattern {
-    const size = 16; // Better than 8x8 on hi res screens.
+    const size = 8;
     const patternCtx = FillPatternsService.getPatternContext(size);
     if (!patternCtx) {
       return Colors.EARTH;
     }
     patternCtx.strokeStyle = Colors.EARTH;
     patternCtx.beginPath();
-    const x = size / 2;
+    const x = size / 2 - 0.5; // Align on pixel column.
     patternCtx.moveTo(x, 0);
     patternCtx.lineTo(x, size);
     patternCtx.stroke();
