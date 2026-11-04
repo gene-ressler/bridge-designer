@@ -1,3 +1,6 @@
+/* Copyright (c) 2025-2026 Gene Ressler
+   SPDX-License-Identifier: GPL-3.0-or-later */
+
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { ConfirmationDialogComponent } from '../../../shared/components/confirmation-dialog/confirmation-dialog.component';
 import { ContestParametersService } from '../../../shared/services/contest-parameters.service';

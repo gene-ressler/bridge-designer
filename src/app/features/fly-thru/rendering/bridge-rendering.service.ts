@@ -42,13 +42,14 @@ export class BridgeRenderingService {
     private readonly simulationStateService: SimulationStateService,
     private readonly uniformService: UniformService,
   ) {
-    // Handle user request to replay the simulation by deleting failed member meshes, if any..
+    // Handle user request to replay the simulation by deleting failed member meshes, if any.
     eventBrokerService.simulationReplayRequest.subscribe(() => {
-      if (this.mesh) {
-        meshRenderingService.deleteExistingMesh(this.mesh.buckledMembersMesh?.mesh);
-        meshRenderingService.deleteExistingMesh(this.mesh.tornMemberMesh?.mesh);
-        this.mesh.buckledMembersMesh = this.mesh.tornMemberMesh = undefined;
+      if (!this.mesh) {
+        return;
       }
+      meshRenderingService.deleteExistingMesh(this.mesh.buckledMembersMesh?.mesh);
+      meshRenderingService.deleteExistingMesh(this.mesh.tornMemberMesh?.mesh);
+      this.mesh.buckledMembersMesh = this.mesh.tornMemberMesh = undefined;
     });
   }
 
