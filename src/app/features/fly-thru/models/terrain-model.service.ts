@@ -344,7 +344,7 @@ export class TerrainModelService {
       }
       // Reset normals, which are 2d. Average unit normals of segments
       // left and right of each post. Ends are special cases.
-      setEndPostNormal(centerLine[0], centerLine[1].elevation, centerLine[0].elevation);
+      setEndPostNormal(centerLine[0], centerLine[0].elevation, centerLine[1].elevation);
       for (let i = 1; i < iMax; i++) {
         // Unit vectors along centerline.
         const e0 = centerLine[i].elevation;
@@ -370,7 +370,7 @@ export class TerrainModelService {
         centerLine[i].xNormal = nx * sn;
         centerLine[i].yNormal = ny * sn;
       }
-      setEndPostNormal(centerLine[iMax], centerLine[iMax].elevation, centerLine[iMax - 1].elevation);
+      setEndPostNormal(centerLine[iMax], centerLine[iMax - 1].elevation, centerLine[iMax].elevation);
 
       function setEndPostNormal(post: CenterlinePost, e0: number, e1: number) {
         // Normal is perp of [grid size, e1 - e0].
