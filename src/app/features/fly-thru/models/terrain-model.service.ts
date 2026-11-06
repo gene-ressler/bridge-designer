@@ -231,7 +231,7 @@ export class TerrainModelService {
     let randomCount = 0;
     const random = () => (randomCount++ === 0 ? 0 : 2 * this.random0to1() - 1);
     // Create square array or use existing one.
-    const y = typeof arg === 'number' ?  Array.from({length: arg}, () => new Float32Array(arg)) : arg;
+    const y = typeof arg === 'number' ? Array.from({ length: arg }, () => new Float32Array(arg)) : arg;
     const size = y.length;
     const iMax = size - 1;
     y[0][0] = y[iMax][0] = y[iMax][iMax] = y[0][iMax] = 0;
@@ -301,6 +301,7 @@ export class TerrainModelService {
     const centerLine: CenterlinePost[] = [];
     const iMax = TerrainModelService.POST_COUNT - 1;
     if (yDeckJoints === 0) {
+      // Avoid parabola calculation if deck is at terrain level.
       for (let i = 0; i <= iMax; ++i) {
         centerLine.push({ elevation: yWearSurface, xNormal: 0, yNormal: 1 });
       }
@@ -342,20 +343,21 @@ export class TerrainModelService {
         x += TerrainModelService.METERS_PER_GRID;
       }
       // Reset normals, which are 2d. Average unit normals of segments
-      // left and right of each post.
-      for (let i = 1; i < iMax - 1; i++) {
+      // left and right of each post. Ends are special cases.
+      setEndPostNormal(centerLine[0], centerLine[1].elevation, centerLine[0].elevation);
+      for (let i = 1; i < iMax; i++) {
         // Unit vectors along centerline.
         const e0 = centerLine[i].elevation;
         let xw = -TerrainModelService.METERS_PER_GRID;
         let yw = centerLine[i - 1].elevation - e0;
         let xe = TerrainModelService.METERS_PER_GRID;
         let ye = centerLine[i + 1].elevation - e0;
-        const rw = 1.0 / Math.hypot(xw, yw);
-        xw *= rw;
-        yw *= rw;
-        const re = 1.0 / Math.hypot(xe, ye);
-        xe *= re;
-        ye *= re;
+        const sw = 1.0 / Math.hypot(xw, yw);
+        xw *= sw;
+        yw *= sw;
+        const se = 1.0 / Math.hypot(xe, ye);
+        xe *= se;
+        ye *= se;
         // Perpendiculars, which are the normals.
         const xnw = yw;
         const ynw = -xw;
@@ -364,14 +366,20 @@ export class TerrainModelService {
         // Average and re-normalize to unit length.
         let nx = 0.5 * (xnw + xne);
         let ny = 0.5 * (ynw + yne);
-        const rn = 1.0 / Math.hypot(nx, ny);
-        nx *= rn;
-        ny *= rn;
-        centerLine[i].xNormal = nx;
-        centerLine[i].yNormal = ny;
+        const sn = 1.0 / Math.hypot(nx, ny);
+        centerLine[i].xNormal = nx * sn;
+        centerLine[i].yNormal = ny * sn;
       }
-      centerLine[0] = centerLine[1];
-      centerLine[iMax] = centerLine[iMax - 1];
+      setEndPostNormal(centerLine[iMax], centerLine[iMax].elevation, centerLine[iMax - 1].elevation);
+
+      function setEndPostNormal(post: CenterlinePost, e0: number, e1: number) {
+        // Normal is perp of [grid size, e1 - e0].
+        const nx = e0 - e1;
+        const ny = TerrainModelService.METERS_PER_GRID;
+        const sn = 1.0 / Math.hypot(nx, ny);
+        post.xNormal = nx * sn;
+        post.yNormal = ny * sn;
+      }
     }
     return centerLine;
   }
