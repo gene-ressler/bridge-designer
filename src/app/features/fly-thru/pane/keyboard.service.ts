@@ -17,16 +17,35 @@ export type DebugState = {
   projectionType: ProjectionType;
 };
 
+/** Container for logic that handles keystrokes during load tests. */
 @Injectable({ providedIn: 'root' })
 export class KeyboardService {
+  /** Debug state maintained by a built-in key handler. */
   public readonly debugState: DebugState = {
     isDisplayingDebugInfo: false,
     isIgnoringViewBoundaries: false,
     projectionType: 'normal',
   };
 
-  /** Handles certain keystrokes for the GL canvas. */
+  private readonly handlersByKey: { [key: string]: (key: string) => void } = {};
+
+  constructor() {
+    this.setHandler('bdp', key => this.handleDebugStateKey(key));
+  }
+
+  /** Adds a handler for given keys. Old assignments are overwritten. */
+  public setHandler(keys: string, handler: (key: string) => void) {
+    keys.split('').forEach(key => {
+      this.handlersByKey[key] = handler;
+    });
+  }
+
+  /** Handles certain keystrokes for the load test GL canvas. */
   public handleKey(key: string): void {
+    this.handlersByKey[key]?.(key);
+  }
+
+  private handleDebugStateKey(key: string): void {
     const state = this.debugState;
     switch (key) {
       case 'b':

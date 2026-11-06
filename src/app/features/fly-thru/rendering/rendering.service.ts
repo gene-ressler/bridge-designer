@@ -60,10 +60,17 @@ export class RenderingService {
     private readonly viewService: ViewService,
     private readonly viewportService: ViewportService,
     private readonly windTurbineRenderingService: WindTurbineRenderingService,
-  ) {}
+  ) {
+    // Install the terrain refresh handler.
+    keyboardService.setHandler('t', () => {
+      // Replace the randomized terrain model, then re-prepare the terrain meshes.
+      this.terrainModelService.refreshFractalTerrain();
+      this.prepareTerrain();
+    });
+  }
 
-  /** 
-   * Sets the rendered view to default. Includes movement limits for the 
+  /**
+   * Sets the rendered view to default. Includes movement limits for the
    * eye and (re)starting the auto-orbit of the view's eye coordinate.
    */
   public setDefaultView(): void {
@@ -77,25 +84,15 @@ export class RenderingService {
       this.shaderService.prepareShaders();
       this.uniformService.prepareUniforms();
     }
-
     // Per-bridge setups.
     // Put the user in the home position.
     this.setDefaultView();
     // Reset the state machine. Required before bridge renderer can be prepared.
     this.simulationStateService.start();
-    // PERF: Some of these can be done only on design conditions changes to save some GC.
-    // Build terrain that matches the work site configuration.
-    this.terrainModelService.initializeForBridge();
-    // Clear old meshes if any. Then build new ones.
-    this.meshRenderingService.deleteExistingMesh(this.terrainMesh);
-    this.meshRenderingService.deleteExistingMesh(this.roadwayMesh);
-    this.terrainMesh = this.meshRenderingService.prepareTerrainMesh(this.terrainModelService.terrainMeshData);
-    this.roadwayMesh = this.meshRenderingService.prepareColoredMesh(this.terrainModelService.roadwayMeshData);
+    this.prepareTerrain();
     this.abutmentRenderingService.prepare();
     this.bridgeRenderingService.prepare();
     this.pierRenderingService.prepare();
-    this.utilityLineRenderingService.prepare();
-    this.windTurbineRenderingService.prepare();
 
     // Other one-time setups follow.
     if (this.prepared) {
@@ -111,6 +108,19 @@ export class RenderingService {
     this.depthBufferService.prepareRenderToDisplay();
 
     this.prepared = true;
+  }
+
+  /** Prepares all terrain-related meshes. */
+  private prepareTerrain(): void {
+    // Build terrain that matches the work site configuration.
+    this.terrainModelService.initializeForBridge();
+    // Clear old meshes if any. Then build new ones.
+    this.meshRenderingService.deleteExistingMesh(this.terrainMesh);
+    this.meshRenderingService.deleteExistingMesh(this.roadwayMesh);
+    this.terrainMesh = this.meshRenderingService.prepareTerrainMesh(this.terrainModelService.terrainMeshData);
+    this.roadwayMesh = this.meshRenderingService.prepareColoredMesh(this.terrainModelService.roadwayMeshData);
+    this.utilityLineRenderingService.prepare();
+    this.windTurbineRenderingService.prepare();
   }
 
   /**
