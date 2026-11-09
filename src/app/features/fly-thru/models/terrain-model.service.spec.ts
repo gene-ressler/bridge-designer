@@ -73,4 +73,19 @@ describe('TerrainModelService', () => {
     const elevation = service.getElevationAtXZ(0, 0);
     expect(typeof elevation).toBe('number');
   });
+
+  it('should produce a reasonable road centerline', () => {
+    for (let i = 0; i < TerrainModelService.POST_COUNT; ++i) {
+      const post = service.getRoadCenterlinePostAtJ(i);
+      expect(post.elevation).toBeCloseTo(0.8, 4);
+      expect(Math.hypot(post.xNormal, post.yNormal)).toBeCloseTo(1, 4);
+      expect(post.yNormal).toBeGreaterThan(0.5);
+      const iMiddle = TerrainModelService.GRID_COUNT >>> 1;
+      if (i < iMiddle) {
+        expect(post.xNormal).toBeGreaterThanOrEqual(0);
+      } else {
+        expect(post.xNormal).toBeLessThanOrEqual(0);
+      }
+    }
+  });
 });

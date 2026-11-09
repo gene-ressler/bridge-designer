@@ -1,12 +1,11 @@
 /* Copyright (c) 2025-2026 Gene Ressler
    SPDX-License-Identifier: GPL-3.0-or-later */
 
-import { Point2D, TaggedPoint2D } from "./graphics";
-
+import { Point2D, TaggedPoint2D } from './graphics';
 
 /** Constants describing site geometry and its 2D drawing. */
 export const enum PointTag {
-  HEIGHT_ADJUSTED
+  HEIGHT_ADJUSTED,
 }
 
 export class SiteConstants {
@@ -19,16 +18,16 @@ export class SiteConstants {
   /** Directed distance from joint to step vertical. Also the x-coordinate. */
   static readonly ABUTMENT_STEP_X: number = -0.45;
   static readonly ACCESS_SLOPE: number = 1.0 / 6.0;
-  static readonly ANCHOR_OFFSET = 8;
+  static readonly ANCHOR_OFFSET: number = 8;
   static readonly BEAM_HEIGHT: number = 0.9;
-  static readonly DECK_CANTILEVER: number = 0.40;
+  static readonly DECK_CANTILEVER: number = 0.4;
   static readonly DECK_HALF_WIDTH: number = 5.0;
   static readonly DECK_TOP_HEIGHT: number = 0.8;
   static readonly DRAWING_X_MARGIN: number = 3;
   /** Coordinate value "off the drawing," where reasonable views are certainly clipped. */
   static readonly FAR_AWAY: number = 100.0;
-  static readonly GAP_DEPTH = 24;
-  static readonly GUSSET_THICKNESS = 0.02;
+  static readonly GAP_DEPTH: number = 24;
+  static readonly GUSSET_THICKNESS: number = 0.02;
   static readonly GAP_NATURAL_HALF_WIDTH: number = 22.0;
   static readonly INDEX_LEFT_SHORE: number = 25;
   static readonly INDEX_RIGHT_SHORE: number = 16;
@@ -110,13 +109,11 @@ export class SiteConstants {
   ).map(pair => new Point2D(...pair));
 
   /** Pillow block below supported joints, connected to abutment or pier. */
-  static readonly PILLOW_POINTS: Point2D[] = (
-    [
-      [0, 0],
-      [-this.ABUTMENT_FACE_X, this.ABUTMENT_STEP_HEIGHT],
-      [this.ABUTMENT_FACE_X, this.ABUTMENT_STEP_HEIGHT],
-    ]
-  ).map(pair => new Point2D(...pair));
+  static readonly PILLOW_POINTS: Point2D[] = [
+    [0, 0],
+    [-this.ABUTMENT_FACE_X, this.ABUTMENT_STEP_HEIGHT],
+    [this.ABUTMENT_FACE_X, this.ABUTMENT_STEP_HEIGHT],
+  ].map(pair => new Point2D(...pair));
 
   static readonly ARCH_ABUTMENT_POINTS: TaggedPoint2D<PointTag | undefined>[] = (
     [
