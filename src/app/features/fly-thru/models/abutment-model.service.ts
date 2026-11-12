@@ -140,11 +140,11 @@ export class AbutmentModelService {
         const addLeftFacePointPair = (y: number) => {
           positions.push(leftX, y, -halfDepth, leftX, y, halfDepth);
           normals.push(-1, 0, 0, -1, 0, 0);
-          const texRearX = texScale * (rearFaceTexOriginS + leftX)
-          const texFrontX = texScale * (frontFaceTexOriginS + leftX)
+          const texRearX = texScale * (rearFaceTexOriginS + leftX);
+          const texFrontX = texScale * (frontFaceTexOriginS + leftX);
           const texY = texScale * y;
           texCoords.push(texRearX, texY, texFrontX, texY);
-        }
+        };
         const positionCount5 = positions.length / 3;
         const topY = positions[rearTopLeftIndex + 1];
         addLeftFacePointPair(topY);

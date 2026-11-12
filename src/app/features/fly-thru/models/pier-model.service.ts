@@ -22,7 +22,7 @@ export class PierModelService {
   private static readonly PIER_TAPER = 1.1;
   private static readonly PILLOW_HEIGHT = 0.4;
   /**
-   * The maximum tex-S value. Integer to avoid a seam. The tex-S coord is the 
+   * The maximum tex-S value. Integer to avoid a seam. The tex-S coord is the
    * counter-clockwise scaled perimeter distance from the rear (negative z) edge.
    */
   private static readonly TEX_S_MAX = 12;
@@ -57,7 +57,7 @@ export class PierModelService {
         positions[ip +  9] = 0; positions[ip + 10] = y; positions[ip + 11] = d + c;   // 3
         positions[ip + 12] = w; positions[ip + 13] = y; positions[ip + 14] = d;       // 4
         positions[ip + 15] = w; positions[ip + 16] = y; positions[ip + 17] =-d;       // 5
-      }
+        }
         // Accumulate perimeter lengths of top polygon. For this we need only two edge lengths.
         const d0 = Geometry.distance2D(positions[ip + 0], positions[ip + 2], positions[ip + 3], positions[ip + 5]);
         const d1 = Geometry.distance2D(positions[ip + 3], positions[ip + 5], positions[ip + 6], positions[ip + 8]);
@@ -188,7 +188,8 @@ export class PierModelService {
       };
       // Stack the two prisms.
       const halfDepth = this.bridgeService.bridgeHalfWidth;
-      const pierHeight = this.bridgeService.designConditions.pierHeight - SiteConstants.GAP_DEPTH - TerrainModelService.WATER_LEVEL;
+      const pierHeight =
+        this.bridgeService.designConditions.pierHeight - SiteConstants.GAP_DEPTH - TerrainModelService.WATER_LEVEL;
       addPrism(
         -PierModelService.PILLOW_HEIGHT,
         PierModelService.PIER_HALF_WIDTH,
